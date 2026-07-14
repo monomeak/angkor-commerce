@@ -1,0 +1,18 @@
+{
+  "name": "acme-invoice-management",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "start": "turbo start",
+    "dev:web": "turbo dev --filter=acme-invoice-dashboard",
+    "build:web": "turbo build --filter=acme-invoice-dashboard",
+    "start:web": "turbo start --filter=acme-invoice-dashboard",
+    "lint:web": "turbo lint --filter=acme-invoice-dashboard"
+  },
+  "devDependencies": {
+    "turbo": "^2.10.5"
+  }
+}
