@@ -143,3 +143,37 @@
     transform: translateX(calc(-50% - 0.5rem));
   }
 }
+
+@keyframes collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+
+  to {
+    height: var(--collapsible-panel-height);
+    opacity: 1;
+  }
+}
+
+@keyframes collapsible-up {
+  from {
+    height: var(--collapsible-panel-height);
+    opacity: 1;
+  }
+
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@utility animate-collapsible-down {
+  animation: collapsible-down 250ms ease-out;
+}
+
+@utility animate-collapsible-up {
+  animation: collapsible-up 200ms ease-in;
+}
+
+@import "flag-icons/css/flag-icons.min.css";
