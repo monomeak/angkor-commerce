@@ -14,7 +14,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
           Manage your profile, appearance, and account security.
         </p>
       </div>
-      <div className="border-t pt-6"> {children}</div>
+      <div className="border-t pt-6">{children}</div>
     </section>
   );
 }
