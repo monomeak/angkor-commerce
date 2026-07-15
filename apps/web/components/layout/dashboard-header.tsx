@@ -13,7 +13,6 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useRouter } from "next/router";
 
 import Link from "next/link";
 
@@ -26,7 +25,10 @@ export default function DashboardHeader() {
 
       <div className="relative hidden max-w-sm flex-1 md:block">
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Search invoices, customers..." />
+        <Input
+          className="border-0 pl-9 shadow-none  focus-visible:ring-0 outline-none w-100 "
+          placeholder="Search invoices, customers..."
+        />
       </div>
 
       <div className="ml-auto flex items-center gap-2">
