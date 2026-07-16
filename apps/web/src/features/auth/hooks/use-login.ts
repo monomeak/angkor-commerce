@@ -37,7 +37,7 @@ async function performLogin(payload: LoginPayload): Promise<AuthSession> {
 export function useLogin() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationKey: ["auth", "login"],
+    mutationKey: authKeys.login(),
     mutationFn: performLogin,
     onSuccess: (session) => {
       queryClient.setQueryData(authKeys.currentUser(), session.user);

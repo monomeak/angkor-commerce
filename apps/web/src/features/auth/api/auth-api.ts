@@ -5,6 +5,7 @@ import type {
   DummyCurrentUserResponse,
 } from "../types/dummy-auth";
 import type {
+  ForgotPasswordPayload,
   LoginPayload,
   RegisterPayload,
 } from "../types/auth";
@@ -73,4 +74,13 @@ export async function registerRequest(
 
   if (!res.ok) throw new Error(`Registration failed (${res.status})`);
   return res.json();
+}
+
+export async function forgotPasswordRequest(
+  payload: ForgotPasswordPayload,
+): Promise<{ email: string }> {
+  // DummyJSON does not provide a password reset endpoint. Keep the API boundary
+  // here so this can become POST /auth/forgot-password when the backend exists.
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { email: payload.email };
 }
