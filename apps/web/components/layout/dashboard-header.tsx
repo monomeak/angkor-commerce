@@ -15,8 +15,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 
 import Link from "next/link";
+type dashboardHeaderProps = {
+  readonly profilePath?: string;
+};
 
-export default function DashboardHeader() {
+export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
   const [locale, setLocale] = useState<"en" | "km">("en");
   const currentLocale = locale === "en" ? "fi-gb" : "fi-kh";
   return (
@@ -60,23 +63,19 @@ export default function DashboardHeader() {
         </DropdownMenu>
 
         <div className="ml-auto flex items-center gap-2">
-          <AvatarDemo />
+          <AvatarDemo profilePath={profilePath} />
         </div>
       </div>
     </header>
   );
 }
 
-export function AvatarDemo() {
+export function AvatarDemo({ profilePath }: dashboardHeaderProps) {
   return (
     <Link href={"/settings/profile"}>
       <Avatar className="cursor-pointer">
-        <AvatarImage
-          src="https://github.com/shadcn.png"
-          alt="@shadcn"
-          className="grayscale"
-        />
-        <AvatarFallback>CN</AvatarFallback>
+        <AvatarImage src={profilePath} alt="@shadcn" />
+        <AvatarFallback>UR</AvatarFallback>
       </Avatar>
     </Link>
   );

@@ -7,8 +7,14 @@ const PUB_PATH = ["/"];
 const ROLE_GATED_PATHs: { prefix: string; allowRoles: AppRole[] }[] = [
   // temporay allows both super and admin at the same level
   // super admin will remove later for different app (back-office)
-  { prefix: "/settings", allowRoles: ["super_admin", "shop_admin"] },
-  { prefix: "/customers", allowRoles: ["super_admin", "shop_admin"] },
+  // { prefix: "/settings", allowRoles: ["super_admin", "shop_admin", "staff"] },
+  // { prefix: "/customers", allowRoles: ["super_admin", "shop_admin", "staff"] },
+
+  { prefix: "/team", allowRoles: ["super_admin", "shop_admin"] },
+  {
+    prefix: "/settings/privacy-security",
+    allowRoles: ["super_admin", "shop_admin"],
+  },
 ];
 // route matching
 

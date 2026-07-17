@@ -29,15 +29,17 @@ export async function loginRequest(
 
   if (!res.ok) {
     if (res.status === 400) throw new Error("Invalid username or password");
+
     throw new Error(`Login falied (${res.status})`);
   }
 
   const json = await res.json();
   const parsed = loginResponseSchema.safeParse(json);
   if (!parsed.success) {
-    throw new Error("Unexpected login response shape");
+    const message =
+      parsed.error.issues[0]?.message ?? "Invalid Response format";
+    throw new Error(message);
   }
-
   return parsed.data;
 }
 

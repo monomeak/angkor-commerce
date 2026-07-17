@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, LockKeyhole, Mail, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -188,6 +195,9 @@ function FormField({
   value,
   onChange,
 }: FormFieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
@@ -195,15 +205,30 @@ function FormField({
         <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           autoComplete={autoComplete}
-          className="pl-9"
+          className={isPassword ? "pl-9 pr-10" : "pl-9"}
           id={name}
           name={name}
           placeholder={placeholder}
           required
-          type={type}
+          type={isPassword && showPassword ? "text" : type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
+        {isPassword && (
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label={showPassword ? `Hide ${label}` : `Show ${label}`}
+            aria-pressed={showPassword}
+          >
+            {showPassword ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

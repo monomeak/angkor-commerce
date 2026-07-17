@@ -8,8 +8,11 @@ import type { AuthSession, LoginPayload } from "../types/auth";
 
 async function performLogin(payload: LoginPayload): Promise<AuthSession> {
   const parsed = loginRequestSchema.safeParse(payload);
+
   if (!parsed.success) {
-    throw new Error(parsed.error.message ?? "Invalid input");
+    const message = parsed.error.issues[0]?.message ?? "Invalid login input";
+
+    throw new Error(message);
   }
 
   const dto = await loginRequest(payload);

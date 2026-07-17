@@ -1,9 +1,9 @@
+"use client";
 import { formatLongDate, getGreeting } from "@/lib/utils";
-import { getProfileResponse } from "@/src/features/profile/api/profile-api";
+import { useCurrentUser } from "@/src/features/auth/hooks/use-current-user";
 
 export default function Dashboard() {
-  const userProfile = getProfileResponse();
-  const fullName = `${userProfile.firstName} ${userProfile.lastName}`.trim();
+  const { data: currentUser } = useCurrentUser();
   const date = new Date().toUTCString();
 
   return (
@@ -11,7 +11,7 @@ export default function Dashboard() {
       <span className=" text-muted-foreground">{formatLongDate(date)}</span>
       <h1 className="flex flex-col items-left gap-2 text-2xl font-semibold pt-2">
         <span>
-          {getGreeting().toString()}, {userProfile.firstName}
+          {getGreeting().toString()}, {currentUser?.firstName}
         </span>
       </h1>
     </main>
