@@ -18,7 +18,7 @@ export function DashboardOverviewView() {
   if (isError) {
     return (
       <div className="text-sm text-red-600">
-        Couldn't load the dashboard. Please try again shortly.
+        Couldn&apos;t load the dashboard. Please try again shortly.
       </div>
     );
   }
@@ -31,8 +31,7 @@ export function DashboardOverviewView() {
           <DashboardStatCard key={stat.id} stat={stat} />
         ))}
       </section>
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        {" "}
+      <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
         <RevenueOverviewChart data={revenue} />
         <InvoiceStatusCard data={invoiceStatusBreakdown} />
       </section>

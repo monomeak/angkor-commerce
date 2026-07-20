@@ -78,7 +78,7 @@ const CHART_COLORS = [
 
 export function InvoiceStatusCard({ data }: InvoiceStatusCardProps) {
   return (
-    <Card className="h-full">
+    <Card className="h-full min-w-0">
       <CardHeader>
         <CardTitle className="text-base font-semibold">
           Invoice status
@@ -86,8 +86,13 @@ export function InvoiceStatusCard({ data }: InvoiceStatusCardProps) {
       </CardHeader>
 
       <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-64 min-w-0 w-full">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            initialDimension={{ width: 320, height: 256 }}
+          >
             <PieChart>
               <Pie
                 data={data}

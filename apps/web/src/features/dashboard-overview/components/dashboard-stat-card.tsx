@@ -17,6 +17,7 @@ export function DashboardStatCard({ stat }: DashboardStatCardProps) {
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
           <div
+            // cn allow css to be combibed based a condition
             className={cn(
               "inline-flex items-center gap-1 text-xs font-medium",
               isUp
@@ -30,9 +31,7 @@ export function DashboardStatCard({ stat }: DashboardStatCardProps) {
               <TrendingDown className="h-3.5 w-3.5" />
             )}
             <span>{change.value}</span>
-            <span className="text-muted-foreground font-normal">
-              vs last month
-            </span>
+            <span className="text-muted-foreground font-normal"></span>
           </div>
         </div>
 

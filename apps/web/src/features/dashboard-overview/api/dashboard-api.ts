@@ -3,7 +3,7 @@ import { dashboardOverviewData } from "../data/dashboard-overview-data";
 import type { DashboardOverviewData } from "../types/dashboard";
 const BASE_URL = env.apiBaseUrl;
 
-/**
+/*
  * PLACEHOLDER ENDPOINT: there is no real "/dashboard/overview" route on
  * DummyJSON (or most backends, this early) — this file exists so the
  * hook/view layer already has its final shape. Point BASE_URL at your

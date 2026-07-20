@@ -48,7 +48,7 @@ function RevenueTooltip({
 
 export function RevenueOverviewChart({ data }: RevenueOverviewChartProps) {
   return (
-    <Card className="h-full">
+    <Card className="h-full min-w-0">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold">
           Revenue overview
@@ -63,8 +63,13 @@ export function RevenueOverviewChart({ data }: RevenueOverviewChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[280px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[280px] min-w-0 w-full">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            initialDimension={{ width: 800, height: 280 }}
+          >
             <AreaChart
               data={data}
               margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
