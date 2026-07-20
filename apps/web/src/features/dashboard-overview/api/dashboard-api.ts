@@ -18,18 +18,18 @@ const BASE_URL = env.apiBaseUrl;
 export async function fetchDashboardOverview(): Promise<DashboardOverviewData> {
   try {
     const res = await fetch(`${BASE_URL}/dashboard/overview`);
-    if (res.ok) {
+    if (!res.ok) {
       throw new Error(`Dashboard overview endpoint returned ${res.status}`);
     }
     return await res.json();
-  } catch (error) {
+  } catch (err) {
     if (process.env.NODE_ENV !== "production") {
       console.warn(
         "[dashboard-api] Falling back to mock data - real endpoint not available yet:",
-        error,
+        err instanceof Error ? err.message : err,
       );
       return dashboardOverviewData;
     }
-    throw error;
+    throw err;
   }
 }

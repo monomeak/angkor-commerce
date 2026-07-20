@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "../types/dashboard";
+import { InvoiceStatus } from "../types/invoice";
 
 interface StatusStyle {
   label: string;
@@ -35,3 +35,10 @@ const STATUS_STYLES: Record<InvoiceStatus, StatusStyle> = {
 export function getStatusStyle(status: InvoiceStatus): StatusStyle {
   return STATUS_STYLES[status];
 }
+
+export const ALL_INVOICE_STATUSES: InvoiceStatus[] = [
+  "paid",
+  "pending",
+  "overdue",
+  "draft",
+];
