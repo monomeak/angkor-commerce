@@ -1,430 +1,209 @@
-# Acme Invoice Management System
-## Full-Stack Learning Project Proposal
+# ACME Invoice Management System
 
-## 1. Project Overview
+## Project Proposal and Current Delivery Plan
 
-The **Acme Invoice Management System** is a production-style full-stack web application for managing customers, products, invoices, payments, dashboard analytics, and business reports.
+- **Last reviewed:** July 20, 2026
+- **Current phase:** Stage 1 — frontend prototype with DummyJSON
+- **Repository model:** pnpm/Turborepo monorepo with one active Next.js application
 
-The project is designed as a hands-on learning system built in two main stages:
+## 1. Project Summary
 
-1. **Frontend development with Next.js and DummyJSON**
-2. **Backend development with Java Spring Boot and PostgreSQL**
+The ACME Invoice Management System is a learning-focused, production-shaped application for managing invoices, customers, payments, teams, analytics, and business reports.
 
-During the first stage, DummyJSON acts as a temporary REST API so the complete frontend architecture and user experience can be developed before the real backend is available.
+Delivery is split into two stages:
 
-During the second stage, DummyJSON will be replaced feature by feature with a Spring Boot REST API backed by PostgreSQL.
+1. Build and validate the frontend with Next.js and DummyJSON.
+2. Add a Spring Boot and PostgreSQL backend, then replace temporary integrations feature by feature.
 
----
+This document reflects the repository as it exists today. It distinguishes completed foundations, partial work, placeholders, and future architecture so the proposal can also serve as a delivery roadmap.
 
-## 2. Project Objectives
+## 2. Goals
 
-The project aims to provide practical experience with:
+- Build a responsive invoice-management dashboard with a clear feature-based architecture.
+- Keep UI components independent from DummyJSON-specific response shapes.
+- Use TanStack React Query for server state and Zod for boundary validation.
+- Introduce secure authentication and role-based access control with the real backend.
+- Use OpenAPI as the contract between the TypeScript frontend and Java backend.
+- Add automated testing, containerized local development, and continuous integration.
+- Provide enough documentation for another developer to run, test, and extend the system.
 
-- Next.js App Router
-- Responsive dashboard development
-- Authentication and protected routes
-- Server-state management with TanStack React Query
-- Form management with React Hook Form
-- Schema validation with Zod
-- Component development with shadcn/ui
-- REST API integration
-- Java Spring Boot backend development
-- Spring Security and role-based access control
-- PostgreSQL relational database design
-- API documentation with Swagger/OpenAPI
-- Containerization with Docker
-- Automated frontend, backend, API, and end-to-end testing
+## 3. Current Repository Snapshot
 
----
+### Implemented foundation
 
-## 3. Project Scope
+- pnpm workspace containing `apps/web`.
+- Turborepo tasks for development, build, lint, and start.
+- Next.js 16 App Router application using React 19 and TypeScript.
+- Tailwind CSS 4, shadcn/ui components, responsive sidebar, header, landing page, and theme-ready design tokens.
+- TanStack React Query provider with shared query defaults.
+- Zod schemas at API and form boundaries.
+- DummyJSON authentication, registration simulation, current-user lookup, and client-side session persistence.
+- Route protection and basic role gates through the Next.js `proxy.ts` convention.
+- Dashboard overview UI with cards, charts, recent invoices, query hooks, and local fallback data.
+- Invoice domain types, schemas, mapper, API function, query hooks, filters, pagination, table, status badges, and details dialog.
+- Profile types, schema, mapper/hooks, and settings UI.
+- Appearance and privacy/security settings screens.
 
-The system will allow authenticated users to:
+### Partial or scaffolded
 
-- Log in and log out.
-- View dashboard statistics.
-- Manage customers.
-- Manage products.
-- Create and manage invoices.
-- Add products as invoice items.
-- Track invoice totals and discounts.
-- Record and view payments.
-- Search, filter, sort, and paginate data.
-- View reports and export selected data.
-- Download invoice and financial reports.
-- Manage users and roles according to permission rules.
+- The `/invoices` route is still a placeholder even though invoice feature components exist.
+- `/customers`, `/reports`, `/analytics`, and `/team` are placeholder routes.
+- Registration and forgot-password flows are simulations because DummyJSON does not persist them.
+- Dashboard data uses a mock fallback because DummyJSON has no dashboard aggregate endpoint.
+- Profile data is local dummy data.
+- Authorization currently covers `/team` and `/settings/privacy-security`; it is not a complete permission model.
+- The invoice mapper generates presentation fields that DummyJSON carts do not contain.
 
----
+### Not started in the current repository
 
-## 4. Development Strategy
+- Spring Boot API application.
+- PostgreSQL schema and Flyway migrations.
+- Products, payments, and complete customer management.
+- OpenAPI-generated frontend client.
+- Unit, integration, and Playwright test suites.
+- Dockerfiles and functional Docker Compose services.
+- CI pipeline.
+- Production-ready environment templates and setup documentation.
 
-The project is divided into two major stages.
+## 4. Current Technology Stack
 
-## Stage 1: Frontend with DummyJSON
-
-The first stage focuses on building the complete frontend independently from the real backend.
-
-```text
-Browser
-   |
-   v
-Next.js Frontend
-   |
-   | HTTP requests
-   v
-DummyJSON API
-```
-
-DummyJSON resources will be mapped to the project domain:
-
-| DummyJSON Resource | Project Domain |
+| Area | Current choice |
 | --- | --- |
-| Users | Customers |
-| Products | Products |
-| Carts | Invoices |
-| Cart products | Invoice items |
-| Cart total | Gross invoice total |
-| Discounted total | Net invoice total |
+| Monorepo | pnpm 10 workspace and Turborepo 2 |
+| Frontend | Next.js 16 App Router, React 19, TypeScript 5 |
+| Styling | Tailwind CSS 4, shadcn/ui, Base UI |
+| Server state | TanStack React Query 5 |
+| Validation | Zod 4 |
+| Charts | Recharts 3 |
+| Notifications | Sonner |
+| Icons | Lucide React |
+| Temporary API | DummyJSON through native `fetch` |
+| Planned backend | Java 21, Spring Boot, Maven Wrapper |
+| Planned persistence | PostgreSQL and Flyway |
+| Planned infrastructure | Docker and Docker Compose |
 
-Some project-specific fields that are missing from DummyJSON will be temporarily generated or mapped by the frontend.
+React Hook Form is part of the intended form strategy but is not currently installed. Current forms use local React state plus Zod validation.
 
-Examples:
-
-- Invoice number
-- Invoice status
-- Issue date
-- Due date
-- Payment status
-- User roles
-
-DummyJSON create, update, and delete operations are simulated and are not permanently persisted. This limitation will be documented and handled during frontend development.
-
-### Stage 1 Goals
-
-- Establish the frontend project architecture.
-- Build authentication screens and session handling.
-- Build the dashboard shell and navigation.
-- Integrate DummyJSON with a reusable API layer.
-- Implement TanStack React Query.
-- Build customer, product, and invoice features.
-- Implement loading, error, empty, and success states.
-- Add search, filtering, sorting, and pagination.
-- Add frontend validation.
-- Add automated frontend and end-to-end tests.
-
----
-
-## Stage 2: Backend with Spring Boot
-
-The second stage introduces the real backend and database.
-
-```text
-Browser
-   |
-   v
-Next.js Frontend
-   |
-   | REST API
-   v
-Spring Boot Backend
-   |
-   | Spring Data JPA
-   v
-PostgreSQL Database
-```
-
-DummyJSON will be replaced feature by feature.
-
-Recommended replacement order:
-
-1. Authentication
-2. Customers
-3. Products
-4. Invoices
-5. Payments
-6. Dashboard statistics
-7. Reports
-8. Users and roles
-9. Audit logs
-
-The frontend UI should remain mostly unchanged because API access will be isolated behind service functions and feature hooks.
-
----
-
-## 5. Technology Stack
-
-## Frontend
-
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- TanStack React Query
-- React Hook Form
-- Zod
-- Axios or Fetch API
-- Recharts
-- Sonner
-- Lucide Icons
-
-## Backend
-
-- Java 21
-- Spring Boot
-- Spring Web
-- Spring Data JPA
-- Spring Security
-- Bean Validation
-- Hibernate
-- PostgreSQL Driver
-- Flyway
-- Springdoc OpenAPI
-- Maven Wrapper
-
-## Testing
-
-- Vitest or Jest
-- React Testing Library
-- Playwright
-- JUnit 5
-- Mockito
-- Spring Boot Test
-- MockMvc
-- Testcontainers
-- Postman
-
-## Infrastructure
-
-- Docker
-- Docker Compose
-- PostgreSQL
-- Optional JSReport or Java PDF library
-- Optional Nginx reverse proxy
-
----
-
-## 6. Repository Strategy
-
-The project will use a **monorepo**.
-
-The frontend and backend will stay in one Git repository but use independent build systems.
+## 5. Current Repository Structure
 
 ```text
 acme-invoice-management/
 ├── apps/
-│   ├── web/
-│   └── api/
-├── tests/
-│   └── e2e/
-├── docs/
-├── infrastructure/
-├── scripts/
-├── docker-compose.yml
-├── pnpm-workspace.yaml
-├── package.json
-├── .env.example
-├── .gitignore
-└── README.md
-```
-
-### Build Ownership
-
-| Application | Build Tool |
-| --- | --- |
-| Next.js frontend | pnpm |
-| Spring Boot backend | Maven Wrapper |
-| PostgreSQL and services | Docker Compose |
-| End-to-end testing | Playwright |
-
-Spring Boot will not be treated as a pnpm workspace package.
-
-The root repository coordinates the applications, documentation, Docker services, and end-to-end tests.
-
----
-
-## 7. Recommended Repository Structure
-
-```text
-acme-invoice-management/
-├── apps/
-│   ├── web/
-│   │   ├── src/
-│   │   ├── public/
-│   │   ├── package.json
-│   │   ├── next.config.ts
-│   │   ├── Dockerfile
-│   │   └── .dockerignore
-│   │
-│   └── api/
+│   └── web/
+│       ├── app/                    # Next.js routes and route groups
+│       │   ├── (auth)/
+│       │   ├── (dashboard)/
+│       │   ├── unauthorized/
+│       │   ├── layout.tsx
+│       │   ├── page.tsx
+│       │   └── providers.tsx
+│       ├── components/
+│       │   ├── home/               # Public landing-page sections
+│       │   ├── layout/             # Dashboard shell and navigation
+│       │   └── ui/                 # Reusable shadcn/ui components
+│       ├── config/                  # Environment parsing
+│       ├── hooks/                   # Application-level hooks
+│       ├── lib/                     # Shared app utilities
+│       ├── public/
 │       ├── src/
-│       │   ├── main/
-│       │   └── test/
-│       ├── pom.xml
-│       ├── mvnw
-│       ├── mvnw.cmd
-│       ├── Dockerfile
-│       └── .dockerignore
-│
-├── tests/
-│   └── e2e/
-│
+│       │   ├── features/
+│       │   │   ├── auth/
+│       │   │   ├── dashboard-overview/
+│       │   │   ├── invoices/
+│       │   │   └── profile/
+│       │   └── shared/              # Cross-feature types, hooks, and helpers
+│       ├── proxy.ts                 # Authentication and role redirects
+│       └── package.json
+├── docker/                          # Reserved; currently empty
 ├── docs/
-│   ├── project-proposal.md
-│   ├── architecture.md
-│   ├── api-contract.md
-│   ├── database-design.md
-│   └── test-plan.md
-│
-├── infrastructure/
-│   ├── postgres/
-│   ├── jsreport/
-│   └── nginx/
-│
-├── docker-compose.yml
-├── pnpm-workspace.yaml
+│   └── ACME_INVOICE_PROJECT_PROPOSAL.md
+├── .env.example                     # Present but currently empty
+├── docker-compose.yml               # Present but currently empty
 ├── package.json
-├── .env.example
-├── .gitignore
-└── README.md
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── README.md                        # Present but currently empty
+└── turbo.json
 ```
 
-Each application keeps its own Dockerfile near its source code.
+The App Router lives at `apps/web/app`, while feature code lives at `apps/web/src/features`. Future work should preserve this convention instead of moving `app` beneath `src` without a deliberate migration.
 
----
+## 6. Current Frontend Architecture
 
-## 8. Frontend Architecture
-
-Recommended frontend structure:
+Each implemented feature generally follows this shape:
 
 ```text
-apps/web/src/
-├── app/
-│   ├── (auth)/
-│   ├── (dashboard)/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── loading.tsx
-│   ├── error.tsx
-│   └── not-found.tsx
-│
+Route page
+  → feature view/component
+  → React Query hook
+  → feature API function
+  → Zod response validation and mapper
+  → DummyJSON (Stage 1) or Spring Boot (Stage 2)
+```
+
+Feature folders may contain:
+
+```text
+feature/
+├── api/
 ├── components/
-│   ├── ui/
-│   ├── common/
-│   └── layout/
-│
-├── features/
-│   ├── auth/
-│   ├── dashboard/
-│   ├── customers/
-│   ├── products/
-│   ├── invoices/
-│   ├── payments/
-│   ├── reports/
-│   └── users/
-│
-├── providers/
 ├── hooks/
 ├── lib/
+├── mappers/
 ├── schemas/
-└── types/
+├── types/
+└── views/
 ```
 
-### Frontend Data Flow
+Rules to retain:
 
-```text
-Page
-  |
-  v
-Feature component
-  |
-  v
-React Query hook
-  |
-  v
-Service function
-  |
-  v
-API client
-  |
-  v
-DummyJSON or Spring Boot
-```
+- Route pages should compose feature views and remain small.
+- UI components should not call DummyJSON directly.
+- DummyJSON response types should stay separate from domain types.
+- External responses should be validated before mapping into domain objects.
+- Query keys should be owned by their feature.
+- URL search parameters should become the source of truth for shareable list filters and pagination.
 
-UI components must not call DummyJSON directly.
+## 7. Current Routes
 
-This architecture allows the backend provider to change without rewriting the pages.
+Next.js route groups do not add URL segments. The implemented URL design is therefore flat rather than nested under `/dashboard`.
 
----
-
-## 9. State Management Strategy
-
-| State Type | Recommended Tool |
+| Route | Status |
 | --- | --- |
-| Server and API data | TanStack React Query |
-| Form values | React Hook Form |
-| Form validation | Zod |
-| URL filters and pagination | Search parameters |
-| Small component state | React `useState` |
-| Authentication profile | React Query |
-| Sidebar and layout state | React context or shadcn sidebar |
-| Theme | next-themes |
+| `/` | Implemented public landing page |
+| `/login` | Implemented with DummyJSON |
+| `/register` | Implemented; simulated persistence |
+| `/forget-password` | Implemented UI; simulated request |
+| `/overview` | Implemented dashboard overview with fallback data |
+| `/invoices` | Placeholder route; feature layer is substantially built |
+| `/customers` | Placeholder |
+| `/reports` | Placeholder |
+| `/analytics` | Placeholder |
+| `/team` | Placeholder and role-gated |
+| `/settings/profile` | Implemented with dummy profile data |
+| `/settings/appearance` | Implemented UI |
+| `/settings/privacy-security` | Implemented UI and role-gated |
+| `/unauthorized` | Implemented |
 
-Redux or Zustand will not be added initially because React Query, URL state, form state, and local React state are sufficient.
+The route names in code are the current source of truth. Future resource-detail routes should follow the same flat model, for example `/invoices/[id]` and `/customers/[id]`, unless the team intentionally adopts a `/dashboard/*` prefix.
 
----
+## 8. Authentication and Authorization
 
-## 10. Frontend Routes
+### Stage 1 behavior
 
-```text
-/login
-/dashboard
-/dashboard/customers
-/dashboard/customers/create
-/dashboard/customers/[id]
-/dashboard/customers/[id]/edit
-/dashboard/products
-/dashboard/products/create
-/dashboard/products/[id]
-/dashboard/products/[id]/edit
-/dashboard/invoices
-/dashboard/invoices/create
-/dashboard/invoices/[id]
-/dashboard/invoices/[id]/edit
-/dashboard/payments
-/dashboard/reports
-/dashboard/users
-/dashboard/settings
-```
+- `POST /auth/login` authenticates against DummyJSON.
+- `GET /auth/me` supplies the current user and temporary role mapping.
+- `POST /users/add` simulates registration.
+- Forgot password is a local delayed response.
+- The session is stored in `localStorage`; readable cookies mirror the access token and role so `proxy.ts` can redirect requests.
+- Unauthenticated users are redirected to `/login` with a `redirect` query parameter.
+- Authenticated users visiting auth pages are redirected to `/overview`.
 
----
+This is acceptable only for the learning prototype. Tokens in `localStorage` or JavaScript-readable cookies are exposed to cross-site scripting and must not be the production design.
 
-## 11. Authentication
+### Stage 2 target
 
-## Stage 1 Authentication
-
-DummyJSON authentication endpoints will be used initially:
-
-```http
-POST /auth/login
-GET  /auth/me
-POST /auth/refresh
-```
-
-The frontend will implement:
-
-- Login form
-- Validation
-- Authentication mutation
-- Current-user query
-- Logout flow
-- Protected dashboard pages
-- Token refresh handling
-- Unauthorized-response handling
-
-## Stage 2 Authentication
-
-Spring Boot will provide:
+The Spring Boot API should expose:
 
 ```http
 POST /api/v1/auth/login
@@ -433,573 +212,220 @@ POST /api/v1/auth/logout
 GET  /api/v1/auth/me
 ```
 
-The real backend will handle:
+Use short-lived access tokens and rotated refresh tokens in `HttpOnly`, `Secure`, `SameSite` cookies, or introduce a Next.js backend-for-frontend session layer. Spring Security must remain the final authorization authority; frontend role checks are user-experience controls only.
 
-- Password hashing
-- Access-token generation
-- Refresh-token rotation
-- Secure cookie configuration
-- Session invalidation
-- Role-based authorization
-- Account status validation
+## 9. Functional Scope
 
-The backend remains the final security authority.
+### MVP
 
----
+- Authentication and protected dashboard routes.
+- Customer list, detail, create, update, and archive flows.
+- Product list, detail, create, update, stock state, and archive flows.
+- Invoice list, detail, create, update, items, discounts, totals, and statuses.
+- Payment recording and remaining-balance calculation.
+- Dashboard aggregates and recent invoices.
+- Search, filter, sort, and pagination.
+- Basic team and role administration.
+- CSV export and print-friendly invoices.
+- PostgreSQL persistence, OpenAPI documentation, Docker Compose, and critical automated tests.
 
-## 12. Core Functional Modules
+### Deferred beyond MVP
 
-## Dashboard
+- Multi-company tenancy.
+- Multiple currencies and exchange rates.
+- Recurring invoices and subscription billing.
+- Advanced accounting and tax jurisdiction rules.
+- Real-time notifications.
+- External payment gateways.
+- Advanced audit and business-intelligence reporting.
 
-The dashboard should display:
+## 10. Stage 2 Backend Architecture
 
-- Total customers
-- Total products
-- Total stock
-- Low-stock products
-- Inventory value
-- Total invoices
-- Gross revenue
-- Net revenue
-- Total discount
-- Total quantity
-- Average invoice
-- Top product
-- Top customer
-- Recent invoices
-
-During Stage 1, these values will be aggregated from DummyJSON users, products, and carts.
-
-During Stage 2, a dedicated Spring Boot dashboard API will return the final values.
-
-## Customer Management
-
-- Customer list
-- Customer details
-- Create customer
-- Edit customer
-- Delete or archive customer
-- Search
-- Sorting
-- Pagination
-- Customer invoice history
-
-## Product Management
-
-- Product list
-- Product details
-- Category filtering
-- Search
-- Sorting
-- Pagination
-- Create and edit product
-- Stock status
-- Low-stock indicators
-
-## Invoice Management
-
-- Invoice list
-- Invoice details
-- Create invoice
-- Edit invoice
-- Delete or archive invoice
-- Add invoice items
-- Automatic total calculation
-- Discount calculation
-- Search and filtering
-- Sorting and pagination
-- Invoice status display
-
-## Payment Management
-
-- Record payment
-- Payment history
-- Payment method
-- Transaction reference
-- Payment date
-- Remaining balance
-- Automatic paid-status update
-
-## Reports
-
-- Invoice report
-- Revenue report
-- Product and stock report
-- Customer statement
-- CSV export
-- Print-friendly report
-- PDF generation in the backend stage
-
-## User and Role Management
-
-Proposed roles:
-
-- Super Admin
-- Shop Admin
-- Staff
-- Viewer
-
-Permissions will be enforced by Spring Security during the backend stage.
-
----
-
-## 13. Backend Architecture
-
-Recommended package structure:
+Add the Java application as `apps/api`, but do not add it to `pnpm-workspace.yaml`. Maven owns the backend build; root scripts or CI coordinate both build systems.
 
 ```text
-apps/api/src/main/java/com/acme/invoice/
-├── auth/
-├── user/
-├── role/
-├── customer/
-├── product/
-├── invoice/
-├── payment/
-├── dashboard/
-├── report/
-├── audit/
-├── security/
-├── common/
-└── config/
+apps/api/
+├── src/main/java/com/acme/invoice/
+│   ├── auth/
+│   ├── user/
+│   ├── customer/
+│   ├── product/
+│   ├── invoice/
+│   ├── payment/
+│   ├── dashboard/
+│   ├── report/
+│   ├── audit/
+│   ├── security/
+│   ├── common/
+│   └── config/
+├── src/main/resources/db/migration/
+├── src/test/
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+└── Dockerfile
 ```
 
-Typical feature structure:
+Use thin controllers, service-owned business rules, repository-owned persistence, DTOs at HTTP boundaries, and transactions around invoice/payment workflows.
+
+### Initial tables
+
+- `users`, `roles`, `user_roles`
+- `customers`
+- `products`
+- `invoices`, `invoice_items`
+- `payments`
+- `refresh_tokens`
+- `audit_logs`
+
+Prefer archive/status columns for business records over destructive deletion. Store money as fixed-precision decimals and define rounding rules centrally. Invoice numbers need a database-enforced unique constraint and a concurrency-safe generation strategy.
+
+## 11. API Contract Strategy
+
+Springdoc OpenAPI should be the contract source of truth:
 
 ```text
-invoice/
-├── InvoiceController.java
-├── InvoiceService.java
-├── InvoiceRepository.java
-├── InvoiceEntity.java
-├── InvoiceItemEntity.java
-├── InvoiceMapper.java
-├── CreateInvoiceRequest.java
-├── UpdateInvoiceRequest.java
-└── InvoiceResponse.java
+Spring DTOs → OpenAPI document → generated TypeScript client/types → frontend hooks
 ```
 
-The backend will follow:
+Choose one generator after a short proof of concept (Orval, Hey API, or `openapi-typescript`). Commit either the generated client or a reproducible generation command, and add a CI check that detects contract drift.
 
-```text
-Controller
-   |
-   v
-Service
-   |
-   v
-Repository
-   |
-   v
-PostgreSQL
-```
+Standardize early:
 
-Controllers should remain thin, while business rules belong in services.
+- Error response shape and machine-readable error codes.
+- Pagination, sorting, and filtering parameters.
+- Date/time format and timezone rules.
+- Decimal/money serialization.
+- Idempotency behavior for payment and invoice-finalization commands.
+- Optimistic concurrency for edits.
 
----
+## 12. Testing Strategy
 
-## 14. Suggested Database Tables
+### Frontend
 
-- users
-- roles
-- user_roles
-- customers
-- products
-- invoices
-- invoice_items
-- payments
-- refresh_tokens
-- report_logs
-- audit_logs
+- Vitest and React Testing Library for mappers, schemas, hooks, components, and form behavior.
+- Mock Service Worker for API success, validation, empty, and failure states.
+- Playwright for authentication, invoice creation, payment, filters, permissions, and report downloads.
 
-Main relationships:
+### Backend
 
-- A customer has many invoices.
-- An invoice belongs to one customer.
-- An invoice contains many invoice items.
-- An invoice can have multiple payments.
-- A user can create invoices and payments.
-- A user can generate reports.
-- A user can create audit-log records through system actions.
+- JUnit 5 and Mockito for service rules.
+- Spring Boot tests and MockMvc for API and security behavior.
+- Testcontainers with PostgreSQL for repositories, Flyway migrations, and transactional workflows.
 
----
+### Contract and quality gates
 
-## 15. API Contract Strategy
+- OpenAPI compatibility or generated-client drift check.
+- TypeScript type-check, lint, build, unit tests, and selected Playwright smoke tests in CI.
+- Backend compile, unit tests, integration tests, and migration validation in CI.
 
-Because the frontend uses TypeScript and the backend uses Java, shared TypeScript packages will not be used as the source of truth.
+## 13. Environment and Infrastructure
 
-Instead, OpenAPI will define the shared contract.
-
-```text
-Spring Boot DTOs
-      |
-      v
-Springdoc OpenAPI
-      |
-      v
-openapi.json
-      |
-      v
-Generated TypeScript client and types
-      |
-      v
-Next.js frontend
-```
-
-Possible frontend client generators:
-
-- openapi-typescript
-- Orval
-- Hey API
-
-This reduces contract drift between Java and TypeScript.
-
----
-
-## 16. Environment Configuration
-
-The repository will provide a root `.env.example`.
-
-Example variables:
+Populate the root `.env.example` without real secrets. A practical initial contract is:
 
 ```env
-NEXT_PUBLIC_APP_NAME=Acme Invoice Management
-NEXT_PUBLIC_APP_ENV=development
+NEXT_PUBLIC_APP_NAME=ACME Invoice Management
 NEXT_PUBLIC_API_BASE_URL=https://dummyjson.com
-NEXT_PUBLIC_USE_DUMMY_API=true
 
 SERVER_PORT=8080
-
 POSTGRES_DB=acme_invoice
 POSTGRES_USER=acme
 POSTGRES_PASSWORD=change_me
-
 SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/acme_invoice
 SPRING_DATASOURCE_USERNAME=acme
 SPRING_DATASOURCE_PASSWORD=change_me
-
-JWT_SECRET=replace_with_a_long_random_secret
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-Only `.env.example` files will be committed.
+Do not expose backend secrets through `NEXT_PUBLIC_*`. Document which values are required for the browser, Next.js server, Spring Boot process, and Docker Compose.
 
-Secrets and local environment files will be ignored by Git.
+The root `docker-compose.yml` should eventually coordinate PostgreSQL, the API, and the web application, with health checks and dependency conditions. Keep Dockerfiles next to their applications.
 
----
+## 14. Revised Delivery Roadmap
 
-## 17. Docker Strategy
+### Milestone 1 — Stabilize the existing frontend foundation
 
-Each application will keep its Dockerfile beside its source:
+- Connect `/invoices` to the existing `InvoicesListView` and verify its loading, error, empty, filter, details, and pagination states.
+- Fix naming and consistency issues such as `forget-password` versus the conventional `forgot-password` before links become widespread.
+- Add a shared API error model and response-validation policy.
+- Populate `.env.example` and `README.md`.
+- Add `typecheck` and test tasks to the workspace pipeline.
 
-```text
-apps/web/Dockerfile
-apps/api/Dockerfile
-```
+### Milestone 2 — Complete Stage 1 core resources
 
-The root `docker-compose.yml` will coordinate:
+- Implement customers and products with DummyJSON adapters.
+- Add invoice create/edit flows and URL-based list state.
+- Decide whether reports and analytics are separate modules or one reporting area.
+- Complete team/role UI using clearly documented mock permissions.
+- Add accessible loading, empty, error, and confirmation states.
 
-- Next.js
-- Spring Boot
-- PostgreSQL
-- Optional JSReport
-- Optional Nginx
+### Milestone 3 — Establish automated tests
 
-The first frontend stage may run locally without Docker.
+- Test schemas, mappers, calculations, and role mapping first.
+- Add component/integration tests for auth and invoices.
+- Add Playwright smoke tests for login, route protection, invoice browsing, and logout.
+- Run lint, type-check, tests, and build in CI.
 
-Docker Compose will become a required part of the project when the Spring Boot backend and PostgreSQL are introduced.
+### Milestone 4 — Create the backend foundation
 
----
+- Scaffold `apps/api` with Java 21, Maven Wrapper, Spring Boot, Spring Security, Spring Data JPA, Bean Validation, Springdoc, PostgreSQL, and Flyway.
+- Define common error and pagination contracts.
+- Add health/readiness endpoints and Testcontainers.
+- Create Dockerfiles and a working Compose environment.
 
-## 18. Git Branch Strategy
+### Milestone 5 — Replace DummyJSON incrementally
 
-Main branches:
+Recommended order:
 
-```text
-main
-develop
-```
+1. Authentication and sessions.
+2. Customers.
+3. Products.
+4. Invoices and invoice items.
+5. Payments.
+6. Dashboard aggregates.
+7. Reports.
+8. Team, roles, and audit logs.
 
-Feature branches:
+Retire each DummyJSON mapper and mock only after its replacement has contract and end-to-end coverage.
 
-```text
-feature/frontend-foundation
-feature/frontend-authentication
-feature/dashboard-layout
-feature/dashboard-overview
-feature/customer-management
-feature/product-management
-feature/invoice-management
-feature/frontend-reports
-test/frontend-automation
+## 15. Recommended Improvements
 
-feature/backend-foundation
-feature/backend-authentication
-feature/backend-customer-api
-feature/backend-product-api
-feature/backend-invoice-api
-feature/backend-payment-api
-feature/backend-dashboard-api
-feature/backend-reports
-test/backend-integration
-```
+### Highest priority
 
-Full-stack features may use one branch containing frontend, backend, migration, documentation, and test changes.
+1. **Finish routing existing invoice work.** The invoice feature layer is much further along than its route; exposing and testing it produces immediate value before adding new modules.
+2. **Harden the API boundary.** Introduce a reusable fetch wrapper for base URL, typed errors, JSON parsing, abort signals, and consistent validation. Keep feature mappers, but avoid repeating transport behavior.
+3. **Add tests before backend migration.** Mapper and total-calculation tests protect the domain behavior while API providers change.
+4. **Replace client-readable auth tokens in Stage 2.** Adopt server-issued `HttpOnly` cookies and backend authorization before treating the application as production-ready.
+5. **Complete operational files.** Empty `README.md`, `.env.example`, and `docker-compose.yml` currently imply capabilities that do not yet exist.
 
-Example:
+### Architecture and maintainability
 
-```text
-feature/invoice-creation
-```
+- Add explicit `typecheck` scripts; lint and production builds are not substitutes for a fast type-check task.
+- Use React Hook Form only if the growing customer/product/invoice forms benefit from its field and error management; otherwise update the documented stack to match the chosen approach.
+- Keep server/domain DTOs separate and validate all untrusted API responses, including dashboard and current-user responses.
+- Centralize roles and permissions in a capability matrix so navigation visibility, route UX, and backend authorities use the same vocabulary.
+- Define an invoice state machine (`draft`, `issued`, `partially_paid`, `paid`, `overdue`, `void`) instead of allowing arbitrary status changes.
+- Treat invoice finalization and payment recording as transactional backend commands, not generic CRUD updates.
+- Add audit fields (`created_at`, `updated_at`, `created_by`, `updated_by`) to core records from the first migration.
 
----
+### Product and user experience
 
-## 19. Commit Convention
+- Clarify whether “analytics” and “reports” have different users and outcomes; merge them if the distinction is not meaningful.
+- Add product navigation only when the product module exists, or document why products are managed indirectly through invoice creation.
+- Preserve filters in the URL so lists are bookmarkable and browser navigation works naturally.
+- Design for keyboard operation, visible focus, semantic labels, responsive tables, and color-independent status indicators.
+- Define export limits, timezone, locale, currency, decimal rounding, and invoice numbering before report and payment work.
 
-Examples:
+## 16. Definition of Done
 
-```text
-feat(web): add customer listing page
-feat(api): add customer search endpoint
-fix(web): handle expired access token
-fix(api): validate invoice due date
-test(e2e): cover invoice creation flow
-test(api): add invoice controller tests
-docs: update architecture proposal
-chore(infra): add postgres health check
-```
+A feature is complete when:
 
----
+- Its route uses the intended feature view rather than placeholder markup.
+- Loading, empty, error, success, validation, and permission states are handled.
+- External data is validated and mapped at the boundary.
+- Business-critical behavior has automated tests.
+- Accessibility and responsive behavior have been checked.
+- Relevant environment variables and setup steps are documented.
+- Temporary DummyJSON behavior is clearly marked and has a Stage 2 replacement path.
 
-## 20. Testing Strategy
-
-## Frontend Testing
-
-- Component tests
-- Form-validation tests
-- React Query integration tests
-- API error-state tests
-- Loading and empty-state tests
-
-## Backend Testing
-
-- Unit tests
-- Controller tests
-- Service tests
-- Repository integration tests
-- Security tests
-- Validation tests
-- Testcontainers with PostgreSQL
-
-## API Testing
-
-Postman will be used to test:
-
-- Request bodies
-- Path parameters
-- Query parameters
-- Authentication
-- Validation errors
-- Authorization
-- Pagination
-- Sorting
-- Filtering
-- Business rules
-
-## End-to-End Testing
-
-Playwright will cover:
-
-- Login
-- Protected-route access
-- Customer creation
-- Product creation
-- Invoice creation
-- Invoice item calculation
-- Payment recording
-- Search and filtering
-- Dashboard totals
-- Report downloads
-- Logout
-
----
-
-## 21. Development Milestones
-
-## Milestone 1: Frontend Foundation
-
-- Set up monorepo.
-- Move Next.js into `apps/web`.
-- Configure pnpm workspace.
-- Install shadcn/ui.
-- Configure TanStack React Query.
-- Add environment validation.
-- Add API client.
-- Create route groups.
-- Create dashboard shell.
-
-## Milestone 2: DummyJSON Authentication
-
-- Build login page.
-- Connect DummyJSON authentication.
-- Add current-user query.
-- Add logout.
-- Protect dashboard routes.
-- Handle expired sessions.
-
-## Milestone 3: Dashboard
-
-- Add dashboard cards.
-- Add charts.
-- Aggregate DummyJSON data.
-- Add recent-invoice table.
-- Add loading and error states.
-
-## Milestone 4: Customer and Product Management
-
-- Build customer pages.
-- Build product pages.
-- Add forms.
-- Add search, sorting, filters, and pagination.
-- Add create, edit, and delete simulations.
-
-## Milestone 5: Invoice Management
-
-- Map carts to invoices.
-- Build invoice list and detail pages.
-- Build invoice create and edit forms.
-- Add invoice items.
-- Add calculated totals.
-- Add generated invoice fields.
-
-## Milestone 6: Frontend Reports and Tests
-
-- Add report views.
-- Add CSV export.
-- Add print-friendly pages.
-- Add component tests.
-- Add Playwright tests.
-
-## Milestone 7: Spring Boot Foundation
-
-- Generate Spring Boot application.
-- Configure Maven.
-- Configure PostgreSQL.
-- Add Flyway.
-- Add health endpoint.
-- Add Swagger.
-- Add global exception handling.
-
-## Milestone 8: Backend Features
-
-- Add authentication.
-- Add customers.
-- Add products.
-- Add invoices and invoice items.
-- Add payments.
-- Add dashboard aggregation.
-- Add reports.
-- Add users and roles.
-
-## Milestone 9: Replace DummyJSON
-
-- Replace authentication service.
-- Replace customer service.
-- Replace product service.
-- Replace invoice service.
-- Replace dashboard service.
-- Remove temporary mappers and generated fields.
-
-## Milestone 10: Full-System Testing and Docker
-
-- Add backend integration tests.
-- Add Testcontainers.
-- Add Dockerfiles.
-- Add Docker Compose.
-- Run complete Playwright suite.
-- Add CI pipeline.
-- Finalize documentation.
-
----
-
-## 22. MVP Scope
-
-The MVP should include:
-
-- Login and logout
-- Protected dashboard
-- Responsive sidebar and header
-- Customer list and forms
-- Product list and forms
-- Invoice list and forms
-- Invoice items
-- Automatic invoice totals
-- Search, filtering, sorting, and pagination
-- Basic payment recording
-- Dashboard summary
-- CSV export
-- PostgreSQL persistence
-- Swagger documentation
-- Docker Compose
-- Basic automated tests
-
-The MVP should not initially include:
-
-- Multi-company support
-- Multiple currencies
-- Recurring invoices
-- Advanced accounting
-- Complex tax rules
-- Subscription billing
-- Real-time notifications
-- Advanced audit reporting
-- External payment-gateway integration
-
----
-
-## 23. Success Criteria
-
-The project is considered successful when:
-
-- The frontend works with DummyJSON during Stage 1.
-- The frontend architecture does not depend directly on DummyJSON.
-- The system can replace DummyJSON with Spring Boot feature by feature.
-- Users can authenticate and access protected pages.
-- Customers and products can be managed.
-- Invoices can contain multiple items.
-- Totals are calculated correctly.
-- Payments update invoice balances and statuses.
-- Dashboard values match database records.
-- Swagger documents the backend APIs.
-- PostgreSQL stores the final business data.
-- Docker Compose runs the complete system.
-- Automated tests cover the main business flows.
-- The README explains setup, architecture, scripts, testing, and learning outcomes.
-
----
-
-## 24. Expected Learning Outcomes
-
-After completing the project, the developer should understand:
-
-- How to organize a mixed-technology monorepo.
-- How Next.js consumes external and internal APIs.
-- How TanStack React Query manages server state.
-- How shadcn/ui supports reusable frontend design.
-- How frontend validation and backend validation differ.
-- How Spring Boot organizes controllers, services, and repositories.
-- How Spring Security protects APIs.
-- How JPA and PostgreSQL manage relational data.
-- How OpenAPI synchronizes Java and TypeScript contracts.
-- How Docker coordinates frontend, backend, and database services.
-- How unit, integration, API, and end-to-end tests work together.
-
----
-
-## 25. Final Project Definition
-
-The **Acme Invoice Management System** is a full-stack business application built with Next.js, Java Spring Boot, PostgreSQL, and Docker.
-
-Its frontend will first be developed and tested with DummyJSON. The real Spring Boot backend will then replace the temporary API feature by feature.
-
-The project uses a monorepo for organization and coordination while keeping pnpm and Maven as independent build systems.
+The MVP is complete when users can securely authenticate, manage customers and products, create and track invoices and payments, view accurate dashboard data, export core reports, and run the full system with PostgreSQL through documented Docker Compose commands.
