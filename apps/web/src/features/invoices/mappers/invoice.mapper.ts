@@ -61,7 +61,8 @@ export function mapCartToInvoice(dto: DummyCart): Invoice {
     totalProducts: dto.totalProducts,
     totalQuantity: dto.totalQuantity,
     amount: dto.total,
-    amountDue: dto.discountedTotal,
+    amountDue: dto.discountedTotal, // amount to pay
+    totalDiscount: dto.total - dto.discountedTotal,
     status: synthesizeStatus(Number(dto.id)),
     issuedDate: issuedDate.toISOString(),
     dueDate: dueDate.toISOString(),

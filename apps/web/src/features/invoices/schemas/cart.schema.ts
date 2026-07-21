@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const cartProductSchema = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   title: z.string(),
   price: z.number(),
   quantity: z.number(),
@@ -12,7 +12,7 @@ export const cartProductSchema = z.object({
 });
 
 export const cartSchema = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   products: z.array(cartProductSchema),
   total: z.number(),
   discountedTotal: z.number(),

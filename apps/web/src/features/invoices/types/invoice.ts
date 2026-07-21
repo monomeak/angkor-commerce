@@ -28,7 +28,8 @@ export interface Invoice {
   /** Sum before discount */
   amount: number;
   /** Amount actually invoiced, after discount */
-  amountDue?: number;
+  totalDiscount: number;
+  amountDue: number;
   status: InvoiceStatus;
   issuedDate: string;
   dueDate: string;
@@ -37,6 +38,10 @@ export interface Invoice {
 export interface InvoiceListFilters {
   search: string;
   status: InvoiceStatus | "all";
+  issuedDateFrom: string;
+  issuedDateTo: string;
+  dueDateFrom: string;
+  dueDateTo: string;
   page: number;
   pageSize: number;
 }

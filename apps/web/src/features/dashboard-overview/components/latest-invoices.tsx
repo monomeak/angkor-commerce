@@ -12,6 +12,7 @@ import {
 import { InvoiceStatusBadge } from "./invoice-status-badge";
 import { formatCurrency, formatDate } from "../lib/format";
 import { Invoice } from "../../invoices/types/invoice";
+import Link from "next/link";
 
 interface LatestInvoicesProps {
   readonly invoices: Invoice[];
@@ -24,10 +25,12 @@ export function LatestInvoices({ invoices }: LatestInvoicesProps) {
         <CardTitle className="text-base font-semibold">
           Latest invoices
         </CardTitle>
-        <Button variant="ghost" size="sm" className="gap-1 text-sm">
-          View all
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Button>
+        <Link href="/invoices">
+          <Button variant="ghost" size="sm" className="gap-1 text-sm">
+            View all
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
       </CardHeader>
       <CardContent>
         <Table>
