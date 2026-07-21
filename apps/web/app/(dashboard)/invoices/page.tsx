@@ -1,3 +1,5 @@
+import { InvoicesListView } from "@/src/features/invoices/views/invoices-list-view";
+
 export default function Invoice() {
-  return <h1>Invoice Page</h1>;
+  return <InvoicesListView />;
 }

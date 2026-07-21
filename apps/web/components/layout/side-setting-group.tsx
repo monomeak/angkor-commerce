@@ -16,17 +16,20 @@ import {
 import { sidebarNavigation } from "./sidebar-navigation";
 import React from "react";
 import Link from "next/link";
+import { AppRole } from "@/src/features/auth/types/auth";
 
 type SidebarGroupItem = (typeof sidebarNavigation)[number];
 
 type SidebarCollapsibleGroupProps = {
-  item: SidebarGroupItem;
-  pathname: string;
+  readonly item: SidebarGroupItem;
+  readonly pathname: string;
+  readonly userRole?: AppRole;
 };
 
 export function SidebarCollapsibleGroup({
   item,
   pathname,
+  userRole,
 }: SidebarCollapsibleGroupProps) {
   const { state, setOpen: setSidebarOpen } = useSidebar();
   const isSidebarCollapsed = state === "collapsed";
@@ -39,6 +42,11 @@ export function SidebarCollapsibleGroup({
     ) ??
       false);
 
+  const visibleSubItems = item.items?.filter(
+    (subItem) =>
+      !subItem.allowedRoles ||
+      (userRole && subItem.allowedRoles.includes(userRole)),
+  );
   const [groupOpen, setGroupOpen] = React.useState(false);
   const isOpen = !isSidebarCollapsed && (groupOpen || isGroupActive);
   const openSidebarIfCollapsed = () => {
@@ -91,7 +99,7 @@ export function SidebarCollapsibleGroup({
           "
         >
           <SidebarMenuSub className="mt-2 gap-2">
-            {item.items?.map((subItem) => {
+            {visibleSubItems?.map((subItem) => {
               const isSubItemActive =
                 pathname === subItem.href ||
                 pathname.startsWith(`${subItem.href}/`);

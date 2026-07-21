@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, LockKeyhole, UserRound } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const { mutateAsync: login, isPending, error } = useLogin();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +34,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       await login({ username, password, rememberMe });
       onSuccess?.();
     } catch {
+      setPassword("");
       // error is already captured by the mutation's `error` state below
     }
   };
@@ -83,15 +85,28 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 autoComplete="current-password"
-                className=" h-11 py-0 pl-9"
+                className="h-11 py-0 pl-9 pr-10"
                 id="password"
                 name="password"
                 placeholder="Enter your password"
                 required
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
             </div>
           </div>
 

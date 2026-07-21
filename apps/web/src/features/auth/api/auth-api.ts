@@ -5,6 +5,7 @@ import type {
   DummyCurrentUserResponse,
 } from "../types/dummy-auth";
 import type {
+  ForgotPasswordPayload,
   LoginPayload,
   RegisterPayload,
 } from "../types/auth";
@@ -28,15 +29,17 @@ export async function loginRequest(
 
   if (!res.ok) {
     if (res.status === 400) throw new Error("Invalid username or password");
+
     throw new Error(`Login falied (${res.status})`);
   }
 
   const json = await res.json();
   const parsed = loginResponseSchema.safeParse(json);
   if (!parsed.success) {
-    throw new Error("Unexpected login response shape");
+    const message =
+      parsed.error.issues[0]?.message ?? "Invalid Response format";
+    throw new Error(message);
   }
-
   return parsed.data;
 }
 
@@ -73,4 +76,13 @@ export async function registerRequest(
 
   if (!res.ok) throw new Error(`Registration failed (${res.status})`);
   return res.json();
+}
+
+export async function forgotPasswordRequest(
+  payload: ForgotPasswordPayload,
+): Promise<{ email: string }> {
+  // DummyJSON does not provide a password reset endpoint. Keep the API boundary
+  // here so this can become POST /auth/forgot-password when the backend exists.
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  return { email: payload.email };
 }
