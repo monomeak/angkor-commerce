@@ -1,7 +1,5 @@
 "use client";
-import { Languages, Search } from "lucide-react";
 import { SidebarTrigger } from "../ui/sidebar";
-import { Input } from "@base-ui/react";
 import { Button } from "../ui/button";
 
 import {
@@ -15,20 +13,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 
 import Link from "next/link";
+import { usePageTitle } from "@/hooks/use-page-title";
+type dashboardHeaderProps = {
+  readonly profilePath?: string;
+};
 
-export default function DashboardHeader() {
+export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
   const [locale, setLocale] = useState<"en" | "km">("en");
+  const pageTitle = usePageTitle();
   const currentLocale = locale === "en" ? "fi-gb" : "fi-kh";
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur md:px-6">
       <SidebarTrigger></SidebarTrigger>
 
-      <div className="relative hidden max-w-sm flex-1 md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="border-0 pl-9 shadow-none  focus-visible:ring-0 outline-none w-100 "
-          placeholder="Search invoices, customers..."
-        />
+      <div className="relative hidden max-w-sm flex-1 overflow-hidden md:block">
+        <h1
+          key={pageTitle}
+          className="animate-in fade-in slide-in-from-bottom-2 font-heading text-xl font-semibold leading-none tracking-[-0.025em] text-foreground duration-300 ease-out sm:text-2xl motion-reduce:animate-none"
+        >
+          {pageTitle}
+        </h1>
       </div>
 
       <div className="ml-auto flex items-center gap-2">
@@ -60,23 +64,19 @@ export default function DashboardHeader() {
         </DropdownMenu>
 
         <div className="ml-auto flex items-center gap-2">
-          <AvatarDemo />
+          <AvatarDemo profilePath={profilePath} />
         </div>
       </div>
     </header>
   );
 }
 
-export function AvatarDemo() {
+export function AvatarDemo({ profilePath }: dashboardHeaderProps) {
   return (
     <Link href={"/settings/profile"}>
       <Avatar className="cursor-pointer">
-        <AvatarImage
-          src="https://github.com/shadcn.png"
-          alt="@shadcn"
-          className="grayscale"
-        />
-        <AvatarFallback>CN</AvatarFallback>
+        <AvatarImage src={profilePath} alt="@shadcn" />
+        <AvatarFallback>UR</AvatarFallback>
       </Avatar>
     </Link>
   );

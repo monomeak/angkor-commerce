@@ -1,5 +1,6 @@
 // src/components/layout/sidebar-navigation.ts
 
+import { AppRole } from "@/src/features/auth/types/auth";
 import {
   FileText,
   LayoutDashboard,
@@ -18,6 +19,7 @@ type SideBarMenu = {
   title: string;
   href: string;
   icon: LucideIcon;
+  allowedRoles?: AppRole[];
   items?: SidebarSubMenuItem[];
 };
 
@@ -49,9 +51,10 @@ export const sidebarNavigation: SideBarMenu[] = [
     icon: ChartPie,
   },
   {
-    title: "Team & Roles",
+    title: "Team and Roles",
     href: "/team",
     icon: UserRoundCog,
+    allowedRoles: ["super_admin", "shop_admin"],
   },
   {
     title: "Settings",
@@ -72,6 +75,7 @@ export const sidebarNavigation: SideBarMenu[] = [
         title: "Privacy and Security",
         href: "/settings/privacy-security",
         icon: LockKeyhole,
+        allowedRoles: ["super_admin", "shop_admin"],
       },
     ],
   },

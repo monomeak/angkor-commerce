@@ -32,7 +32,7 @@ export interface RegisterPayload {
   lastName: string;
 }
 export interface ForgotPasswordPayload {
-  emails: string;
+  email: string;
 }
 export interface ResetPasswordPayload {
   token: string;

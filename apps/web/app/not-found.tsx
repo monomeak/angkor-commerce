@@ -3,7 +3,6 @@
 //     <div className="flex justify-center text-center">Somethig went wrong!</div>
 //   );
 // }
-import { SearchIcon } from "lucide-react";
 
 import {
   Empty,
