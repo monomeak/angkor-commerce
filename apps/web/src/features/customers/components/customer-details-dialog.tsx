@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 
 interface CustomerDetailsDialogProps {
-  customerId: number | null;
-  onClose: () => void;
+  readonly customerId: number | null;
+  readonly onClose: () => void;
 }
 
 export function CustomerDetailsDialog({

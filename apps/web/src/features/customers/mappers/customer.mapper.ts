@@ -1,15 +1,12 @@
 import type { DummyUser } from "../types/dummy-customer";
 import type { Customer } from "../types/customer";
-
-function getInitials(firstName: string, lastName: string): string {
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-}
+import { getInitials } from "@/src/shared/lib/get-initial";
 
 export function mapUserToCustomer(dto: DummyUser): Customer {
   return {
     id: dto.id,
     fullName: `${dto.firstName} ${dto.lastName}`,
-    initials: getInitials(dto.firstName, dto.lastName),
+    initials: getInitials(`${dto.firstName} ${dto.lastName}`),
     email: dto.email,
     phone: dto.phone,
     avatarUrl: dto.image,
