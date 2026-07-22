@@ -3,6 +3,7 @@ import { ArrowRight, Building2, Quote } from "lucide-react";
 
 import { clients, type Client } from "@/components/home/data";
 import { Button } from "@/components/ui/button";
+import { getInitials } from "@/src/shared/lib/get-initial";
 
 export function ClientsSection() {
   return (
@@ -90,12 +91,4 @@ function ClientCard({
       </div>
     </article>
   );
-}
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .slice(0, 2);
 }

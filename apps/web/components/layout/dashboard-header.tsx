@@ -21,7 +21,8 @@ type dashboardHeaderProps = {
 export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
   const [locale, setLocale] = useState<"en" | "km">("en");
   const pageTitle = usePageTitle();
-  const currentLocale = locale === "en" ? "fi-gb" : "fi-kh";
+  const currentLocaleFlag = locale === "en" ? "fi-gb " : "fi-kh ";
+  const currentLocaleText = locale === "en" ? "English" : "ខ្មែរ";
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur md:px-6">
       <SidebarTrigger></SidebarTrigger>
@@ -39,14 +40,15 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Change language"
-              ></Button>
+              <Button variant="ghost" aria-label="Change language"></Button>
             }
+            className="flex gap-2"
           >
-            <span className={`fi ${currentLocale}`} aria-hidden="true"></span>
+            <span
+              className={`fi ${currentLocaleFlag}`}
+              aria-hidden="true"
+            ></span>
+            <span>{currentLocaleText}</span>
           </DropdownMenuTrigger>
           {/* Dropdown content here */}
 

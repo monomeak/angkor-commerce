@@ -10,8 +10,6 @@ import { PaginationControls } from "@/lib/pagination-control";
 import { useDebouncedValue } from "@/src/shared/hooks/use-debounced-value";
 import { InvoiceToolbar } from "../components/invoices-toolbar";
 import { InvoicesTable } from "../components/invoices-table";
-// static page size
-const PAGE_SIZE = 10;
 export function InvoicesListView() {
   // Handle search input
   const [searchInput, setSearchInput] = useState("");
@@ -24,6 +22,7 @@ export function InvoicesListView() {
   const [dueDateTo, setDueDateTo] = useState("");
   // Handle page navigation
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   // Handle Selected InvoiceId
 
   const [selectedInvoiceId, setSeletedInvoiceId] = useState<string | null>(
@@ -43,7 +42,7 @@ export function InvoicesListView() {
       dueDateFrom,
       dueDateTo,
       page,
-      pageSize: PAGE_SIZE,
+      pageSize,
     });
 
   const handleSearchChange = (value: string) => {
@@ -119,8 +118,12 @@ export function InvoicesListView() {
         currentPage={currentPage}
         pageCount={pageCount}
         total={total}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         onPageChange={setPage}
+        onPageSizeChange={(value) => {
+          setPageSize(value);
+          setPage(1);
+        }}
         itemLabel="invoice"
       />
       <InvoiceDetailsDialog
