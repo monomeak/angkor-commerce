@@ -1,5 +1,5 @@
 "use client";
-import { Eye, Ghost } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -32,7 +32,7 @@ export function InvoicesTable({
       <TableHeader>
         <TableRow>
           <TableHead>Invoice</TableHead>
-          <TableHead>Client</TableHead>
+          <TableHead className="w-[220px]">Client</TableHead>
           <TableHead>Items</TableHead>
           <TableHead>Issued</TableHead>
           <TableHead>Due Date</TableHead>
@@ -69,12 +69,18 @@ export function InvoicesTable({
         {invoices.map((inv) => (
           <TableRow key={inv.id}>
             <TableCell className="font-medium">{inv.invoiceNumber}</TableCell>
-            <TableCell>
-              <div className="flex flex-col">
-                <span className="text-sm">{inv.client.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {inv.client.email}
-                </span>
+            <TableCell className="max-w-[220px]">
+              <div className="min-w-0 space-y-1">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <span className="truncate text-sm font-medium">
+                    {inv.client.name}
+                  </span>
+                </div>
+                <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+                  <span className="truncate text-xs" title={inv.client.email}>
+                    {inv.client.email}
+                  </span>
+                </div>
               </div>
             </TableCell>
             <TableCell className="text-sm text-muted-foreground">

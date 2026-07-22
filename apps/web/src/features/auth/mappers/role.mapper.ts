@@ -42,3 +42,8 @@ const ROLE_HIERARCHY: Record<AppRole, number> = {
 export function hasMinimumRole(userRole: AppRole, required: AppRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[required];
 }
+
+// exposes the rank
+export function getRoleRank(role: AppRole): number {
+  return ROLE_HIERARCHY[role];
+}

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Invoice, InvoiceStatus } from "../../invoices/types/invoice";
+import type { Invoice, InvoiceStatus } from "../../invoices/types/invoice";
 
 export interface DashboardStat {
   id: string;
