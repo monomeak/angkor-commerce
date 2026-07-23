@@ -3,8 +3,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-const env = process.env.NODE_ENV || "development";
-const isDev = env === "development";
+import { env } from "@/config/env";
+const isDev = env.nodeEnv === "development";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

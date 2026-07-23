@@ -1,0 +1,135 @@
+import { NextResponse, NextRequest } from "next/server";
+import { GoogleGenAI } from "@google/genai";
+import z from "zod";
+
+// Server-only — NEVER prefix these with NEXT_PUBLIC_, or they'd ship to the browser.
+const requestSchema = z.object({
+  statusByMonth: z.array(
+    z.object({
+      month: z.string(),
+      paid: z.number(),
+      pending: z.number(),
+      overdue: z.number(),
+      draft: z.number(),
+    }),
+  ),
+  topCustomers: z.array(
+    z.object({
+      fullName: z.string(),
+      company: z.string(),
+      invoiceCount: z.number(),
+      totalRevenue: z.number(),
+    }),
+  ),
+});
+const AI_API_KEY = process.env.AI_API_KEY;
+const AI_MODEL = process.env.AI_MODEL ?? "gemini-3.5-flash";
+
+const SYSTEM_PROMPT = `You are a financial analyst assistant for a small invoicing business.
+You will be given aggregated invoice data (never raw customer records) as JSON.
+Write a concise, plain-English summary (3-5 short paragraphs or bullet points) covering:
+- The overall trend in paid vs pending vs overdue amounts across the months shown
+- Any months that stand out (high overdue, low collections, unusual spikes/drops)
+- What the top-customer concentration looks like (is a large share of revenue coming from just a few customers?)
+Only reference numbers that are actually present in the data. Be direct, skip filler and disclaimers.`;
+
+/**
+ * VERY BASIC in-memory rate limit — resets on server restart and does
+ * NOT work correctly across multiple server instances/serverless cold
+ * starts. Fine for a single-instance demo; swap for Redis/Upstash-backed
+ * limiting before this handles real traffic.
+ */
+
+const requestLog = new Map<string, number[]>();
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_REQUESTS_PER_WINDOW = 5;
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const recent = (requestLog.get(key) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  );
+  recent.push(now);
+  requestLog.set(key, recent);
+  return recent.length > MAX_REQUESTS_PER_WINDOW;
+}
+
+export async function POST(request: NextRequest) {
+  if (!AI_API_KEY) {
+    return NextResponse.json(
+      {
+        error: "AI_API_KEY is not configured!",
+      },
+      { status: 500 },
+    );
+  }
+
+  const json = await request.json();
+  const parsed = requestSchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request payload." },
+      { status: 400 },
+    );
+  }
+
+  const userPrompt = `Here is the aggregated data:\n\n${JSON.stringify(parsed.data, null, 2)}`;
+
+  try {
+    const ai = new GoogleGenAI({
+      apiKey: AI_API_KEY,
+    });
+    const streamResult = await ai.models.generateContentStream({
+      model: AI_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0.3,
+      },
+    });
+
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of streamResult) {
+            if (chunk.text) {
+              controller.enqueue(encoder.encode(chunk.text));
+            }
+          }
+          controller.close();
+        } catch (err) {
+          // Once the stream has started, we can no longer send a JSON
+          // error response — the client just sees the stream end. Log
+          // it server-side at minimum.
+          console.error("Error while streaming from AI provider:", err);
+          controller.error(err);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+      },
+    });
+
+    // const insight = response.text?.trim();
+
+    // if (!insight) {
+    //   return NextResponse.json(
+    //     { error: "The AI provider returned an empty response." },
+    //     { status: 502 },
+    //   );
+    // }
+    // return NextResponse.json({ insight });
+  } catch (err) {
+    console.error("Failed to reach AI provider:", err);
+    return NextResponse.json(
+      { error: "Failed to reach the AI provider." },
+      { status: 502 },
+    );
+  }
+}
