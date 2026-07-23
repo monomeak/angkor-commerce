@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
+import { Check, Copy } from "lucide-react";
 import Markdown from "react-markdown";
-
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
+
+import { Button } from "@/components/ui/button";
 
 interface InsightsPanelProps {
   readonly insight?: string;
@@ -68,6 +71,16 @@ export function InsightsPanel({
   isError,
   error,
 }: InsightsPanelProps) {
+  const [copiedInsight, setCopiedInsight] = useState<string>();
+  const isCopied = copiedInsight === insight;
+
+  const handleCopy = async () => {
+    if (!insight) return;
+
+    await navigator.clipboard.writeText(insight);
+    setCopiedInsight(insight);
+  };
+
   if (isPending && !insight) {
     return (
       <p
@@ -110,6 +123,23 @@ export function InsightsPanel({
           className="ml-0.5 inline-block h-4 w-0.5 animate-pulse rounded-full bg-foreground/70 align-text-bottom"
           aria-hidden="true"
         />
+      )}
+
+      {!isPending && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-4 gap-1.5"
+          onClick={() => void handleCopy()}
+        >
+          {isCopied ? (
+            <Check className="size-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="size-3.5" aria-hidden="true" />
+          )}
+          {isCopied ? "Copied" : "Copy"}
+        </Button>
       )}
     </div>
   );
