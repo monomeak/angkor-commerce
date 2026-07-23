@@ -1,4 +1,5 @@
 "use client";
+import { useLocale, useTranslations } from "next-intl";
 import { SidebarTrigger } from "../ui/sidebar";
 import { Button } from "../ui/button";
 
@@ -10,21 +11,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
-
-import Link from "next/link";
+import { Link, usePathname, useRouter } from "@/app/i18n/navigation";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { ThemeSwitcher } from "@/lib/theme-switcher";
-import { useLocale } from "@/app/providers/locale-provider";
+import type { Locale } from "@/app/i18n/routing";
+import { cn } from "@/lib/utils";
 type dashboardHeaderProps = {
   readonly profilePath?: string;
+  readonly userName?: string;
 };
 
-export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
-  const { locale, setLocale } = useLocale();
+export default function DashboardHeader({
+  profilePath,
+  userName,
+}: dashboardHeaderProps) {
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const t = useTranslations("Language");
   const pageTitle = usePageTitle();
   const currentLocaleFlag = locale === "en" ? "fi-gb " : "fi-kh ";
-  const currentLocaleText = locale === "en" ? "English" : "ខ្មែរ";
+  const currentLocaleText = locale === "en" ? t("english") : t("khmer");
+
+  function changeLocale(nextLocale: Locale) {
+    router.replace(pathname, { locale: nextLocale });
+  }
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur md:px-6">
       <SidebarTrigger></SidebarTrigger>
@@ -32,7 +43,13 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
       <div className="relative hidden max-w-sm flex-1 overflow-hidden md:block">
         <h1
           key={pageTitle}
-          className="animate-in fade-in slide-in-from-bottom-2 font-heading text-xl font-semibold leading-none tracking-[-0.025em] text-foreground duration-300 ease-out sm:text-2xl motion-reduce:animate-none"
+          className={cn(
+            "animate-in fade-in slide-in-from-bottom-2 font-heading font-medium",
+            "text-foreground duration-300 ease-out motion-reduce:animate-none",
+            locale === "km"
+              ? "py-1 text-lg leading-relaxed tracking-normal sm:text-xl"
+              : "text-xl leading-none tracking-[-0.025em] sm:text-2xl",
+          )}
         >
           {pageTitle}
         </h1>
@@ -44,7 +61,7 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" aria-label="Change language"></Button>
+              <Button variant="ghost" aria-label={t("changeLanguage")}></Button>
             }
             className="flex gap-2"
           >
@@ -57,21 +74,31 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
           {/* Dropdown content here */}
 
           <DropdownMenuContent align="end">
-            <DropdownMenuItem className="gap-3" onClick={() => setLocale("en")}>
+            <DropdownMenuItem
+              className="gap-3"
+              onClick={() => changeLocale("en")}
+            >
               <span className="fi fi-gb " aria-hidden="true"></span>
-              <span className="text-muted-foreground">English</span>
+              <span className="text-muted-foreground">{t("english")}</span>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className="gap-3" onClick={() => setLocale("km")}>
+            <DropdownMenuItem
+              className="gap-3"
+              onClick={() => changeLocale("km")}
+            >
               <span className="fi fi-kh" aria-hidden="true"></span>
-              <span className="text-muted-foreground">ខ្មែរ</span>
+              <span className="text-muted-foreground">{t("khmer")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="ml-auto flex items-center gap-2">
+        <Link
+          href={"/settings/profile"}
+          className="ml-auto flex items-center gap-2"
+        >
           <AvatarDemo profilePath={profilePath} />
-        </div>
+          {userName}
+        </Link>
       </div>
     </header>
   );
@@ -79,11 +106,9 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
 
 export function AvatarDemo({ profilePath }: dashboardHeaderProps) {
   return (
-    <Link href={"/settings/profile"}>
-      <Avatar className="cursor-pointer">
-        <AvatarImage src={profilePath} alt="@shadcn" />
-        <AvatarFallback>UR</AvatarFallback>
-      </Avatar>
-    </Link>
+    <Avatar className="cursor-pointer">
+      <AvatarImage src={profilePath} alt="@shadcn" />
+      <AvatarFallback>UR</AvatarFallback>
+    </Avatar>
   );
 }

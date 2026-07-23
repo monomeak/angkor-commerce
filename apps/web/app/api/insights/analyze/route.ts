@@ -5,6 +5,7 @@ import z from "zod";
 // Server-only — NEVER prefix these with NEXT_PUBLIC_, or they'd ship to the browser.
 const requestSchema = z.object({
   periodLabel: z.string().min(1).max(50),
+  locale: z.string(),
   statusByMonth: z.array(
     z.object({
       month: z.string(),
@@ -56,17 +57,17 @@ function isRateLimited(key: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  const clientKey =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+  // const clientKey =
+  //   request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+  //   request.headers.get("x-real-ip") ??
+  //   "unknown";
 
-  if (isRateLimited(clientKey)) {
-    return NextResponse.json(
-      { error: "Too many insight requests. Please try again in a minute." },
-      { status: 429 },
-    );
-  }
+  // if (isRateLimited(clientKey)) {
+  //   return NextResponse.json(
+  //     { error: "Too many insight requests. Please try again in a minute." },
+  //     { status: 429 },
+  //   );
+  // }
 
   if (!AI_API_KEY) {
     return NextResponse.json(
@@ -85,8 +86,13 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+  const getUserContext =
+    parsed.data.locale === "en"
+      ? "English"
+      : "Khmer Language With Understandable Context";
 
-  const userPrompt = `Analyze the reporting period "${parsed.data.periodLabel}". Here is the aggregated data:\n\n${JSON.stringify(parsed.data, null, 2)}`;
+  const userPrompt = `Analyze the reporting period "${parsed.data.periodLabel}". Here is the aggregated data:\n\n${JSON.stringify(parsed.data, null, 2)} in ${getUserContext}`;
+  // console.log("user prompt:", userPrompt);
 
   try {
     const ai = new GoogleGenAI({

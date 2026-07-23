@@ -15,6 +15,7 @@ export interface TopCustomerPayload {
 
 export interface InsightsRequestPayload {
   periodLabel: string;
+  locale: string;
   statusByMonth: MonthlyStatusPayload[];
   topCustomers: TopCustomerPayload[];
 }

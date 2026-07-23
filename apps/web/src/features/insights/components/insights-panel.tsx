@@ -72,6 +72,7 @@ export function InsightsPanel({
   error,
 }: InsightsPanelProps) {
   const [copiedInsight, setCopiedInsight] = useState<string>();
+
   const isCopied = copiedInsight === insight;
 
   const handleCopy = async () => {

@@ -1,0 +1,41 @@
+{
+  "Common": {
+    "save": "រក្សាទុក",
+    "cancel": "បោះបង់",
+    "delete": "លុប",
+    "edit": "កែប្រែ",
+    "loading": "កំពុងផ្ទុក...",
+    "search": "ស្វែងរក"
+  },
+  "Navigation": {
+    "overview": "ទិដ្ឋភាពទូទៅ",
+    "invoices": "វិក្កយបត្រ",
+    "customers": "អតិថិជន",
+    "reports": "របាយការណ៍",
+    "analytics": "ការវិភាគ",
+    "team": "ក្រុម និងតួនាទី",
+    "settings": "ការកំណត់",
+    "profile": "ប្រវត្តិរូបរបស់ខ្ញុំ",
+    "appearance": "រូបរាង",
+    "privacySecurity": "ឯកជនភាព និងសុវត្ថិភាព"
+  },
+  "Dashboard": {
+    "title": "ទិដ្ឋភាពទូទៅនៃផ្ទាំងគ្រប់គ្រង",
+    "welcome": "សូមស្វាគមន៍មកវិញ {name}",
+    "totalInvoices": "វិក្កយបត្រសរុប",
+    "totalCustomers": "អតិថិជនសរុប",
+    "grossRevenue": "ចំណូលសរុប",
+    "netRevenue": "ចំណូលសុទ្ធ"
+  },
+  "Theme": {
+    "changeTheme": "ប្ដូររូបរាង",
+    "light": "ភ្លឺ",
+    "dark": "ងងឹត",
+    "system": "តាមឧបករណ៍"
+  },
+  "Language": {
+    "changeLanguage": "ប្ដូរភាសា",
+    "english": "អង់គ្លេស",
+    "khmer": "ខ្មែរ"
+  }
+}

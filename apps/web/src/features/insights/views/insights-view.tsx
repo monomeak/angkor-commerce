@@ -15,6 +15,7 @@ import { GenerateInsightsButton } from "../components/generate-insights-button";
 import { InsightsPanel } from "../components/insights-panel";
 import { useGenerateInsights } from "../hooks/use-generate-insights";
 import { useTypewriterBuffer } from "../hooks/use-typewriter-butter";
+import { useLocale } from "next-intl";
 
 const PERIOD_OPTIONS = {
   all: "Overall insight",
@@ -26,6 +27,7 @@ type Period = keyof typeof PERIOD_OPTIONS;
 
 export function InsightsView() {
   const [period, setPeriod] = useState<Period>("all");
+  const locale = useLocale();
   const months = period === "all" ? undefined : Number(period);
   const { data: statusByMonth, isLoading: statusLoading } =
     useStatusByMonth(months);
@@ -43,6 +45,7 @@ export function InsightsView() {
     mutate({
       payload: {
         periodLabel: PERIOD_OPTIONS[period],
+        locale,
         statusByMonth: statusByMonth.map(
           ({ month, paid, pending, overdue, draft }) => ({
             month,

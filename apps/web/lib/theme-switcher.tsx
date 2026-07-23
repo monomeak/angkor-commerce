@@ -1,7 +1,7 @@
 "use client";
 import { Laptop, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useAppTheme } from "@/app/providers/theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useAppTheme();
 
   let ThemeIcon = Laptop;
 
@@ -38,18 +38,21 @@ export function ThemeSwitcher() {
           aria-label="Light theme"
         >
           <Sun className="size-4" />
+          <span>Light</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("dark")}
           aria-label="Dark theme"
         >
           <Moon className="size-4" />
+          <span>Dark</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("system")}
           aria-label="Device theme"
         >
           <Laptop className="size-4" />
+          <span>System</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

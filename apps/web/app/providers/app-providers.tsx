@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
-import { ThemeProviderConfig } from "./theme-privder";
-import { LocaleProviderConfig } from "./locale-provider";
+import { ThemeProviderConfig } from "./theme-provider";
 import { QueryClientProviderConfig } from "./query-client-providers";
 
 interface AppProvidersProps {
@@ -9,15 +8,8 @@ interface AppProvidersProps {
 
 export function AppProvidersConfig({ children }: AppProvidersProps) {
   return (
-    <ThemeProviderConfig
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <LocaleProviderConfig>
-        <QueryClientProviderConfig>{children}</QueryClientProviderConfig>
-      </LocaleProviderConfig>
+    <ThemeProviderConfig>
+      <QueryClientProviderConfig>{children}</QueryClientProviderConfig>
     </ThemeProviderConfig>
   );
 }

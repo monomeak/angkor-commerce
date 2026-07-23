@@ -15,7 +15,8 @@ import {
 } from "../ui/sidebar";
 import { sidebarNavigation } from "./sidebar-navigation";
 import React from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/app/i18n/navigation";
 import { AppRole } from "@/src/features/auth/types/auth";
 
 type SidebarGroupItem = (typeof sidebarNavigation)[number];
@@ -31,6 +32,7 @@ export function SidebarCollapsibleGroup({
   pathname,
   userRole,
 }: SidebarCollapsibleGroupProps) {
+  const t = useTranslations("Navigation");
   const { state, setOpen: setSidebarOpen } = useSidebar();
   const isSidebarCollapsed = state === "collapsed";
   const isGroupActive =
@@ -69,7 +71,7 @@ export function SidebarCollapsibleGroup({
           render={
             <SidebarMenuButton
               isActive={isGroupActive}
-              tooltip={item.title}
+              tooltip={t(item.titleKey)}
               onMouseEnter={openSidebarIfCollapsed}
               onFocus={openSidebarIfCollapsed}
               onClick={openSidebarIfCollapsed}
@@ -79,7 +81,7 @@ export function SidebarCollapsibleGroup({
         >
           <item.icon className="size-4" />
 
-          <span>{item.title}</span>
+          <span>{t(item.titleKey)}</span>
 
           <ChevronRight
             className={[
@@ -118,7 +120,7 @@ export function SidebarCollapsibleGroup({
                   >
                     {subItem.icon && <subItem.icon className="size-4" />}
 
-                    <span>{subItem.title}</span>
+                    <span>{t(subItem.titleKey)}</span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               );

@@ -16,7 +16,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 type SideBarMenu = {
-  title: string;
+  titleKey: string;
   href: string;
   icon: LucideIcon;
   allowedRoles?: AppRole[];
@@ -26,53 +26,53 @@ type SideBarMenu = {
 type SidebarSubMenuItem = Omit<SideBarMenu, "items">;
 export const sidebarNavigation: SideBarMenu[] = [
   {
-    title: "Overview",
+    titleKey: "overview",
     href: "/overview",
     icon: LayoutDashboard,
   },
   {
-    title: "Invoices",
+    titleKey: "invoices",
     href: "/invoices",
     icon: FileText,
   },
   {
-    title: "Customers",
+    titleKey: "customers",
     href: "/customers",
     icon: Users,
   },
   {
-    title: "Reports",
+    titleKey: "reports",
     href: "/reports",
     icon: ChartNoAxesCombined,
   },
   {
-    title: "Analytics",
+    titleKey: "analytics",
     href: "/analytics",
     icon: ChartPie,
   },
   {
-    title: "Team and Roles",
+    titleKey: "team",
     href: "/team",
     icon: UserRoundCog,
     allowedRoles: ["super_admin", "shop_admin"],
   },
   {
-    title: "Settings",
+    titleKey: "settings",
     href: "/settings",
     icon: Settings,
     items: [
       {
-        title: "My Profile",
+        titleKey: "profile",
         href: "/settings/profile",
         icon: UserRound,
       },
       {
-        title: "Appearance",
+        titleKey: "appearance",
         href: "/settings/appearance",
         icon: Palette,
       },
       {
-        title: "Privacy and Security",
+        titleKey: "privacySecurity",
         href: "/settings/privacy-security",
         icon: LockKeyhole,
         allowedRoles: ["super_admin", "shop_admin"],

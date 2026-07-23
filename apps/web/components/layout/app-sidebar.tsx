@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useState, useSyncExternalStore } from "react";
+import { Link, usePathname, useRouter } from "@/app/i18n/navigation";
 
 import {
   AlertDialog,
@@ -35,19 +35,20 @@ import { useAuthSession } from "@/src/features/auth/hooks/use-auth-session";
 import { useCurrentUser } from "@/src/features/auth/hooks/use-current-user";
 
 const LOGOUT_DELAY_MS = 300;
+const subscribeToHydration = () => () => {};
 
 export default function AppSidebar() {
+  const t = useTranslations("Navigation");
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
   const router = useRouter();
   const { logout } = useAuthSession();
   const { data: currentUser } = useCurrentUser();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleLogout = () => {
     if (isLoggingOut) return;
@@ -68,7 +69,7 @@ export default function AppSidebar() {
 
   const visibleNavigation = sidebarNavigation.filter((item) => {
     if (!item.allowedRoles) return true;
-    if (!mounted || !currentUser) return false;
+    if (!isHydrated || !currentUser) return false;
     return item.allowedRoles.includes(currentUser.role);
   });
   const pathname = usePathname();
@@ -101,10 +102,10 @@ export default function AppSidebar() {
                     <SidebarMenuButton
                       render={<Link href={item.href}></Link>}
                       isActive={isActive}
-                      tooltip={item.title}
+                      tooltip={t(item.titleKey)}
                     >
                       <item.icon></item.icon>
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -112,7 +113,7 @@ export default function AppSidebar() {
 
               return (
                 <SidebarCollapsibleGroup
-                  key={item.title}
+                  key={item.titleKey}
                   item={item}
                   pathname={pathname}
                   userRole={currentUser?.role}
