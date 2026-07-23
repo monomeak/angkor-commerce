@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { generateInsights, generateInsightsStream } from "../api/insights-api";
+import { generateInsightsStream } from "../api/insights-api";
 import { InsightsRequestPayload } from "../types/insights";
 
 interface GenerateInsightsVariables {
