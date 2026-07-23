@@ -1,9 +1,30 @@
 "use client";
-import { usePathname } from "next/navigation";
-import { PAGE_TITLES } from "@/lib/route-labels";
+import { useTranslations } from "next-intl";
+import { usePathname } from "@/app/i18n/navigation";
+import { routing } from "@/app/i18n/routing";
 // looks up the current pathname in Page-Title
 
 export function usePageTitle(): string {
   const pathname = usePathname();
-  return PAGE_TITLES[pathname] ?? "Overview";
+  const t = useTranslations("Navigation");
+  const segments = pathname.split("/").filter(Boolean);
+
+  if (routing.locales.some((locale) => locale === segments[0])) {
+    segments.shift();
+  }
+
+  const routeKey = segments[0] ?? "overview";
+
+  if (routeKey === "settings") {
+    const settingsPage = segments[1];
+    const settingsKeys: Record<string, string> = {
+      profile: "profile",
+      appearance: "appearance",
+      "privacy-security": "privacySecurity",
+    };
+
+    return t(settingsKeys[settingsPage] ?? "settings");
+  }
+
+  return t(routeKey);
 }

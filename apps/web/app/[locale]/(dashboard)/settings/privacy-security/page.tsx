@@ -1,4 +1,10 @@
-import { Clock3, Database, KeyRound, ShieldCheck, Smartphone } from "lucide-react";
+import {
+  Clock3,
+  Database,
+  KeyRound,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
 
 import {
   Card,
@@ -15,12 +21,7 @@ const securityItems = [
     status: "Healthy",
     icon: KeyRound,
   },
-  {
-    title: "Two-factor authentication",
-    description: "Authenticator app is connected.",
-    status: "Enabled",
-    icon: Smartphone,
-  },
+
   {
     title: "Active sessions",
     description: "2 trusted devices currently signed in.",
@@ -61,9 +62,12 @@ export default function PrivacySecurity() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 lg:grid-cols-3">
+          <div className="grid gap-3 lg:grid-cols-2">
             {securityItems.map((item) => (
-              <div key={item.title} className="rounded-lg border bg-background p-4">
+              <div
+                key={item.title}
+                className="rounded-lg border bg-background p-4"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <item.icon className="size-5 text-muted-foreground" />
                   <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">

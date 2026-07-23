@@ -8,7 +8,11 @@ export function aggregateTopCustomer(
   const totals = new Map<number, TopCustomerRevenue>();
 
   for (const invoice of invoices) {
-    const userId = invoice.client.userId!!;
+    const userId = invoice.client.userId;
+    if (userId === undefined) {
+      continue;
+    }
+
     const existing = totals.get(userId) ?? {
       userId,
       totalRevenue: 0,

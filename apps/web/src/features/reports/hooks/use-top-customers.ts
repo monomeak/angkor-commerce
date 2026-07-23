@@ -5,15 +5,22 @@ import { aggregateTopCustomer } from "../lib/aggregate-top-customers";
 import { useQueries } from "@tanstack/react-query";
 import { customerKeys } from "../../customers/lib/query-keys";
 import { fetchCustomerById } from "../../customers/api/customer-api";
+import { filterInvoicesByRecentMonths } from "../lib/filter-invoices-by-recent-months";
 const TOP_N = 5;
-export function useTopCustomers(): {
+export function useTopCustomers(months?: number): {
   data: TopCustomerWithDetails[];
   isLoading: boolean;
 } {
   const { data: invoices, isLoading: invoiceLoading } = useInvoices();
   const topRevenue = useMemo(
-    () => (invoices ? aggregateTopCustomer(invoices, TOP_N) : []),
-    [invoices],
+    () =>
+      invoices
+        ? aggregateTopCustomer(
+            filterInvoicesByRecentMonths(invoices, months),
+            TOP_N,
+          )
+        : [],
+    [invoices, months],
   );
 
   const customerQueries = useQueries({

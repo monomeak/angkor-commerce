@@ -1,3 +1,4 @@
+"use client";
 import { Monitor, Moon, Palette, Rows3, Sun } from "lucide-react";
 
 import {
@@ -7,25 +8,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAppTheme, type Theme } from "@/app/providers/theme-provider";
 
-const themeOptions = [
+const themeOptions: {
+  title: string;
+  value: Theme;
+  description: string;
+  icon: typeof Sun;
+}[] = [
   {
     title: "Light",
+    value: "light",
     description: "Bright interface for daytime work.",
     icon: Sun,
-    active: false,
   },
   {
     title: "Dark",
+    value: "dark",
     description: "Lower contrast for late sessions.",
     icon: Moon,
-    active: false,
   },
   {
     title: "System",
+    value: "system",
     description: "Follow your device preference.",
     icon: Monitor,
-    active: true,
   },
 ];
 
@@ -48,6 +56,12 @@ const preferences = [
 ];
 
 export default function Appearance() {
+  const { theme, setTheme } = useAppTheme();
+
+  const handleChangeTheme = (value: Theme) => {
+    setTheme(value);
+  };
+
   return (
     <div className="w-full space-y-6">
       <Card>
@@ -62,26 +76,39 @@ export default function Appearance() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
-            {themeOptions.map((option) => (
-              <div
-                key={option.title}
-                className="rounded-lg border bg-background p-4 data-[active=true]:border-primary data-[active=true]:bg-primary/5"
-                data-active={option.active}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <option.icon className="size-5 text-muted-foreground" />
-                  {option.active && (
-                    <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                      Active
-                    </span>
-                  )}
-                </div>
-                <h2 className="mt-3 font-medium">{option.title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {option.description}
-                </p>
-              </div>
-            ))}
+            {themeOptions.map((option) => {
+              const isActive = theme === option.value;
+              const Icon = option.icon;
+
+              return (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleChangeTheme(option.value)}
+                  data-active={isActive}
+                  aria-pressed={isActive}
+                  className="h-auto min-h-36 w-full items-start justify-start whitespace-normal rounded-lg bg-background p-4 text-left transition-colors hover:bg-muted/50 data-[active=true]:border-primary data-[active=true]:bg-primary/5"
+                >
+                  <div className="flex w-full flex-col items-start gap-3">
+                    <div className="flex w-full items-center justify-between gap-3">
+                      <Icon className="size-5 text-muted-foreground" />
+                      {isActive && (
+                        <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <h2 className="font-medium">{option.title}</h2>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {option.description}
+                      </p>
+                    </div>
+                  </div>
+                </Button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
