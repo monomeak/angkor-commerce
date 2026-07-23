@@ -6,7 +6,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { env } from "@/config/env";
 const isDev = env.nodeEnv === "development";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function QueryClientProviderConfig({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({

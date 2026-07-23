@@ -14,12 +14,14 @@ import { useState } from "react";
 
 import Link from "next/link";
 import { usePageTitle } from "@/hooks/use-page-title";
+import { ThemeSwitcher } from "@/lib/theme-switcher";
+import { useLocale } from "@/app/providers/locale-provider";
 type dashboardHeaderProps = {
   readonly profilePath?: string;
 };
 
 export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
-  const [locale, setLocale] = useState<"en" | "km">("en");
+  const { locale, setLocale } = useLocale();
   const pageTitle = usePageTitle();
   const currentLocaleFlag = locale === "en" ? "fi-gb " : "fi-kh ";
   const currentLocaleText = locale === "en" ? "English" : "ខ្មែរ";
@@ -37,6 +39,8 @@ export default function DashboardHeader({ profilePath }: dashboardHeaderProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <ThemeSwitcher />
+
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
