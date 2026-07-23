@@ -8,4 +8,5 @@ export const env = {
     "NEXT_PUBLIC_API_BASE_URL",
     process.env.NEXT_PUBLIC_API_BASE_URL,
   ),
+  nodeEnv: getEnvVar("NEXT_PUBLIC_NODE_ENV", process.env.NEXT_PUBLIC_NODE_ENV),
 };
