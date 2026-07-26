@@ -10,6 +10,7 @@ export const dashboardOverviewData: DashboardOverviewData = {
   stats: [
     {
       id: "total-revenue",
+      key: "totalRevenue",
       label: "Total revenue",
       value: "$84,254.00",
       change: { value: "12.4%", direction: "up" },
@@ -17,6 +18,7 @@ export const dashboardOverviewData: DashboardOverviewData = {
     },
     {
       id: "outstanding",
+      key: "outstanding",
       label: "Outstanding",
       value: "$12,430.00",
       change: { value: "3.1%", direction: "down" },
@@ -24,6 +26,7 @@ export const dashboardOverviewData: DashboardOverviewData = {
     },
     {
       id: "pending",
+      key: "pendingInvoices",
       label: "Pending invoices",
       value: "18",
       change: { value: "5.0%", direction: "up" },
@@ -31,6 +34,7 @@ export const dashboardOverviewData: DashboardOverviewData = {
     },
     {
       id: "overdue",
+      key: "overdueInvoices",
       label: "Overdue invoices",
       value: "4",
       change: { value: "2.0%", direction: "down" },
