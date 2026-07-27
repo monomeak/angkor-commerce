@@ -32,6 +32,8 @@ public class Customer {
 	@Column(name = "billing_address")
 	private String billingAddress;
 
+	private String other;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private CustomerStatus status = CustomerStatus.ACTIVE;
@@ -89,6 +91,14 @@ public class Customer {
 
 	public void setBillingAddress(String billingAddress) {
 		this.billingAddress = billingAddress;
+	}
+
+	public String getOther() {
+		return other;
+	}
+
+	public void setOther(String other) {
+		this.other = other;
 	}
 
 	public CustomerStatus getStatus() {
