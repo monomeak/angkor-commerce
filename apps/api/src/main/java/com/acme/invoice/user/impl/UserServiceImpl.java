@@ -60,14 +60,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        if (userRepository.exexistsByUsername(request.username())) {
+        if (userRepository.existsByUsername(request.username())) {
             throw new ValidationException(
                 "Username is already taken.",
                 Map.of("username", "This username is already in use.")
             );
         }
 
-        if (userRepository.exexistsByUsername(request.email())) {
+        if (userRepository.existsByUsername(request.email())) {
             throw new ValidationException("Email is already taken.");
         }
         // instance new user objective and set the values
@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse updateUser(Long id, UpdateUserRequest request) {
         User user = findUserOrThrow(id);
         if (request.email() != null && request.email().equalsIgnoreCase(user.getEmail())) {
-            if (userRepository.exexistsByEmail(request.email())) {
+            if (userRepository.existsByEmail(request.email())) {
                 throw new ValidationException(
                     "Email is already registered",
                     Map.of("email", "This email is already in use.")

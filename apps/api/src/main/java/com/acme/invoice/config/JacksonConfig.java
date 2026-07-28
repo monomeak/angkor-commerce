@@ -1,12 +1,15 @@
 package com.acme.invoice.config;
 
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilderCustomizer;
+import tools.jackson.databind.cfg.DateTimeFeature;
 
 @Configuration
 public class JacksonConfig {
 
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {}
+    public JsonMapperBuilderCustomizer jacksonCustomizer() {
+        return builder -> builder.disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS);
+    }
 }
