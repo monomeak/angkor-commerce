@@ -13,6 +13,8 @@
     "lint:web": "turbo lint --filter=acme-invoice-dashboard"
   },
   "devDependencies": {
+    "prettier": "^3.9.6",
+    "prettier-plugin-java": "^2.10.3",
     "turbo": "^2.10.5"
   },
   "dependencies": {
