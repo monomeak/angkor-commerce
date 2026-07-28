@@ -27,6 +27,12 @@
     "grossRevenue": "ចំណូលសរុប",
     "netRevenue": "ចំណូលសុទ្ធ"
   },
+  "Overview": {
+    "totalRevenue": "ចំណូលសរុប",
+    "outstanding": "នៅសល់",
+    "pendingInvoices": "វិក្កយបត្រកំពុងរង់ចាំ",
+    "overdueInvoices": "វិក្កយបត្រហួសកំណត់"
+  },
   "Theme": {
     "changeTheme": "ប្ដូររូបរាង",
     "light": "ភ្លឺ",

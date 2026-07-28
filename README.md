@@ -57,7 +57,7 @@ This document reflects the repository as it exists today. It distinguishes compl
 ### Not started in the current repository
 
 - Spring Boot API application.
-- PostgreSQL schema and Flyway migrations.
+- PostgreSQL schema generated from JPA entities (Hibernate).
 - Products, payments, and complete customer management.
 - OpenAPI-generated frontend client.
 - Unit, integration, and Playwright test suites.
@@ -79,7 +79,7 @@ This document reflects the repository as it exists today. It distinguishes compl
 | Icons                  | Lucide React                                  |
 | Temporary API          | DummyJSON through native `fetch`              |
 | Planned backend        | Java 21, Spring Boot, Maven Wrapper           |
-| Planned persistence    | PostgreSQL and Flyway                         |
+| Planned persistence    | PostgreSQL, Spring Data JPA, Hibernate schema |
 | Planned infrastructure | Docker and Docker Compose                     |
 
 React Hook Form is part of the intended form strategy but is not currently installed. Current forms use local React state plus Zod validation.
@@ -311,7 +311,7 @@ Standardize early:
 
 - JUnit 5 and Mockito for service rules.
 - Spring Boot tests and MockMvc for API and security behavior.
-- Testcontainers with PostgreSQL for repositories, Flyway migrations, and transactional workflows.
+- Testcontainers with PostgreSQL for repositories and transactional workflows.
 
 ### Contract and quality gates
 
@@ -368,7 +368,7 @@ The root `docker-compose.yml` should eventually coordinate PostgreSQL, the API, 
 
 ### Milestone 4 — Create the backend foundation
 
-- Scaffold `apps/api` with Java 21, Maven Wrapper, Spring Boot, Spring Security, Spring Data JPA, Bean Validation, Springdoc, PostgreSQL, and Flyway.
+- Scaffold `apps/api` with Java 21, Maven Wrapper, Spring Boot, Spring Security, Spring Data JPA (Hibernate-generated schema), Bean Validation, Springdoc, and PostgreSQL.
 - Define common error and pagination contracts.
 - Add health/readiness endpoints and Testcontainers.
 - Create Dockerfiles and a working Compose environment.

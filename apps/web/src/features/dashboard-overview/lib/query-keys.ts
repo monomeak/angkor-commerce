@@ -1,4 +1,4 @@
-export const dashboardkeys = {
+export const dashboardKeys = {
   all: ["dashboard"] as const,
-  overview: () => [...dashboardkeys.all, "overview"] as const,
+  overview: () => [...dashboardKeys.all, "overview"] as const,
 };

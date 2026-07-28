@@ -1,8 +1,15 @@
 import type { LucideIcon } from "lucide-react";
 import type { Invoice, InvoiceStatus } from "../../invoices/types/invoice";
 
+export type DashboardStatKey =
+  | "totalRevenue"
+  | "outstanding"
+  | "pendingInvoices"
+  | "overdueInvoices";
+
 export interface DashboardStat {
   id: string;
+  key: DashboardStatKey;
   label: string;
   value: string;
   change: {

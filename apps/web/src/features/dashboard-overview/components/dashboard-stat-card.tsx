@@ -2,19 +2,21 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DashboardStat } from "../types/dashboard";
+import { useTranslations } from "next-intl";
 interface DashboardStatCardProps {
   readonly stat: DashboardStat;
 }
 
 export function DashboardStatCard({ stat }: DashboardStatCardProps) {
-  const { label, value, change, icon: Icon } = stat;
+  const t = useTranslations("Overview");
+  const { label, key, value, change, icon: Icon } = stat;
   const isUp = change.direction === "up";
 
   return (
     <Card>
       <CardContent className="flex items-start justify-between p-6">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-sm text-muted-foreground">{t(key)}</p>
           <p className="text-2xl font-semibold tracking-tight">{value}</p>
           <div
             // cn allow css to be combibed based a condition

@@ -27,6 +27,12 @@
     "grossRevenue": "Gross revenue",
     "netRevenue": "Net revenue"
   },
+  "Overview": {
+    "totalRevenue": "Total Revenue",
+    "outstanding": "Outstanding",
+    "pendingInvoices": "Pending invoices",
+    "overdueInvoices": "Overdue invoices"
+  },
   "Theme": {
     "changeTheme": "Change theme",
     "light": "Light",
