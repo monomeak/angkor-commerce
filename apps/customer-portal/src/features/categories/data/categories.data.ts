@@ -17,9 +17,9 @@ export const categories: Category[] = [
   { id: 10, parentId: 1, name: "Shoes", slug: "men-shoes" },
 
   { id: 11, parentId: 2, name: "Blouse", slug: "women-blouse" },
-  { id: 12, parentId: 2, name: "Sampot", slug: "women-sampot" },
+  { id: 12, parentId: 2, name: "Sampot (Skirt)", slug: "women-sampot" },
   { id: 13, parentId: 2, name: "Dress", slug: "women-dress" },
-  { id: 14, parentId: 2, name: "Scarf", slug: "women-scarf" },
+  { id: 14, parentId: 2, name: "Scarf (Krama)", slug: "women-scarf" },
   { id: 15, parentId: 2, name: "Accessories", slug: "women-accessories" },
   { id: 16, parentId: 2, name: "Shoes", slug: "women-shoes" },
 

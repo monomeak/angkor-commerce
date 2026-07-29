@@ -6,6 +6,13 @@ export function getDiscountedPrice(product: Product): number {
   return Math.round((product.price - discount) * 100) / 100;
 }
 
+const SHOE_SIZES = ["39", "40", "41", "42", "43", "44"];
+const APPAREL_SIZES = ["S", "M", "L", "XL"];
+
+export function getSizeOptions(categoryName: string): string[] {
+  return categoryName.toLowerCase().includes("shoe") ? SHOE_SIZES : APPAREL_SIZES;
+}
+
 export function filterProductsByCategory(
   products: Product[],
   categoryId: number,
