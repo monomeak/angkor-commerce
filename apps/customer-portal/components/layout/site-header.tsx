@@ -105,7 +105,9 @@ function CategoryNavItem({ category }: { readonly category: Category }) {
           </li>
           {children.map((child) => (
             <li key={child.id}>
-              <NavigationMenuLink render={<Link href={`/product/${child.slug}`} />}>
+              <NavigationMenuLink
+                render={<Link href={`/product/${category.slug}?category=${child.slug}`} />}
+              >
                 {child.name}
               </NavigationMenuLink>
             </li>
@@ -131,7 +133,7 @@ function MobileCategoryGroup({ category }: { readonly category: Category }) {
         {children.map((child) => (
           <Link
             key={child.id}
-            href={`/product/${child.slug}`}
+            href={`/product/${category.slug}?category=${child.slug}`}
             className="rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             {child.name}
