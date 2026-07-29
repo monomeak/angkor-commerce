@@ -39,6 +39,9 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-account-text: var(--account-text);
+  --color-account-accent: var(--account-accent);
+  --color-account-accent-bar: var(--account-accent-bar);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -97,6 +100,12 @@
   --sidebar-accent-foreground: #26355d;
   --sidebar-border: #dddddd;
   --sidebar-ring: #af47d2;
+
+  /* Account page — page bg/heading/icon reuse muted/foreground above
+     (muted is already documented as the account/sidebar background). */
+  --account-text: #555555;
+  --account-accent: #6c63ff;
+  --account-accent-bar: #a855f7;
 }
 
 .dark {
@@ -140,6 +149,10 @@
   --sidebar-accent-foreground: #f0dff5;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #af47d2;
+
+  --account-text: #c7d0e0;
+  --account-accent: #9b8cff;
+  --account-accent-bar: #c084fc;
 }
 
 @layer base {
