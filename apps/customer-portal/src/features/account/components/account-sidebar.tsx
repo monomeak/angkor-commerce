@@ -4,16 +4,13 @@ import { usePathname } from "next/navigation";
 
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarProvider } from "@/components/ui/sidebar";
 import { accountNavigation } from "../constants/account-navigation";
-import type { AccountCustomer } from "../types/account";
+import { useAccount } from "../lib/account-context";
 import { AccountHeaderCard } from "./account-header-card";
 import { AccountNavItem } from "./account-nav-item";
 
-type AccountSidebarProps = {
-  readonly customer: AccountCustomer;
-};
-
-export function AccountSidebar({ customer }: AccountSidebarProps) {
+export function AccountSidebar() {
   const pathname = usePathname();
+  const { customer } = useAccount();
 
   return (
     <SidebarProvider className="min-h-0 w-full md:w-auto">
