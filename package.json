@@ -7,7 +7,7 @@
         "build": "turbo build",
         "lint": "turbo lint",
         "start": "turbo start",
-        "dev:back-office": "turbo dev --filter=back-office-portal",
+        "dev:back-office": "turbo dev --filter=back-office-portal -- --port 4000",
         "build:back-office": "turbo build --filter=back-office-portal",
         "start:back-office": "turbo start --filter=back-office-portal",
         "dev:customer-portal": "turbo dev --filter=customer-portal",
