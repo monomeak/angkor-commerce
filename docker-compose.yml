@@ -15,9 +15,9 @@ services:
       timeout: 5s
       retries: 10
 
-  api:
+  core-api:
     build:
-      context: ./apps/api
+      context: ./apps/core-api
     environment:
       SERVER_PORT: 8080
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-acme_invoice}
@@ -35,7 +35,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # apps/web joins this file once it has its own Dockerfile (Stage 1 still runs against DummyJSON).
+  # apps/back-office-portal joins this file once it has its own Dockerfile (Stage 1 still runs against DummyJSON).
 
 volumes:
   postgres-data:

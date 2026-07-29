@@ -1,0 +1,347 @@
+import type { Product } from "../types/product";
+
+export const products: Product[] = [
+  {
+    id: 1,
+    name: "Classic Cotton Shirt",
+    categoryId: 4, // men-shirt
+    images: [],
+    description: "A breathable cotton shirt for everyday wear.",
+    quantity: 42,
+    rating: 4.5,
+    promotionPercentage: 0,
+    price: 18,
+  },
+  {
+    id: 2,
+    name: "Everyday Men T-Shirt",
+    categoryId: 5, // men-t-shirt
+    images: [],
+    description: "Soft jersey t-shirt in a relaxed fit.",
+    quantity: 55,
+    rating: 4.3,
+    promotionPercentage: 10,
+    price: 14,
+  },
+  {
+    id: 3,
+    name: "Woven Krama Scarf",
+    categoryId: 8, // men-krama
+    images: [],
+    description: "Traditional Khmer krama, hand-woven cotton.",
+    quantity: 60,
+    rating: 4.8,
+    promotionPercentage: 10,
+    price: 12,
+  },
+  {
+    id: 4,
+    name: "Everyday Short-Pants",
+    categoryId: 9, // men-short-pants
+    images: [],
+    description: "Lightweight short-pants for warm weather.",
+    quantity: 35,
+    rating: 4.2,
+    promotionPercentage: 0,
+    price: 15,
+  },
+  {
+    id: 5,
+    name: "Woven Sampot Skirt",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Traditional Khmer sampot with hand-woven pattern.",
+    quantity: 20,
+    rating: 4.9,
+    promotionPercentage: 15,
+    price: 45,
+  },
+  {
+    id: 6,
+    name: "Classic Sampot",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Everyday sampot in a solid weave.",
+    quantity: 18,
+    rating: 4.6,
+    promotionPercentage: 20,
+    price: 39,
+  },
+  {
+    id: 7,
+    name: "Silk Blend Blouse",
+    categoryId: 11, // women-blouse
+    images: [],
+    description: "Lightweight blouse with a silk-blend finish.",
+    quantity: 28,
+    rating: 4.4,
+    promotionPercentage: 0,
+    price: 22,
+  },
+  {
+    id: 8,
+    name: "Occasion Dress",
+    categoryId: 13, // women-dress
+    images: [],
+    description: "A versatile dress for both casual and formal occasions.",
+    quantity: 15,
+    rating: 4.6,
+    promotionPercentage: 20,
+    price: 38,
+  },
+  {
+    id: 9,
+    name: "Kids Krama Set",
+    categoryId: 20, // children-krama
+    images: [],
+    description: "Soft cotton krama sized for children.",
+    quantity: 50,
+    rating: 4.7,
+    promotionPercentage: 0,
+    price: 8,
+  },
+  {
+    id: 10,
+    name: "Kids Everyday Shirt",
+    categoryId: 17, // children-shirt
+    images: [],
+    description: "Durable, comfortable shirt for daily play.",
+    quantity: 40,
+    rating: 4.3,
+    promotionPercentage: 5,
+    price: 10,
+  },
+  {
+    id: 11,
+    name: "Kids Play Dress",
+    categoryId: 19, // children-dresses
+    images: [],
+    description: "Comfortable dress for play and outings.",
+    quantity: 22,
+    rating: 4.5,
+    promotionPercentage: 0,
+    price: 16,
+  },
+  {
+    id: 12,
+    name: "Relaxed Fit Chinos",
+    categoryId: 6, // men-pants
+    images: [],
+    description: "Everyday chinos with a comfortable relaxed fit.",
+    quantity: 30,
+    rating: 4.4,
+    promotionPercentage: 0,
+    price: 26,
+  },
+  {
+    id: 13,
+    name: "Woven Straw Hat",
+    categoryId: 7, // men-hats
+    images: [],
+    description: "Lightweight straw hat for sun protection.",
+    quantity: 25,
+    rating: 4.2,
+    promotionPercentage: 0,
+    price: 16,
+  },
+  {
+    id: 14,
+    name: "Everyday Canvas Sneakers",
+    categoryId: 10, // men-shoes
+    images: [],
+    description: "Durable canvas sneakers for daily wear.",
+    quantity: 33,
+    rating: 4.5,
+    promotionPercentage: 10,
+    price: 28,
+  },
+  {
+    id: 15,
+    name: "Silk Krama Scarf",
+    categoryId: 14, // women-scarf
+    images: [],
+    description: "Lightweight silk-blend krama scarf.",
+    quantity: 40,
+    rating: 4.7,
+    promotionPercentage: 0,
+    price: 18,
+  },
+  {
+    id: 16,
+    name: "Handwoven Rattan Clutch",
+    categoryId: 15, // women-accessories
+    images: [],
+    description: "Handwoven rattan clutch bag with fabric lining.",
+    quantity: 20,
+    rating: 4.6,
+    promotionPercentage: 0,
+    price: 24,
+  },
+  {
+    id: 17,
+    name: "Everyday Strap Sandals",
+    categoryId: 16, // women-shoes
+    images: [],
+    description: "Comfortable strap sandals for daily wear.",
+    quantity: 27,
+    rating: 4.3,
+    promotionPercentage: 15,
+    price: 22,
+  },
+  {
+    id: 18,
+    name: "Kids Comfort Pants",
+    categoryId: 18, // children-pants
+    images: [],
+    description: "Stretchy, durable pants built for active kids.",
+    quantity: 38,
+    rating: 4.4,
+    promotionPercentage: 0,
+    price: 12,
+  },
+  {
+    id: 19,
+    name: "Kids Canvas Shoes",
+    categoryId: 21, // children-shoes
+    images: [],
+    description: "Lightweight canvas shoes for everyday play.",
+    quantity: 32,
+    rating: 4.5,
+    promotionPercentage: 0,
+    price: 14,
+  },
+  {
+    id: 20,
+    name: "Kids Sun Hat",
+    categoryId: 22, // children-accessories
+    images: [],
+    description: "Soft cotton sun hat for outdoor play.",
+    quantity: 45,
+    rating: 4.3,
+    promotionPercentage: 0,
+    price: 9,
+  },
+  // Extra men's items so /product/men exceeds one page (pagination test data).
+  {
+    id: 21,
+    name: "Linen Button-Down Shirt",
+    categoryId: 4, // men-shirt
+    images: [],
+    description: "Breathable linen shirt for warm-weather wear.",
+    quantity: 30,
+    rating: 4.4,
+    promotionPercentage: 0,
+    price: 24,
+  },
+  {
+    id: 22,
+    name: "Graphic Print Tee",
+    categoryId: 5, // men-t-shirt
+    images: [],
+    description: "Cotton tee with a screen-printed Angkor motif.",
+    quantity: 48,
+    rating: 4.2,
+    promotionPercentage: 0,
+    price: 15,
+  },
+  {
+    id: 23,
+    name: "Slim Fit Jeans",
+    categoryId: 6, // men-pants
+    images: [],
+    description: "Stretch denim jeans with a slim fit.",
+    quantity: 26,
+    rating: 4.3,
+    promotionPercentage: 5,
+    price: 32,
+  },
+  {
+    id: 24,
+    name: "Wide Brim Sun Hat",
+    categoryId: 7, // men-hats
+    images: [],
+    description: "Wide-brim hat for outdoor sun protection.",
+    quantity: 20,
+    rating: 4.1,
+    promotionPercentage: 0,
+    price: 19,
+  },
+  // Extra women's sampot items so a filtered subcategory also exceeds one page.
+  {
+    id: 25,
+    name: "Royal Silk Sampot",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Formal silk sampot with a woven gold border.",
+    quantity: 12,
+    rating: 4.9,
+    promotionPercentage: 0,
+    price: 68,
+  },
+  {
+    id: 26,
+    name: "Everyday Sampot Wrap",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Easy wrap-style sampot for daily wear.",
+    quantity: 24,
+    rating: 4.4,
+    promotionPercentage: 0,
+    price: 32,
+  },
+  {
+    id: 27,
+    name: "Sampot Chong Kben",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Traditional Chong Kben style sampot for ceremonies.",
+    quantity: 10,
+    rating: 4.8,
+    promotionPercentage: 0,
+    price: 72,
+  },
+  {
+    id: 28,
+    name: "Floral Sampot Hol",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Hand-woven Hol pattern sampot with floral motifs.",
+    quantity: 14,
+    rating: 4.7,
+    promotionPercentage: 10,
+    price: 58,
+  },
+  {
+    id: 29,
+    name: "Sampot Phamuong",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Twill-weave Phamuong sampot in a solid color.",
+    quantity: 16,
+    rating: 4.6,
+    promotionPercentage: 0,
+    price: 49,
+  },
+  {
+    id: 30,
+    name: "Casual Cotton Sampot",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Lightweight cotton sampot for everyday errands.",
+    quantity: 30,
+    rating: 4.3,
+    promotionPercentage: 0,
+    price: 26,
+  },
+  {
+    id: 31,
+    name: "Sampot for Ceremony",
+    categoryId: 12, // women-sampot
+    images: [],
+    description: "Embellished sampot suited for special occasions.",
+    quantity: 8,
+    rating: 4.9,
+    promotionPercentage: 15,
+    price: 65,
+  },
+];

@@ -1,5 +1,5 @@
 ---
-tags: [spring-boot, java, maven, beginner, acme-invoice, learning-notes]
+tags: [spring-boot, java, maven, beginner, angkor-commerce, learning-notes]
 date: 2026-07-24
 updated: 2026-07-26
 ---
@@ -34,6 +34,8 @@ curl -G "https://start.spring.io/starter.zip" \
 ```
 
 > **Update (2026-07-26):** `flyway` was later removed from `pom.xml` — the project switched to Hibernate-generated schema instead. See [[03-why-flyway-sql-instead-of-jpa-entities]]. The command above is kept as-is since it's what actually generated the project originally.
+>
+> **Update (2026-07-29):** the project (and this package) was later renamed from `com.acme.invoice` to `com.angkor.commerce`. The command above is still kept as-is for the same reason — it's the literal command that generated the project.
 
 - `groupId` — your company/namespace, e.g. `com.acme.invoice`
 - `artifactId` — this project's own name, e.g. `api`
@@ -86,7 +88,7 @@ Always run `./mvnw ...`, never a plain `mvn ...`.
 ## Folder structure
 
 ```
-apps/api/
+apps/core-api/
 ├── mvnw                  — the wrapper script
 ├── pom.xml               — the shopping list
 ├── src/main/java/...     — your actual code

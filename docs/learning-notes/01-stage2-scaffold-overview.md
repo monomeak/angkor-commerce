@@ -1,12 +1,12 @@
 ---
-tags: [spring-boot, backend, acme-invoice, learning-notes]
+tags: [spring-boot, backend, angkor-commerce, learning-notes]
 date: 2026-07-24
 updated: 2026-07-26
 ---
 
 # Stage 2 backend — what's been built so far
 
-Quick recap: the ACME Invoice project started as a Next.js frontend talking to a fake API (DummyJSON). Stage 2 is building the real backend — Spring Boot + PostgreSQL — at `apps/api`. This note covers what exists right now: a working skeleton, no business features yet.
+Quick recap: the Angkor Commerce project started as a Next.js frontend talking to a fake API (DummyJSON). Stage 2 is building the real backend — Spring Boot + PostgreSQL — at `apps/core-api`. This note covers what exists right now: a working skeleton, no business features yet.
 
 ## How it was created
 
@@ -21,7 +21,7 @@ Also worth knowing: this project uses **Spring Boot 4**, which is newer than wha
 One Java package per topic:
 
 ```
-com.acme.invoice/
+com.angkor.commerce/
 ├── auth/        — login, logout (not built yet)
 ├── user/        — users & roles
 ├── customer/    — customers
