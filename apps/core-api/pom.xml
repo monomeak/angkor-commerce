@@ -8,11 +8,11 @@
 		<version>4.0.7</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.acme.invoice</groupId>
+	<groupId>com.angkor.commerce</groupId>
 	<artifactId>core-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>core-api</name>
-	<description>ACME Invoice Management API</description>
+	<description>Angkor Commerce API</description>
 	<url/>
 	<licenses>
 		<license/>

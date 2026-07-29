@@ -257,7 +257,7 @@ Add the Java application as `apps/core-api`, but do not add it to `pnpm-workspac
 
 ```text
 apps/core-api/
-├── src/main/java/com/acme/invoice/
+├── src/main/java/com/angkor/commerce/
 │   ├── auth/
 │   ├── user/
 │   ├── customer/

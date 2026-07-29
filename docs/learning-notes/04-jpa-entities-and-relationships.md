@@ -8,7 +8,7 @@ updated: 2026-07-26
 
 An "entity" is just a Java class that represents one row in a database table. This note shows what those classes look like for this project, and how relationships between tables (like "an invoice belongs to a customer") get written in Java.
 
-> **Update (2026-07-26):** the project now generates its schema from these entities instead of hand-written SQL — see [[03-why-flyway-sql-instead-of-jpa-entities]]. `Customer` (`apps/core-api/src/main/java/com/acme/invoice/customer/Customer.java`) is the first one actually built, with a repository and a read-only `/api/customers` endpoint. The rest below (`Invoice`, `Payment`, `User`/`Role`) are still just the plan — built feature by feature as each DummyJSON feature gets replaced.
+> **Update (2026-07-26):** the project now generates its schema from these entities instead of hand-written SQL — see [[03-why-flyway-sql-instead-of-jpa-entities]]. `Customer` (`apps/core-api/src/main/java/com/angkor/commerce/customer/Customer.java`) is the first one actually built, with a repository and a read-only `/api/customers` endpoint. The rest below (`Invoice`, `Payment`, `User`/`Role`) are still just the plan — built feature by feature as each DummyJSON feature gets replaced.
 
 ## The basics
 

@@ -34,6 +34,8 @@ curl -G "https://start.spring.io/starter.zip" \
 ```
 
 > **Update (2026-07-26):** `flyway` was later removed from `pom.xml` — the project switched to Hibernate-generated schema instead. See [[03-why-flyway-sql-instead-of-jpa-entities]]. The command above is kept as-is since it's what actually generated the project originally.
+>
+> **Update (2026-07-29):** the project (and this package) was later renamed from `com.acme.invoice` to `com.angkor.commerce`. The command above is still kept as-is for the same reason — it's the literal command that generated the project.
 
 - `groupId` — your company/namespace, e.g. `com.acme.invoice`
 - `artifactId` — this project's own name, e.g. `api`

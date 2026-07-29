@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE="apps/core-api/src/main/java/com/acme/invoice"
+BASE="apps/core-api/src/main/java/com/angkor/commerce"
 
 # Helper: create a file only if it doesn't already exist
 create_file() {

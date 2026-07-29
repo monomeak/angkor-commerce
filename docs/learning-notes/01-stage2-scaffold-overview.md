@@ -21,7 +21,7 @@ Also worth knowing: this project uses **Spring Boot 4**, which is newer than wha
 One Java package per topic:
 
 ```
-com.acme.invoice/
+com.angkor.commerce/
 ├── auth/        — login, logout (not built yet)
 ├── user/        — users & roles
 ├── customer/    — customers

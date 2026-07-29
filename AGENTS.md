@@ -75,7 +75,7 @@ Use `.env.example` as the template for local environment variables.
 - Keep route files small. Next.js pages should compose feature views rather than owning business logic.
 - Keep feature code under `apps/back-office-portal/src/features/<feature>/` with local `api`, `components`, `hooks`, `lib`, `mappers`, `schemas`, `types`, and `views` folders when needed.
 - Keep shared frontend utilities under `apps/back-office-portal/src/shared` or `apps/back-office-portal/lib` depending on the existing local pattern.
-- Keep backend code organized by domain package under `com.acme.invoice`, such as `customer`, `invoice`, `payment`, `product`, `dashboard`, `report`, `audit`, `auth`, `user`, `security`, `config`, and `common`.
+- Keep backend code organized by domain package under `com.angkor.commerce`, such as `customer`, `invoice`, `payment`, `product`, `dashboard`, `report`, `audit`, `auth`, `user`, `security`, `config`, and `common`.
 - Do not introduce broad refactors while implementing a feature. Match the current file layout and naming style.
 - Do not overwrite unrelated working tree changes. Check `git status --short` before broad edits.
 
