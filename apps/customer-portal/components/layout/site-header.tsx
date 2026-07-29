@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search, ShoppingCart, User } from "lucide-react";
+import { Menu, Search, User } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
     NavigationMenuTrigger
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { CartSheet } from "@/src/features/cart/components/cart-sheet";
 import { getChildCategories, getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
 import type { Category } from "@/src/features/categories/types/category";
 
@@ -71,9 +72,7 @@ export function SiteHeader() {
                     >
                         <User className="size-5" />
                     </Button>
-                    <Button variant="ghost" size="icon" aria-label="Cart">
-                        <ShoppingCart className="size-5" />
-                    </Button>
+                    <CartSheet />
 
                     <Button
                         variant="accent"
