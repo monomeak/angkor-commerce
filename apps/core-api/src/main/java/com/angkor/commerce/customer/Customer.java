@@ -1,10 +1,6 @@
 package com.angkor.commerce.customer;
 
-import java.time.Instant;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import com.angkor.commerce.common.enums.RecordStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,108 +9,81 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "customers")
 public class Customer {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false)
-	private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "customer_type", nullable = false)
+    private CustomerType customerType = CustomerType.INDIVIDUAL;
 
-	private String email;
+    @Column(name = "first_name")
+    private String firstName;
 
-	private String phone;
+    @Column(name = "last_name")
+    private String lastName;
 
-	@Column(name = "billing_address")
-	private String billingAddress;
+    @Column(name = "company_name")
+    private String companyName;
 
-	private String other;
+    private String email;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private CustomerStatus status = CustomerStatus.ACTIVE;
+    private String phone;
 
-	@CreationTimestamp
-	@Column(name = "created_at", nullable = false, updatable = false)
-	private Instant createdAt;
+    @Column(name = "tax_number")
+    private String taxNumber;
 
-	@UpdateTimestamp
-	@Column(name = "updated_at", nullable = false)
-	private Instant updatedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "record_status", nullable = false)
+    private RecordStatus recordStatus = RecordStatus.ACTIVE;
 
-	protected Customer() {
-		// required by Hibernate
-	}
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId;
 
-	public Customer(String name, String email, String phone, String billingAddress) {
-		this.name = name;
-		this.email = email;
-		this.phone = phone;
-		this.billingAddress = billingAddress;
-	}
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
-	public Long getId() {
-		return id;
-	}
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
-	public String getName() {
-		return name;
-	}
+    protected Customer() {
+        // required by Hibernate
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public Customer(
+        CustomerType customerType,
+        String firstName,
+        String lastName,
+        String companyName,
+        String email,
+        String phone
+    ) {
+        this.customerType = customerType;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.companyName = companyName;
+        this.email = email;
+        this.phone = phone;
+    }
 
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getPhone() {
-		return phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public String getBillingAddress() {
-		return billingAddress;
-	}
-
-	public void setBillingAddress(String billingAddress) {
-		this.billingAddress = billingAddress;
-	}
-
-	public String getOther() {
-		return other;
-	}
-
-	public void setOther(String other) {
-		this.other = other;
-	}
-
-	public CustomerStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(CustomerStatus status) {
-		this.status = status;
-	}
-
-	public Instant getCreatedAt() {
-		return createdAt;
-	}
-
-	public Instant getUpdatedAt() {
-		return updatedAt;
-	}
-
+    public String getDisplayName() {
+        if (customerType == CustomerType.BUSINESS && companyName != null && !companyName.isBlank()) {
+            return companyName;
+        }
+        return (firstName == null ? "" : firstName + " ") + (lastName == null ? "" : lastName);
+    }
 }
