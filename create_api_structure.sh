@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE="apps/api/src/main/java/com/acme/invoice"
+BASE="apps/core-api/src/main/java/com/acme/invoice"
 
 # Helper: create a file only if it doesn't already exist
 create_file() {
@@ -31,6 +31,10 @@ DIRS=(
   "$BASE/product/impl"
   "$BASE/product/dto/request"
   "$BASE/product/dto/response"
+
+  "$BASE/order/impl"
+  "$BASE/order/dto/request"
+  "$BASE/order/dto/response"
 
   "$BASE/invoice/impl"
   "$BASE/invoice/dto/request"
@@ -87,7 +91,8 @@ create_file "$BASE/auth/RefreshTokenRepository.java"
 create_file "$BASE/auth/impl/AuthServiceImpl.java"
 create_file "$BASE/auth/dto/request/LoginRequest.java"
 create_file "$BASE/auth/dto/request/RefreshRequest.java"
-create_file "$BASE/auth/dto/response/AuthTokenResponse.java"
+create_file "$BASE/auth/dto/response/AuthenticatedUserResponse.java"
+create_file "$BASE/auth/dto/response/LoginResultResponse.java"
 create_file "$BASE/auth/dto/response/CurrentUserResponse.java"
 
 # ---- customer ----
@@ -110,6 +115,21 @@ create_file "$BASE/product/impl/ProductServiceImpl.java"
 create_file "$BASE/product/dto/request/CreateProductRequest.java"
 create_file "$BASE/product/dto/request/UpdateProductRequest.java"
 create_file "$BASE/product/dto/response/ProductResponse.java"
+
+# ---- order ----
+create_file "$BASE/order/Order.java"
+create_file "$BASE/order/OrderItem.java"
+create_file "$BASE/order/OrderStatus.java"
+create_file "$BASE/order/OrderController.java"
+create_file "$BASE/order/OrderService.java"
+create_file "$BASE/order/OrderRepository.java"
+create_file "$BASE/order/OrderItemRepository.java"
+create_file "$BASE/order/impl/OrderServiceImpl.java"
+create_file "$BASE/order/dto/request/CreateOrderRequest.java"
+create_file "$BASE/order/dto/request/OrderItemRequest.java"
+create_file "$BASE/order/dto/response/OrderResponse.java"
+create_file "$BASE/order/dto/response/OrderSummaryResponse.java"
+create_file "$BASE/order/dto/response/OrderItemResponse.java"
 
 # ---- invoice ----
 create_file "$BASE/invoice/Invoice.java"

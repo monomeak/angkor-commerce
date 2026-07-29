@@ -1,5 +1,5 @@
 {
-  "name": "acme-invoice-management",
+  "name": "angkor-commerce",
   "private": true,
   "packageManager": "pnpm@10.24.0",
   "scripts": {
@@ -7,10 +7,10 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "start": "turbo start",
-    "dev:web": "turbo dev --filter=acme-invoice-dashboard",
-    "build:web": "turbo build --filter=acme-invoice-dashboard",
-    "start:web": "turbo start --filter=acme-invoice-dashboard",
-    "lint:web": "turbo lint --filter=acme-invoice-dashboard"
+    "dev:back-office": "turbo dev --filter=back-office-portal",
+    "build:back-office": "turbo build --filter=back-office-portal",
+    "start:back-office": "turbo start --filter=back-office-portal",
+    "lint:back-office": "turbo lint --filter=back-office-portal"
   },
   "devDependencies": {
     "prettier": "^3.9.6",

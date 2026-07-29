@@ -1,20 +1,20 @@
-# ACME Invoice Management - AI Agent Guide
+# Angkor Commerce - AI Agent Guide
 
-Use this file as the first source of project-specific instructions when working in this repository. For frontend-only work, also read `apps/web/AGENTS.md`.
+Use this file as the first source of project-specific instructions when working in this repository. For frontend-only work, also read `apps/back-office-portal/AGENTS.md`.
 
 ## Project Overview
 
-ACME Invoice Management is a personal learning project, not a real company's production app: a full invoice management system (customers, products, invoices, payments, reporting) built end-to-end as a pnpm/Turborepo monorepo to practice a modern full-stack toolset deliberately, one layer at a time.
+Angkor Commerce is a personal learning project, not a real company's production app: a full invoice management system (customers, products, invoices, payments, reporting) built end-to-end as a pnpm/Turborepo monorepo to practice a modern full-stack toolset deliberately, one layer at a time.
 
 It's being built in two stages:
 
 - **Stage 1 (done):** a Next.js frontend wired to DummyJSON, a public fake REST API, standing in for a real backend. This let the UI, auth flow, and feature layer get built and reviewed before any backend existed.
-- **Stage 2 (in progress):** a real Spring Boot + PostgreSQL backend (`apps/api`) that replaces DummyJSON one feature at a time. `customer` is the first slice built end-to-end (entity, repository, read endpoint); everything else in `apps/web` still points at DummyJSON until its backend counterpart lands.
+- **Stage 2 (in progress):** a real Spring Boot + PostgreSQL backend (`apps/core-api`) that replaces DummyJSON one feature at a time. `customer` is the first slice built end-to-end (entity, repository, read endpoint); everything else in `apps/back-office-portal` still points at DummyJSON until its backend counterpart lands.
 
 Structure:
 
-- `apps/web`: Next.js dashboard and public landing page — the actual product UI.
-- `apps/api`: Spring Boot API, Java 21, PostgreSQL, JPA/Hibernate.
+- `apps/back-office-portal`: Next.js dashboard and public landing page — the actual product UI.
+- `apps/core-api`: Spring Boot API, Java 21, PostgreSQL, JPA/Hibernate.
 - `docs`: project proposal, roadmap, and `docs/learning-notes/` — plain-language write-ups of *why* each backend decision was made. Read these before assuming a choice (like Hibernate-generated schema over Flyway) was arbitrary or a shortcut.
 - `docker-compose.yml`: local PostgreSQL plus API service.
 
@@ -37,11 +37,11 @@ Backend:
 - Spring Boot 4, Spring Web MVC, Spring Security, Spring Data JPA, Validation, Actuator.
 - PostgreSQL.
 - springdoc OpenAPI UI at `/swagger-ui.html`.
-- Maven Wrapper owns backend builds; do not add `apps/api` to `pnpm-workspace.yaml`.
+- Maven Wrapper owns backend builds; do not add `apps/core-api` to `pnpm-workspace.yaml`.
 
 ## Commands
 
-Run frontend tasks from the repo root unless there is a reason to work inside `apps/web`.
+Run frontend tasks from the repo root unless there is a reason to work inside `apps/back-office-portal`.
 
 ```bash
 pnpm dev
@@ -52,7 +52,7 @@ pnpm build:web
 pnpm lint:web
 ```
 
-Run backend tasks from `apps/api`.
+Run backend tasks from `apps/core-api`.
 
 ```bash
 ./mvnw spring-boot:run
@@ -73,15 +73,15 @@ Use `.env.example` as the template for local environment variables.
 
 - Preserve the monorepo boundary: pnpm/Turborepo coordinates frontend tasks, Maven coordinates backend tasks.
 - Keep route files small. Next.js pages should compose feature views rather than owning business logic.
-- Keep feature code under `apps/web/src/features/<feature>/` with local `api`, `components`, `hooks`, `lib`, `mappers`, `schemas`, `types`, and `views` folders when needed.
-- Keep shared frontend utilities under `apps/web/src/shared` or `apps/web/lib` depending on the existing local pattern.
+- Keep feature code under `apps/back-office-portal/src/features/<feature>/` with local `api`, `components`, `hooks`, `lib`, `mappers`, `schemas`, `types`, and `views` folders when needed.
+- Keep shared frontend utilities under `apps/back-office-portal/src/shared` or `apps/back-office-portal/lib` depending on the existing local pattern.
 - Keep backend code organized by domain package under `com.acme.invoice`, such as `customer`, `invoice`, `payment`, `product`, `dashboard`, `report`, `audit`, `auth`, `user`, `security`, `config`, and `common`.
 - Do not introduce broad refactors while implementing a feature. Match the current file layout and naming style.
 - Do not overwrite unrelated working tree changes. Check `git status --short` before broad edits.
 
 ## Frontend Guidelines
 
-- Follow `apps/web/AGENTS.md` for detailed frontend rules.
+- Follow `apps/back-office-portal/AGENTS.md` for detailed frontend rules.
 - External API response shapes must stay separate from domain types.
 - Validate external responses with Zod before mapping them into domain models.
 - Feature hooks should own TanStack Query usage and query keys.
@@ -109,7 +109,7 @@ Use `.env.example` as the template for local environment variables.
 Before finishing code changes, run the smallest useful verification command:
 
 - Frontend-only change: `pnpm lint:web` and, when behavior or types changed, `pnpm build:web`.
-- Backend-only change: `cd apps/api && ./mvnw test`.
+- Backend-only change: `cd apps/core-api && ./mvnw test`.
 - Cross-stack change: run the relevant frontend and backend checks.
 - Documentation-only change: no test run is required, but inspect the rendered Markdown structure mentally for broken paths or stale claims.
 
@@ -118,8 +118,8 @@ If a verification command cannot run because dependencies, Docker, network acces
 ## Documentation Sources
 
 - `README.md`: proposal-style project overview and roadmap.
-- `docs/ACME_INVOICE_PROJECT_PROPOSAL.md`: fuller proposal and architecture notes.
+- `docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`: fuller proposal and architecture notes.
 - `docs/learning-notes/`: beginner-oriented notes about the backend and project setup.
-- `apps/web/AGENTS.md`: frontend-specific AI agent instructions.
+- `apps/back-office-portal/AGENTS.md`: frontend-specific AI agent instructions.
 
 When docs disagree with code, treat the code and package files as current, then update docs or mention the mismatch if it affects the task.

@@ -1,5 +1,5 @@
 ---
-tags: [spring-boot, java, maven, beginner, acme-invoice, learning-notes]
+tags: [spring-boot, java, maven, beginner, angkor-commerce, learning-notes]
 date: 2026-07-24
 updated: 2026-07-26
 ---
@@ -86,7 +86,7 @@ Always run `./mvnw ...`, never a plain `mvn ...`.
 ## Folder structure
 
 ```
-apps/api/
+apps/core-api/
 ├── mvnw                  — the wrapper script
 ├── pom.xml               — the shopping list
 ├── src/main/java/...     — your actual code

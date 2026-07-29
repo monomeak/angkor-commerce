@@ -1,12 +1,12 @@
 ---
-tags: [flyway, database, migrations, backend, acme-invoice, learning-notes]
+tags: [flyway, database, migrations, backend, angkor-commerce, learning-notes]
 date: 2026-07-24
 updated: 2026-07-26
 ---
 
 # Flyway, explained simply
 
-> **No longer used in this project (as of 2026-07-26).** This project switched from Flyway-managed SQL migrations to Hibernate-generated schema (JPA `@Entity` classes + `ddl-auto=update`) — see [[03-why-flyway-sql-instead-of-jpa-entities]] for why. The `flyway` dependency and `db/migration/` folder have been removed from `apps/api`. This note is kept as general background on how Flyway works, in case a real migration tool gets reintroduced later (e.g. before production).
+> **No longer used in this project (as of 2026-07-26).** This project switched from Flyway-managed SQL migrations to Hibernate-generated schema (JPA `@Entity` classes + `ddl-auto=update`) — see [[03-why-flyway-sql-instead-of-jpa-entities]] for why. The `flyway` dependency and `db/migration/` folder have been removed from `apps/core-api`. This note is kept as general background on how Flyway works, in case a real migration tool gets reintroduced later (e.g. before production).
 
 Flyway's whole job: keep a folder of `.sql` files, remember which ones have already run, and run the new ones — in order, once each, forever.
 

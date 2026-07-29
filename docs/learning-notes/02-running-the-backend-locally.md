@@ -1,9 +1,9 @@
 ---
-tags: [spring-boot, backend, acme-invoice, learning-notes]
+tags: [spring-boot, backend, angkor-commerce, learning-notes]
 date: 2026-07-24
 ---
 
-# Running `apps/api` locally (no Docker)
+# Running `apps/core-api` locally (no Docker)
 
 ## What you need installed
 
@@ -29,7 +29,7 @@ Match these to whatever's in `application.properties` — that's where the app l
 ## Run it
 
 ```bash
-cd apps/api
+cd apps/core-api
 ./mvnw spring-boot:run
 ```
 
@@ -77,5 +77,5 @@ This means the username or password in `application.properties` doesn't match wh
 
 ```bash
 docker compose up -d postgres     # just the database, containerized
-cd apps/api && ./mvnw spring-boot:run   # app still runs normally, talks to that container
+cd apps/core-api && ./mvnw spring-boot:run   # app still runs normally, talks to that container
 ```
