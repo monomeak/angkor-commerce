@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/src/features/cart/lib/cart-context";
 import { getDiscountedPrice, getSizeOptions } from "../lib/product-helpers";
 import type { Product } from "../types/product";
 
@@ -21,6 +22,7 @@ export function ProductDetail({ product, categoryName }: ProductDetailProps) {
     const sizeOptions = getSizeOptions(categoryName);
     const [selectedSize, setSelectedSize] = useState(sizeOptions[0]);
     const [quantity, setQuantity] = useState(1);
+    const { addItem } = useCart();
 
     return (
         <div className="mt-6 grid gap-8 lg:grid-cols-2">
@@ -100,7 +102,12 @@ export function ProductDetail({ product, categoryName }: ProductDetailProps) {
                     <p className="mt-1 text-xs text-muted-foreground">{product.quantity} in stock</p>
                 </div>
 
-                <Button variant="accent" size="lg" className="h-12 w-full text-sm sm:w-auto sm:px-10">
+                <Button
+                    variant="accent"
+                    size="lg"
+                    className="h-12 w-full text-sm sm:w-auto sm:px-10"
+                    onClick={() => addItem(product.id, selectedSize, quantity)}
+                >
                     Add to cart
                 </Button>
             </div>

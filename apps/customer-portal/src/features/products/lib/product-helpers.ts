@@ -20,3 +20,7 @@ export function filterProductsByCategory(
   const allowedCategoryIds = new Set(getDescendantCategoryIds(categoryId));
   return products.filter((product) => allowedCategoryIds.has(product.categoryId));
 }
+
+export function getProductById(products: Product[], id: number): Product | undefined {
+  return products.find((product) => product.id === id);
+}
