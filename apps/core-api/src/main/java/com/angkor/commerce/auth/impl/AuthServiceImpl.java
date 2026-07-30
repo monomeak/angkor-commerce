@@ -73,8 +73,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResultResponse refresh(RefreshRequest request) {
-        String incomingHashToken = hash(request.refreshToken());
+    @Transactional
+    public LoginResultResponse refresh(String refreshToken) {
+        String incomingHashToken = hash(refreshToken);
         RefreshToken storedHashToken = refreshTokenRepository
             .findByTokenHash(incomingHashToken)
             .orElseThrow(() -> new BadCredentialsException("Invalid or expired refresh token"));
@@ -91,10 +92,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void logout(RefreshRequest request) {
+    public void logout(String refreshToken) {
         // does the revoke the token directly
 
-        String incomingHashToken = hash(request.refreshToken());
+        String incomingHashToken = hash(refreshToken);
         refreshTokenRepository.findByTokenHash(incomingHashToken).ifPresent(token -> {
             token.setRevoked(true);
             refreshTokenRepository.save(token);

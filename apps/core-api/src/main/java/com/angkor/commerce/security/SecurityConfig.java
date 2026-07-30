@@ -1,7 +1,9 @@
 package com.angkor.commerce.security;
 
+import com.angkor.commerce.common.ApiConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -63,6 +65,13 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout")
                     .authenticated()
                     .requestMatchers("/api/v1/users/**")
+                    .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
+                    // Public catalog read: category browsing needs no auth for
+                    // either back-office or the future storefront. Writes stay
+                    // staff-only, same roles as user management.
+                    .requestMatchers(HttpMethod.GET, ApiConstants.CATEGORIES_BASE, ApiConstants.CATEGORIES_BASE + "/**")
+                    .permitAll()
+                    .requestMatchers(ApiConstants.CATEGORIES_BASE + "/**")
                     .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
                     .anyRequest()
                     .authenticated()
