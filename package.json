@@ -7,13 +7,14 @@
         "build": "turbo build",
         "lint": "turbo lint",
         "start": "turbo start",
-        "dev:back-office": "turbo dev --filter=back-office-portal -- --port 4000",
-        "build:back-office": "turbo build --filter=back-office-portal",
-        "start:back-office": "turbo start --filter=back-office-portal",
-        "dev:customer-portal": "turbo dev --filter=customer-portal",
-        "build:customer-portal": "turbo build --filter=customer-portal",
-        "start:customer-portal": "turbo start --filter=customer-portal",
-        "lint:back-office": "turbo lint --filter=back-office-portal"
+        "dev:back": "turbo dev --filter=back-office-portal -- --port 4000",
+        "build:back": "turbo build --filter=back-office-portal",
+        "start:back": "turbo start --filter=back-office-portal",
+        "dev:customer": "turbo dev --filter=customer-portal",
+        "build:customer": "turbo build --filter=customer-portal",
+        "start:customer": "turbo start --filter=customer-portal",
+        "lint:back": "turbo lint --filter=back-office-portal",
+        "lint:customer": "turbo lint --filter=customer-portal"
     },
     "devDependencies": {
         "prettier": "^3.9.6",

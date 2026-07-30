@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search, User } from "lucide-react";
+import { Menu, Search, User, LogOut } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import {
     NavigationMenuItem,
     NavigationMenuLink,
     NavigationMenuList,
-    NavigationMenuTrigger
+    NavigationMenuTrigger,
+    navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { CartSheet } from "@/src/features/cart/components/cart-sheet";
@@ -37,6 +38,16 @@ export function SiteHeader() {
                                 <BrandLogo size="sm" />
                             </SheetTitle>
                         </SheetHeader>
+                        <form action="/search" className="relative px-4 pb-2">
+                            <Search className="pointer-events-none absolute top-1/2 left-7 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                name="q"
+                                placeholder="Search products…"
+                                className="pl-9"
+                                aria-label="Search products"
+                            />
+                        </form>
                         <nav className="flex flex-col gap-1 px-4">
                             {navCategories.map((category) => (
                                 <MobileCategoryGroup key={category.id} category={category} />
@@ -49,16 +60,28 @@ export function SiteHeader() {
 
                 <NavigationMenu className="hidden md:flex">
                     <NavigationMenuList>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink
+                                className={navigationMenuTriggerStyle()}
+                                render={<Link href="/#">Home</Link>}
+                            />
+                        </NavigationMenuItem>
                         {navCategories.map((category) => (
                             <CategoryNavItem key={category.id} category={category} />
                         ))}
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                <div className="relative ml-auto hidden max-w-xs flex-1 sm:block">
+                <form action="/search" className="relative ml-auto hidden max-w-xs flex-1 sm:block">
                     <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input type="search" placeholder="Search products…" className="pl-9" aria-label="Search products" />
-                </div>
+                    <Input
+                        type="search"
+                        name="q"
+                        placeholder="Search products…"
+                        className="pl-9"
+                        aria-label="Search products"
+                    />
+                </form>
 
                 <div className="ml-auto flex items-center gap-1 sm:ml-2">
                     {/* future check if user is authenticated or not here  if not show button shop now otherwise you card and account*/}
@@ -83,6 +106,17 @@ export function SiteHeader() {
                     >
                         Shop now
                     </Button>
+
+                    {/* <Button
+                        variant="accent"
+                        size="sm"
+                        className="hidden h-9 px-4 text-sm sm:inline-flex"
+                        nativeButton={false}
+                        render={<LogOut href="/login" />}
+                    >
+                        Shop now
+                    </Button> */}
+                    <LogOut />
                 </div>
             </div>
         </header>
