@@ -1,38 +1,58 @@
-import { Play } from "lucide-react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-import { Card } from "@/components/ui/card";
-
-// The legacy app streamed remote lookbook videos here. No video assets are
-// wired up yet (see docs/NEXTJS_MIGRATION_PLAN.md "Assets Migration") — this
-// placeholder preserves the section's place in the layout until real clips
-// are added.
+// No real lookbook footage is wired up yet (see docs/NEXTJS_MIGRATION_PLAN.md
+// "Assets Migration") — these are stock clips used only to exercise the
+// player + carousel navigation. Swap the `url`s for real Angkor Commerce
+// footage once it exists.
 const trendingClips = [
-  { id: 1, title: "Sampot styling for everyday wear" },
-  { id: 2, title: "How krama is woven" },
-  { id: 3, title: "Men's collection lookbook" },
+    { id: 1, url: "https://videos.pexels.com/video-files/5889057/5889057-sd_640_360_25fps.mp4" },
+    { id: 2, url: "https://videos.pexels.com/video-files/3959704/3959704-sd_960_506_25fps.mp4" },
+    { id: 3, url: "https://videos.pexels.com/video-files/4715373/4715373-sd_960_506_25fps.mp4" },
+    {
+        id: 4,
+        url: "https://videos.pexels.com/video-files/6272385/6272385-sd_426_240_30fps.mp4"
+    },
+    {
+        id: 5,
+        url: "https://videos.pexels.com/video-files/6238179/6238179-hd_1920_1080_25fps.mp4"
+    },
+    {
+        id: 6,
+        url: "https://videos.pexels.com/video-files/8177447/8177447-uhd_3840_2160_24fps.mp4"
+    }
 ];
 
 export function TrendingVideos() {
-  return (
-    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-      <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
-        Trending now
-      </h2>
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        {trendingClips.map((clip) => (
-          <Card
-            key={clip.id}
-            className="flex aspect-video items-center justify-center bg-muted/60 p-4 transition-transform duration-300 hover:-translate-y-1"
-          >
-            <div className="flex flex-col items-center gap-2 text-center">
-              <span className="flex size-10 items-center justify-center rounded-full bg-background/80 text-primary">
-                <Play className="size-4" />
-              </span>
-              <span className="text-sm text-muted-foreground">{clip.title}</span>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </section>
-  );
+    return (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Trending now</h2>
+
+            <Carousel className="mt-6" opts={{ align: "start" }}>
+                <CarouselContent>
+                    {trendingClips.map((clip) => (
+                        <CarouselItem key={clip.id} className="sm:basis-1/2 lg:basis-1/3">
+                            <div className="overflow-hidden rounded-xl border">
+                                <video
+                                    className="aspect-video w-full bg-muted"
+                                    muted
+                                    width={100}
+                                    height={100}
+                                    controls
+                                    autoPlay
+                                    preload="auto"
+                                    playsInline
+                                    loop
+                                >
+                                    <source src={clip.url} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+            </Carousel>
+        </section>
+    );
 }
