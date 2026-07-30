@@ -1,10 +1,5 @@
-import { AuthShell } from "@/src/features/auth/components/auth-shell";
-import { SignupForm } from "@/src/features/auth/components/signup-form";
+import { AuthPage } from "@/src/features/auth/components/auth-page";
 
 export default function SignupPage() {
-  return (
-    <AuthShell>
-      <SignupForm />
-    </AuthShell>
-  );
+  return <AuthPage mode="signup" />;
 }
