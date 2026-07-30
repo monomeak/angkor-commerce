@@ -2,19 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AuthField } from "./auth-field";
 import { signupSchema } from "../lib/auth-schemas";
 
 export function SignupForm() {
@@ -24,6 +16,8 @@ export function SignupForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -50,94 +44,110 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="items-center text-center">
-        <BrandLogo href="/" showName={false} size="lg" className="mb-2" />
-        <CardTitle className="text-2xl font-semibold">Create an account</CardTitle>
-        <CardDescription>Sign up to track orders and save your details.</CardDescription>
-      </CardHeader>
+    <form onSubmit={handleSubmit} className="flex h-full flex-col">
+      <div className="flex flex-1 flex-col gap-6 px-8 py-10 sm:px-10 lg:px-12 lg:py-12">
+        <BrandLogo className="lg:hidden" />
 
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+            Sign up to track orders, save your details, and check out faster next time.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="first-name">First name</Label>
-              <Input
-                id="first-name"
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="last-name">Last name</Label>
-              <Input
-                id="last-name"
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+            <AuthField
+              id="first-name"
+              label="First name"
+              value={firstName}
+              onChange={setFirstName}
+              required
+            />
+            <AuthField
+              id="last-name"
+              label="Last name"
+              value={lastName}
+              onChange={setLastName}
               required
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="phone">Phone (optional)</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-            />
-          </div>
+          <AuthField
+            id="email"
+            label="Enter your email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            required
+          />
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </div>
+          <AuthField
+            id="phone"
+            label="Phone (optional)"
+            type="tel"
+            value={phone}
+            onChange={setPhone}
+          />
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="confirm-password">Confirm password</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
-            />
-          </div>
+          <AuthField
+            id="password"
+            label="Enter your Password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={setPassword}
+            required
+            endAdornment={
+              <button
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            }
+          />
+
+          <AuthField
+            id="confirm-password"
+            label="Confirm password"
+            type={showConfirmPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            required
+            endAdornment={
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((current) => !current)}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            }
+          />
 
           {error && <p className="text-sm text-destructive">{error}</p>}
           {success && <p className="text-sm text-emerald-600">Account created.</p>}
+        </div>
+      </div>
 
-          <Button type="submit" className="w-full">
-            Create account
-          </Button>
-        </form>
-      </CardContent>
-
-      <CardFooter className="justify-center border-t-0 bg-transparent text-sm text-muted-foreground">
-        Already have an account?
-        <Link href="/login" className="ml-1 font-medium text-primary hover:underline">
-          Log in
-        </Link>
-      </CardFooter>
-    </Card>
+      <div className="flex items-center justify-between gap-4 border-t">
+        <p className="px-8 py-6 text-sm text-muted-foreground sm:px-10 lg:px-12">
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-foreground hover:underline">
+            Log in
+          </Link>
+        </p>
+        <Button type="submit" size="lg" className="h-full shrink-0 rounded-none px-10 text-base">
+          Create account
+        </Button>
+      </div>
+    </form>
   );
 }
