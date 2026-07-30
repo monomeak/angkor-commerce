@@ -6,7 +6,9 @@ export function getTopLevelCategories(): Category[] {
 }
 
 export function getChildCategories(parentId: number): Category[] {
-  return categories.filter((category) => category.parentId === parentId);
+  return categories
+    .filter((category) => category.parentId === parentId)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name));
 }
 
 export function getCategoryBySlug(slug: string): Category | undefined {

@@ -54,7 +54,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticatedUserResponse> refresh(
-        @CookieValue(name = "refreshToken", required = true) RefreshRequest refreshToken,
+        @CookieValue(name = "refreshToken", required = false) String refreshToken,
         HttpServletResponse response
     ) {
         if (refreshToken == null) {
@@ -67,8 +67,12 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody @Valid RefreshRequest request) {
-        authService.logout(request);
+    public ResponseEntity<Void> logout(
+        @CookieValue(name = "refreshToken", required = true) String refreshToken,
+        HttpServletResponse response
+    ) {
+        authService.logout(refreshToken);
+        clearAuthCookies(response);
         return ResponseEntity.noContent().build();
     }
 
@@ -95,8 +99,8 @@ public class AuthController {
             .maxAge(Duration.ofDays(10))
             .build();
 
-        response.addHeader(HttpHeaders.SET_COOKIE, accessToken);
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 
     private void clearAuthCookies(HttpServletResponse response) {
@@ -112,7 +116,7 @@ public class AuthController {
             .httpOnly(true)
             .secure(cookieSecure)
             .sameSite(cookieSameSite)
-            .path(ApiConstants.AUTH_BASE)
+            .path("/")
             .maxAge(0)
             .build();
 

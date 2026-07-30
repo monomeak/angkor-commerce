@@ -65,7 +65,7 @@ export function HeroSection() {
                             size="lg"
                             className="h-11 px-5 text-sm"
                             nativeButton={false}
-                            render={<Link href="/product/home" />}
+                            render={<Link href="/" />}
                         >
                             Shop now
                             <ArrowRight data-icon="inline-end" className="size-4" />
