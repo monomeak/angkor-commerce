@@ -112,7 +112,7 @@ pgdata/
 
 # Generated API clients
 
-apps/web/src/generated/
+apps/back-office-portal/src/generated/
 
 # Certificates and secrets
 
