@@ -1,7 +1,7 @@
 <!-- BEGIN:nextjs-agent-rules -->
 # Angkor Commerce — apps/back-office-portal
 
-Frontend for Angkor Commerce. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) at the repo root for the full proposal, stack rationale, and delivery roadmap — treat it as the source of truth over this file for anything not covered here.
+Frontend for Angkor Commerce. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) at the repo root for the project vision, roles, and architecture — treat it as the source of truth over this file for anything not covered here.
 
 ## Stack
 

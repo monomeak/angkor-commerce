@@ -23,4 +23,4 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Conventions
 
-See [`AGENTS.md`](AGENTS.md) for the feature-folder structure, data-flow rules, and current implementation status. For the full proposal, architecture rationale, and delivery roadmap, see [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) at the repo root.
+See [`AGENTS.md`](AGENTS.md) for the feature-folder structure, data-flow rules, and current implementation status. For the overall project vision, roles, and architecture, see [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) at the repo root.
