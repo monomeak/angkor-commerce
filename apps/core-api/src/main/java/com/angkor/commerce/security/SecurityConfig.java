@@ -24,6 +24,9 @@ public class SecurityConfig {
         "/actuator/health",
         "/api/v1/auth/login",
         "/api/v1/auth/refresh",
+        ApiConstants.STOREFRONT_AUTH_BASE + "/register",
+        ApiConstants.STOREFRONT_AUTH_BASE + "/login",
+        ApiConstants.STOREFRONT_AUTH_BASE + "/refresh",
         "/actuator/info",
         "/v3/api-docs/**",
         "/swagger-ui/**",
@@ -63,6 +66,8 @@ public class SecurityConfig {
                     .requestMatchers(PUBLIC_ENDPOINTS)
                     .permitAll()
                     .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout")
+                    .authenticated()
+                    .requestMatchers(ApiConstants.STOREFRONT_AUTH_BASE + "/me", ApiConstants.STOREFRONT_AUTH_BASE + "/logout")
                     .authenticated()
                     .requestMatchers("/api/v1/users/**")
                     .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")

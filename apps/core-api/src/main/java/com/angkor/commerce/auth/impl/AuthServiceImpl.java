@@ -4,23 +4,17 @@ import com.angkor.commerce.auth.AuthService;
 import com.angkor.commerce.auth.RefreshToken;
 import com.angkor.commerce.auth.RefreshTokenRepository;
 import com.angkor.commerce.auth.dto.request.LoginRequest;
-import com.angkor.commerce.auth.dto.request.RefreshRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedUserResponse;
 import com.angkor.commerce.auth.dto.response.CurrentUserResponse;
 import com.angkor.commerce.auth.dto.response.LoginResultResponse;
-import com.angkor.commerce.auth.dto.response.LoginResultResponse;
+import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.security.JwtTokenProvider;
 import com.angkor.commerce.user.User;
 import com.angkor.commerce.user.UserRepository;
 import jakarta.transaction.Transactional;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -31,12 +25,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    private static final String HASH_ALGORITHM = "SHA-256";
-
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenCrypto refreshTokenCrypto;
     private final JwtTokenProvider jwtTokenProvider;
     private final long refreshTokenTtlDays;
 
@@ -44,12 +36,14 @@ public class AuthServiceImpl implements AuthService {
         AuthenticationManager authenticationManager,
         UserRepository userRepository,
         RefreshTokenRepository refreshTokenRepository,
+        RefreshTokenCrypto refreshTokenCrypto,
         JwtTokenProvider jwtTokenProvider,
         @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenCrypto = refreshTokenCrypto;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenTtlDays = refreshTokenTtlDays;
     }
@@ -75,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public LoginResultResponse refresh(String refreshToken) {
-        String incomingHashToken = hash(refreshToken);
+        String incomingHashToken = refreshTokenCrypto.hash(refreshToken);
         RefreshToken storedHashToken = refreshTokenRepository
             .findByTokenHash(incomingHashToken)
             .orElseThrow(() -> new BadCredentialsException("Invalid or expired refresh token"));
@@ -95,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
     public void logout(String refreshToken) {
         // does the revoke the token directly
 
-        String incomingHashToken = hash(refreshToken);
+        String incomingHashToken = refreshTokenCrypto.hash(refreshToken);
         refreshTokenRepository.findByTokenHash(incomingHashToken).ifPresent(token -> {
             token.setRevoked(true);
             refreshTokenRepository.save(token);
@@ -122,23 +116,6 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    // Internal Utilities
-    private String hash(String value) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
-            byte[] hashed = digest.digest(value.getBytes(StandardCharsets.UTF_8));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(hashed);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(HASH_ALGORITHM + "is not available", e);
-        }
-    }
-
-    private String generateRawRefreshToken() {
-        byte[] bytes = new byte[64];
-        SECURE_RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
     private LoginResultResponse issueTokens(User user) {
         String accessToken = jwtTokenProvider.generateAccessToken(
             user.getId(),
@@ -146,11 +123,11 @@ public class AuthServiceImpl implements AuthService {
             user.getRole().name()
         );
 
-        String rawRefreshToken = generateRawRefreshToken();
+        String rawRefreshToken = refreshTokenCrypto.generateRawToken();
         RefreshToken refreshToken = new RefreshToken();
         // set to the record
         refreshToken.setUser(user);
-        refreshToken.setTokenHash(hash(rawRefreshToken));
+        refreshToken.setTokenHash(refreshTokenCrypto.hash(rawRefreshToken));
         refreshToken.setExpiresAt(Instant.now().plus(refreshTokenTtlDays, ChronoUnit.DAYS));
         refreshTokenRepository.save(refreshToken);
         AuthenticatedUserResponse authenticatedUserResponse = new AuthenticatedUserResponse(
