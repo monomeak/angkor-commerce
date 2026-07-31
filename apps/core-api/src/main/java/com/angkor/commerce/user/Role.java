@@ -10,10 +10,5 @@ public enum Role {
     SHOP_ADMIN,
 
     @JsonProperty("staff")
-    STAFF,
-
-    @JsonProperty("customer")
-    CUSTOMER
-
-    // add another role about Customer
+    STAFF
 }

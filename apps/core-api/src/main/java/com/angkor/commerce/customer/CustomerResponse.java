@@ -6,7 +6,6 @@ import com.angkor.commerce.common.enums.RecordStatus;
 
 public record CustomerResponse(
 		Long id,
-		CustomerType customerType,
 		String displayName,
 		String firstName,
 		String lastName,
@@ -21,7 +20,6 @@ public record CustomerResponse(
 	static CustomerResponse from(Customer customer) {
 		return new CustomerResponse(
 				customer.getId(),
-				customer.getCustomerType(),
 				customer.getDisplayName(),
 				customer.getFirstName(),
 				customer.getLastName(),

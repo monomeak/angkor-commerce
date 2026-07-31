@@ -25,10 +25,6 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "customer_type", nullable = false)
-    private CustomerType customerType = CustomerType.INDIVIDUAL;
-
     @Column(name = "first_name")
     private String firstName;
 
@@ -38,7 +34,11 @@ public class Customer {
     @Column(name = "company_name")
     private String companyName;
 
+    @Column(nullable = false)
     private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
     private String phone;
 
@@ -49,8 +49,8 @@ public class Customer {
     @Column(name = "record_status", nullable = false)
     private RecordStatus recordStatus = RecordStatus.ACTIVE;
 
-    @Column(name = "created_by_user_id")
-    private Long createdByUserId;
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -65,23 +65,23 @@ public class Customer {
     }
 
     public Customer(
-        CustomerType customerType,
         String firstName,
         String lastName,
         String companyName,
         String email,
+        String passwordHash,
         String phone
     ) {
-        this.customerType = customerType;
         this.firstName = firstName;
         this.lastName = lastName;
         this.companyName = companyName;
         this.email = email;
+        this.passwordHash = passwordHash;
         this.phone = phone;
     }
 
     public String getDisplayName() {
-        if (customerType == CustomerType.BUSINESS && companyName != null && !companyName.isBlank()) {
+        if (companyName != null && !companyName.isBlank()) {
             return companyName;
         }
         return (firstName == null ? "" : firstName + " ") + (lastName == null ? "" : lastName);

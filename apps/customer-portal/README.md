@@ -2,7 +2,7 @@
 
 Customer-facing storefront / self-service portal for Angkor Commerce — self-registration, browsing, and order/invoice viewing against the shared `apps/core-api` backend.
 
-Freshly scaffolded (`create-next-app`); not yet wired to any API. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md#17-planned-extension-self-service-customer-portal-storefront) at the repo root for the intended design.
+UI is largely built (home, browse/search, cart, checkout, account) against local mock/localStorage data; not yet wired to the real `apps/core-api` backend. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) for the overall design and [`docs/CORE_API_DATA_MODEL.md`](../../docs/CORE_API_DATA_MODEL.md) for the storefront data model.
 
 ## Getting started
 

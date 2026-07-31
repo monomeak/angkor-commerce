@@ -44,6 +44,5 @@ CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens (user_id);
 CREATE INDEX idx_refresh_tokens_expires_at ON refresh_tokens (expires_at);
 
 -- Seed a default admin so the system is usable immediately after first migration.
--- Password is "Sokmeak@Admin" hashed with BCrypt (cost 10). CHANGE THIS in any real environment.
 INSERT INTO users (first_name, last_name, username, email, password_hash, role, status)
 VALUES ('System', 'Admin', 'admin', 'admin@angkor-commerce.com', '$2a$10$ChSymDNrKZJ.UyTSTOwGu.4hG7FlNhay6VVVOFTAdpzxucCeFOZqi', 'SUPER_ADMIN', 'ACTIVE');
