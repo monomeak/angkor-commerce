@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Angkor Commerce — apps/customer-portal
 
-Public storefront for Angkor Commerce: browsing, self-registration, and order/invoice viewing against the shared `apps/core-api` backend. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md#17-planned-extension-self-service-customer-portal-storefront) (Section 17) and [`docs/NEXTJS_MIGRATION_PLAN.md`](../../docs/NEXTJS_MIGRATION_PLAN.md) at the repo root for design intent and the phased migration plan — treat them as the source of truth over this file for anything not covered here.
+Public storefront for Angkor Commerce: browsing, self-registration, and order/invoice viewing against the shared `apps/core-api` backend. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](../../docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) for overall design intent, [`docs/CORE_API_DATA_MODEL.md`](../../docs/CORE_API_DATA_MODEL.md) for the storefront data model, and [`docs/NEXTJS_MIGRATION_PLAN.md`](../../docs/NEXTJS_MIGRATION_PLAN.md) at the repo root for the phased migration plan — treat them as the source of truth over this file for anything not covered here.
 
 ## Stack
 

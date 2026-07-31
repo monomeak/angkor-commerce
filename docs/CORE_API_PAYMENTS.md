@@ -1,8 +1,8 @@
 # Core API Payments
 
-Drafted 2026-07-30, not yet implemented. Companion to `CORE_API_DATA_MODEL.md` (§6, "Payments") and
-`ANGKOR_COMMERCE_PROJECT_PROPOSAL.md` §17.5 ("payment gateway integration... out of MVP scope" — this
-is that decision, now made).
+Drafted 2026-07-30, not yet implemented. Companion to `CORE_API_DATA_MODEL.md` (§6, "Payments") —
+storefront checkout payments are now in MVP scope (see `ANGKOR_COMMERCE_PROJECT_PROPOSAL.md` §6),
+starting with a dev-only mock and moving to a real gateway.
 
 Two storefront payment methods, deliberately distinct from the existing back-office `payments` table
 (see `CORE_API_DATA_MODEL.md` §6 for why they don't share a table):

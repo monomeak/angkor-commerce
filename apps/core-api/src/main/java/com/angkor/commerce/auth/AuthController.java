@@ -1,19 +1,15 @@
 package com.angkor.commerce.auth;
 
 import com.angkor.commerce.auth.dto.request.LoginRequest;
-import com.angkor.commerce.auth.dto.request.RefreshRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedUserResponse;
 import com.angkor.commerce.auth.dto.response.CurrentUserResponse;
 import com.angkor.commerce.auth.dto.response.LoginResultResponse;
+import com.angkor.commerce.auth.shared.AuthCookieService;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.time.Duration;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,18 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiConstants.AUTH_BASE)
 public class AuthController {
 
-    private final AuthService authService;
-    private final boolean cookieSecure;
-    private final String cookieSameSite;
+    private static final String ACCESS_COOKIE = "accessToken";
+    private static final String REFRESH_COOKIE = "refreshToken";
 
-    public AuthController(
-        AuthService authService,
-        @Value("${angkor.cookie.secure}") boolean cookieSecure,
-        @Value("${angkor.cookie.same-site}") String cookieSameSite
-    ) {
+    private final AuthService authService;
+    private final AuthCookieService authCookieService;
+
+    public AuthController(AuthService authService, AuthCookieService authCookieService) {
         this.authService = authService;
-        this.cookieSecure = cookieSecure;
-        this.cookieSameSite = cookieSameSite;
+        this.authCookieService = authCookieService;
     }
 
     @PostMapping("/login")
@@ -48,7 +41,13 @@ public class AuthController {
         HttpServletResponse response
     ) {
         LoginResultResponse resultResponse = authService.login(request);
-        addAuthCookies(response, resultResponse.accessToken(), resultResponse.refreshToken());
+        authCookieService.setAuthCookies(
+            response,
+            ACCESS_COOKIE,
+            resultResponse.accessToken(),
+            REFRESH_COOKIE,
+            resultResponse.refreshToken()
+        );
         return ResponseEntity.ok(resultResponse.user());
     }
 
@@ -62,6 +61,13 @@ public class AuthController {
         }
 
         LoginResultResponse result = authService.refresh(refreshToken);
+        authCookieService.setAuthCookies(
+            response,
+            ACCESS_COOKIE,
+            result.accessToken(),
+            REFRESH_COOKIE,
+            result.refreshToken()
+        );
 
         return ResponseEntity.ok(result.user());
     }
@@ -72,7 +78,7 @@ public class AuthController {
         HttpServletResponse response
     ) {
         authService.logout(refreshToken);
-        clearAuthCookies(response);
+        authCookieService.clearAuthCookies(response, ACCESS_COOKIE, REFRESH_COOKIE);
         return ResponseEntity.noContent().build();
     }
 
@@ -80,47 +86,5 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
         return ResponseEntity.ok(authService.getCurrentUser(principal.usernmae()));
-    }
-
-    private void addAuthCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
-            .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
-            .path("/")
-            .maxAge(Duration.ofMinutes(15))
-            .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-            .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
-            .path("/")
-            .maxAge(Duration.ofDays(10))
-            .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-    }
-
-    private void clearAuthCookies(HttpServletResponse response) {
-        ResponseCookie expiredAccess = ResponseCookie.from("accessToken", "")
-            .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
-            .path("/")
-            .maxAge(0)
-            .build();
-
-        ResponseCookie expiredRefresh = ResponseCookie.from("refreshToken", "")
-            .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
-            .path("/")
-            .maxAge(0)
-            .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, expiredAccess.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, expiredRefresh.toString());
     }
 }

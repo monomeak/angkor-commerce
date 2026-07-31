@@ -12,7 +12,7 @@ proposed.
 (`AUTH_BASE`, `INVOICES_BASE`, `USERS_BASE`, `CUSTOMER_BASE`, `CATEGORIES_BASE`, ...) — every controller
 should build its `@RequestMapping` off one of these rather than a literal string.
 
-**Two namespaces, two security chains** (per proposal §17.2):
+**Two namespaces, two security chains** (per `CORE_API_DATA_MODEL.md` decision 7):
 - `/api/v1/{resource}` — staff, existing `SecurityFilterChain`, `hasAnyRole(...)` checks, Bearer JWT.
 - `/api/v1/storefront/{resource}` — customers, a *new* `SecurityFilterChain` matched on
   `/api/v1/storefront/**`, resource-ownership checks (`order.customerId == token.customerId`) instead of
@@ -62,9 +62,10 @@ exists as an unused empty scaffold, confirming the team already moved away from 
 module). Entities use Lombok `@Getter @Setter` (see `Customer.java`), not hand-written accessors.
 
 **Ownership resolution for storefront routes.** The authenticated principal on `/storefront/**` resolves
-to a `customerId` (via `CustomerAccount`), the same way `@AuthenticationPrincipal AuthenticatedUser`
-resolves a staff user today (see `AuthController`/`JwtAuthenticationFilter`). Every storefront query
-scopes by that `customerId` — never trust a `customerId` passed in the request body/path.
+to a `customerId` (the `Customer` row's own id — email/passwordHash live directly on `Customer`, no
+separate account table), the same way `@AuthenticationPrincipal AuthenticatedUser` resolves a staff user
+today (see `AuthController`/`JwtAuthenticationFilter`). Every storefront query scopes by that
+`customerId` — never trust a `customerId` passed in the request body/path.
 
 ---
 
@@ -78,17 +79,16 @@ scopes by that `customerId` — never trust a `customerId` passed in the request
 | Auth | `GET /auth/me` | ✅ existing | |
 | Users | `GET /users?skip=&limit=&search=` | ✅ existing | `UserListResponse`. |
 | Users | `POST /users`, `PUT /users/{id}`, ... | ✅ existing (partial) | |
-| Customers | `GET /customers`, `GET /customers/{id}` | ✅ existing | |
-| Customers | `POST /customers`, `PUT /customers/{id}` | 🆕 planned | Proposal flags this gap explicitly. Add email uniqueness check. |
+| Customers | `GET /customers`, `GET /customers/{id}` | ✅ existing | Read-only on purpose (data model doc decision 10) — every `Customer` is self-registered via `POST /storefront/auth/register`, so there's no staff create/update endpoint to build. |
 | Categories | `GET /categories`, `GET /categories/{id}` | ✅ implemented | Flat active list — client builds the tree, matching `customer-portal`'s mock `category-helpers.ts`. Public, no auth. |
 | Categories | `POST /categories`, `PUT /categories/{id}`, `DELETE /categories/{id}` | ✅ implemented | `SUPER_ADMIN`/`SHOP_ADMIN` only. `DELETE` soft-deletes (`recordStatus = DELETED`). |
 | Products | `GET /products?skip=&limit=&search=&categoryId=` | 🆕 planned | `ProductListResponse` in the same `{items, total, skip, limit}` shape. |
 | Products | `GET /products/{id}` | 🆕 planned | |
 | Products | `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}` | 🆕 planned | Staff-only (create/edit catalog). |
 | Orders | `GET /orders?skip=&limit=&status=&customerId=`, `GET /orders/{id}` | 🆕 planned | Staff view across all customers. |
-| Orders | `POST /orders/{id}/cancel` | 🆕 planned | Per §17.3 `Order.status → CANCELLED`. |
+| Orders | `POST /orders/{id}/cancel` | 🆕 planned | Per `CORE_API_DATA_MODEL.md` §4, `Order.status → CANCELLED`. |
 | Invoices | `GET /invoices?skip=&limit=&status=`, `GET /invoices/{id}` | ✅ route exists, 🚧 backing empty | Frontend feature components already exist per proposal — this is the highest-leverage empty scaffold to fill in first on the back-office side. |
-| Invoices | `POST /invoices` (manual, no order) | 🆕 planned | Keeps `orderId` nullable per §17.3. |
+| Invoices | `POST /invoices` (manual, no order) | 🆕 planned | Keeps `orderId` nullable per `CORE_API_DATA_MODEL.md` §5. |
 | Invoices | `POST /invoices/{id}/void`, `POST /invoices/{id}/mark-paid` | 🆕 planned | |
 | Payments | `POST /invoices/{id}/payments` (record a manual payment) | 🆕 planned | Back-office bookkeeping entry — see `CORE_API_DATA_MODEL.md` §6, this is *not* the same as storefront checkout payment. |
 | Payments | `GET /invoices/{id}/payments` | 🆕 planned | |
@@ -97,14 +97,14 @@ scopes by that `customerId` — never trust a `customerId` passed in the request
 
 | Resource | Method & path | Status | Notes |
 |---|---|---|---|
-| Auth | `POST /storefront/auth/register` | 🆕 planned | Creates `Customer` + `CustomerAccount` together in one transaction. |
+| Auth | `POST /storefront/auth/register` | 🆕 planned | Creates a single `Customer` row directly (email + password now live on `Customer`, no separate account table). |
 | Auth | `POST /storefront/auth/login` | 🆕 planned | Mirrors staff login's cookie pattern. |
 | Auth | `GET /storefront/auth/me` | 🆕 planned | |
-| Products | `GET /storefront/products?skip=&limit=&categorySlug=&search=&minPrice=&maxPrice=` | 🆕 planned | Public catalog read. §17.5 flags "whether this needs auth at all" as undecided — recommend fully public (matches how `customer-portal` already browses/searches without a login gate). Query params intentionally mirror what `customer-portal`'s mock `fetchProducts` filter shape already supports (`categorySlug`, `query`, `minPrice`/`maxPrice`) — the real endpoint should be a drop-in replacement for that function, not a redesign. |
+| Products | `GET /storefront/products?skip=&limit=&categorySlug=&search=&minPrice=&maxPrice=` | 🆕 planned | Public catalog read — fully public, no auth (matches how `customer-portal` already browses/searches without a login gate). Query params intentionally mirror what `customer-portal`'s mock `fetchProducts` filter shape already supports (`categorySlug`, `query`, `minPrice`/`maxPrice`) — the real endpoint should be a drop-in replacement for that function, not a redesign. |
 | Products | `GET /storefront/products/{id}` | 🆕 planned | |
 | Categories | `GET /storefront/categories` | 🆕 planned | Same flat-list shape as the staff endpoint; likely just reuse the staff `GET /categories` since categories aren't staff-sensitive data — no need for a separate storefront copy. |
 | Addresses | `GET /storefront/addresses`, `POST`, `PUT /{id}`, `DELETE /{id}` | 🆕 planned | Scoped to the authenticated customer. Blocked on open question 2 in the data model doc (address shape reconciliation) before the request/response DTOs can be finalized. |
-| Orders | `POST /storefront/orders` (checkout) | 🆕 planned | Body: shipping address (or `addressId`) + cart line items (`productId`, `size`, `quantity` — no price, server computes it). Creates `Order` + `OrderItem`s, auto-generates `Invoice`/`InvoiceItem`s in the same transaction per §17.3. |
+| Orders | `POST /storefront/orders` (checkout) | 🆕 planned | Body: shipping address (or `addressId`) + cart line items (`productId`, `size`, `quantity` — no price, server computes it). Creates `Order` + `OrderItem`s, auto-generates `Invoice`/`InvoiceItem`s in the same transaction per `CORE_API_DATA_MODEL.md` decision 4. |
 | Orders | `GET /storefront/orders?skip=&limit=`, `GET /storefront/orders/{id}` | 🆕 planned | Scoped to `token.customerId`. |
 | Invoices | `GET /storefront/invoices?skip=&limit=`, `GET /storefront/invoices/{id}` | 🆕 planned | Read-only, scoped to the customer. |
 | Payments | `POST /storefront/orders/{orderId}/payments` | 🆕 planned | See `CORE_API_PAYMENTS.md` — full request/response contract, processor design, `DEV_WALLET`/`KHQR`. |
