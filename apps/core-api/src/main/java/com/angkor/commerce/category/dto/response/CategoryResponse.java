@@ -1,7 +1,6 @@
 package com.angkor.commerce.category.dto.response;
 
 import com.angkor.commerce.category.Category;
-import com.angkor.commerce.common.enums.RecordStatus;
 import java.time.Instant;
 
 public record CategoryResponse(
@@ -10,7 +9,6 @@ public record CategoryResponse(
     String name,
     String slug,
     Integer sortOrder,
-    RecordStatus recordStatus,
     Instant createdAt,
     Instant updatedAt
 ) {
@@ -21,7 +19,6 @@ public record CategoryResponse(
             category.getName(),
             category.getSlug(),
             category.getSortOrder(),
-            category.getRecordStatus(),
             category.getCreatedAt(),
             category.getUpdatedAt()
         );

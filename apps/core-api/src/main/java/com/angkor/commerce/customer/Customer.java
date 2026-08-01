@@ -1,29 +1,23 @@
 package com.angkor.commerce.customer;
 
+import com.angkor.commerce.common.BaseEntity;
 import com.angkor.commerce.common.enums.RecordStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "customers")
-public class Customer {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Customer extends BaseEntity {
 
     @Column(name = "first_name")
     private String firstName;
@@ -42,43 +36,15 @@ public class Customer {
 
     private String phone;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private RecordStatus status = RecordStatus.ACTIVE;
+
     @Column(name = "tax_number")
     private String taxNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "record_status", nullable = false)
-    private RecordStatus recordStatus = RecordStatus.ACTIVE;
-
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    protected Customer() {
-        // required by Hibernate
-    }
-
-    public Customer(
-        String firstName,
-        String lastName,
-        String companyName,
-        String email,
-        String passwordHash,
-        String phone
-    ) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.companyName = companyName;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.phone = phone;
-    }
 
     public String getDisplayName() {
         if (companyName != null && !companyName.isBlank()) {
