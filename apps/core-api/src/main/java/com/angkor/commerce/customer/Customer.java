@@ -1,33 +1,23 @@
 package com.angkor.commerce.customer;
 
+import com.angkor.commerce.common.BaseEntity;
 import com.angkor.commerce.common.enums.RecordStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor
 @Table(name = "customers")
-public class Customer {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "customer_type", nullable = false)
-    private CustomerType customerType = CustomerType.INDIVIDUAL;
+public class Customer extends BaseEntity {
 
     @Column(name = "first_name")
     private String firstName;
@@ -38,50 +28,26 @@ public class Customer {
     @Column(name = "company_name")
     private String companyName;
 
+    @Column(nullable = false)
     private String email;
 
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
     private String phone;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private RecordStatus status = RecordStatus.ACTIVE;
 
     @Column(name = "tax_number")
     private String taxNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "record_status", nullable = false)
-    private RecordStatus recordStatus = RecordStatus.ACTIVE;
-
-    @Column(name = "created_by_user_id")
-    private Long createdByUserId;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    protected Customer() {
-        // required by Hibernate
-    }
-
-    public Customer(
-        CustomerType customerType,
-        String firstName,
-        String lastName,
-        String companyName,
-        String email,
-        String phone
-    ) {
-        this.customerType = customerType;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.companyName = companyName;
-        this.email = email;
-        this.phone = phone;
-    }
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     public String getDisplayName() {
-        if (customerType == CustomerType.BUSINESS && companyName != null && !companyName.isBlank()) {
+        if (companyName != null && !companyName.isBlank()) {
             return companyName;
         }
         return (firstName == null ? "" : firstName + " ") + (lastName == null ? "" : lastName);

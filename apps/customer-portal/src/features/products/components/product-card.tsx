@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/src/features/cart/lib/cart-context";
 import { getDiscountedPrice, getSizeOptions } from "../lib/product-helpers";
 import type { Product } from "../types/product";
 
@@ -26,6 +27,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     const [selectedSize, setSelectedSize] = useState(sizeOptions[0]);
     const [isFavorite, setIsFavorite] = useState(false);
     const detailHref = category ? `/product/${category.slug}/${product.id}` : undefined;
+    const { addItem } = useCart();
 
     return (
         <Card
@@ -104,7 +106,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
                     </div>
                 </div>
 
-                <Button variant="accent" size="lg" className="w-full">
+                <Button
+                    variant="accent"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => addItem(product.id, selectedSize)}
+                >
                     Add to cart
                 </Button>
             </div>

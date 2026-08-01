@@ -20,3 +20,31 @@ export function filterProductsByCategory(
   const allowedCategoryIds = new Set(getDescendantCategoryIds(categoryId));
   return products.filter((product) => allowedCategoryIds.has(product.categoryId));
 }
+
+export function getProductById(products: Product[], id: number): Product | undefined {
+  return products.find((product) => product.id === id);
+}
+
+export function filterProductsByQuery(products: Product[], query: string): Product[] {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return products;
+  }
+
+  return products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(normalized) ||
+      product.description.toLowerCase().includes(normalized),
+  );
+}
+
+export function filterProductsByPriceRange(
+  products: Product[],
+  minPrice: number,
+  maxPrice: number,
+): Product[] {
+  return products.filter((product) => {
+    const price = getDiscountedPrice(product);
+    return price >= minPrice && price <= maxPrice;
+  });
+}

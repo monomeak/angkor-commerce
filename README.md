@@ -12,7 +12,7 @@ A learning-focused, production-shaped invoice management system — customers, p
 
 Each app owns its own README/AGENTS file for setup and conventions specific to it. `docs/` holds the project-wide details:
 
-- [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) — full proposal, current status, tech stack, architecture, and delivery roadmap
+- [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) — what the project is, core flows, roles, architecture, tech stack, and current status
 - [`docs/learning-notes/`](docs/learning-notes) — write-ups of *why* specific backend decisions were made
 - [`AGENTS.md`](AGENTS.md) — instructions for AI coding agents working in this repo
 

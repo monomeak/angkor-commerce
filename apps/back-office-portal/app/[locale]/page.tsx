@@ -1,27 +1,11 @@
-import {
-  BackgroundGlow,
-  ClientsSection,
-  CtaSection,
-  FeaturesSection,
-  HeroSection,
-  SiteFooter,
-  SiteHeader,
-  SolutionsSection,
-  TrustedTeams,
-} from "@/components/home";
+import { redirect } from "@/app/i18n/navigation";
 
-export default function Home() {
-  return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
-      <BackgroundGlow />
-      <SiteHeader />
-      <HeroSection />
-      <TrustedTeams />
-      <FeaturesSection />
-      <CtaSection />
-      <SolutionsSection />
-      <ClientsSection />
-      <SiteFooter />
-    </main>
-  );
+type HomeProps = {
+    readonly params: Promise<{ locale: string }>;
+};
+
+export default async function Home({ params }: HomeProps) {
+    const { locale } = await params;
+
+    redirect({ href: "/login", locale });
 }
