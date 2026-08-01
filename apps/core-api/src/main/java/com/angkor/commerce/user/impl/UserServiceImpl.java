@@ -1,5 +1,6 @@
 package com.angkor.commerce.user.impl;
 
+import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
@@ -9,7 +10,6 @@ import com.angkor.commerce.user.UserRepository;
 import com.angkor.commerce.user.UserService;
 import com.angkor.commerce.user.dto.request.CreateUserRequest;
 import com.angkor.commerce.user.dto.request.UpdateUserRequest;
-import com.angkor.commerce.user.dto.response.UserListResponse;
 import com.angkor.commerce.user.dto.response.UserResponse;
 import java.util.Map;
 import org.springframework.data.domain.Page;
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserListResponse listUsers(int skip, int limit, String search) {
+    public PageResponse<UserResponse> listUsers(int skip, int limit, String search) {
         int safeLimit = limit <= 0 ? 30 : limit;
         int pageNumber = safeLimit == 0 ? 0 : skip / safeLimit;
         Pageable pageable = PageRequest.of(pageNumber, safeLimit, Sort.by(Sort.Direction.ASC, "id"));
@@ -53,8 +53,8 @@ public class UserServiceImpl implements UserService {
         }
 
         // :: lamda syntax
-        var users = page.getContent().stream().map(this::toResponse).toList();
-        return new UserListResponse(users, page.getTotalElements(), skip, safeLimit);
+        var users = page.getContent().stream().map(UserResponse::from).toList();
+        return new PageResponse<>(users, page.getTotalElements(), skip, safeLimit);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(request.role() != null ? request.role() : Role.STAFF); // default role: STAFF
         user.setStatus(RecordStatus.ACTIVE);
 
-        return toResponse(userRepository.save(user));
+        return UserResponse.from(user);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
         if (request.status() != null) {
             user.setStatus(request.status());
         }
-        return toResponse(userRepository.save(user));
+        return UserResponse.from(userRepository.save(user));
     }
 
     @Override
@@ -125,29 +125,13 @@ public class UserServiceImpl implements UserService {
     public UserResponse archiveUser(Long id) {
         User user = findUserOrThrow(id);
         user.setStatus(RecordStatus.INACTIVE);
-        return toResponse(userRepository.save(user));
+        return UserResponse.from(userRepository.save(user));
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
-        return toResponse(findUserOrThrow(id));
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getPhone(),
-            user.getImage(),
-            user.getRole(),
-            user.getStatus(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
-        );
+        return UserResponse.from(findUserOrThrow(id));
     }
 
     private User findUserOrThrow(Long id) {

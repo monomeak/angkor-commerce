@@ -36,13 +36,13 @@ CREATE TABLE customers (
     phone               VARCHAR(30),
     tax_number          VARCHAR(100),
 
-    record_status       VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    status              VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     last_login_at       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_customers_record_status
-        CHECK (record_status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
+    CONSTRAINT chk_customers_status
+        CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
 
     CONSTRAINT chk_customers_identity
         CHECK (
@@ -58,8 +58,8 @@ CREATE INDEX idx_customers_name
 CREATE INDEX idx_customers_company_name
     ON customers (company_name);
 
-CREATE INDEX idx_customers_record_status
-    ON customers (record_status);
+CREATE INDEX idx_customers_status
+    ON customers (status);
 
 CREATE UNIQUE INDEX uq_customers_email_lower
     ON customers (LOWER(email));
@@ -158,7 +158,7 @@ CREATE TABLE categories (
     name                VARCHAR(150) NOT NULL,
     slug                VARCHAR(160) NOT NULL,
     sort_order          INTEGER NOT NULL DEFAULT 0,
-    record_status       VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    status              VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     created_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -170,8 +170,8 @@ CREATE TABLE categories (
     CONSTRAINT uq_categories_slug
         UNIQUE (slug),
 
-    CONSTRAINT chk_categories_record_status
-        CHECK (record_status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
+    CONSTRAINT chk_categories_status
+        CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
 
     CONSTRAINT chk_categories_not_self_parent
         CHECK (parent_id IS DISTINCT FROM id)
@@ -180,8 +180,8 @@ CREATE TABLE categories (
 CREATE INDEX idx_categories_parent_id
     ON categories (parent_id);
 
-CREATE INDEX idx_categories_record_status
-    ON categories (record_status);
+CREATE INDEX idx_categories_status
+    ON categories (status);
 
 CREATE TRIGGER trg_categories_set_updated_at
 BEFORE UPDATE ON categories
@@ -212,7 +212,7 @@ CREATE TABLE products (
 
     unit                    VARCHAR(50) NOT NULL DEFAULT 'piece',
     thumbnail_url           TEXT,
-    record_status           VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    status                  VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
 
     created_by_user_id      BIGINT,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -240,8 +240,8 @@ CREATE TABLE products (
     CONSTRAINT chk_products_currency
         CHECK (currency ~ '^[A-Z]{3}$'),
 
-    CONSTRAINT chk_products_record_status
-        CHECK (record_status IN ('ACTIVE', 'INACTIVE', 'DELETED'))
+    CONSTRAINT chk_products_status
+        CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED'))
 );
 
 CREATE INDEX idx_products_title
@@ -250,8 +250,8 @@ CREATE INDEX idx_products_title
 CREATE INDEX idx_products_category_id
     ON products (category_id);
 
-CREATE INDEX idx_products_record_status
-    ON products (record_status);
+CREATE INDEX idx_products_status
+    ON products (status);
 
 CREATE TRIGGER trg_products_set_updated_at
 BEFORE UPDATE ON products
@@ -344,8 +344,8 @@ CREATE TABLE invoices (
     invoice_number          VARCHAR(50) NOT NULL,
     customer_id             BIGINT NOT NULL,
 
-    status                  VARCHAR(30) NOT NULL DEFAULT 'DRAFT',
-    record_status           VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    invoice_status          VARCHAR(30) NOT NULL DEFAULT 'DRAFT',
+    status                  VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
 
     issue_date              DATE NOT NULL,
     due_date                DATE NOT NULL,
@@ -385,9 +385,9 @@ CREATE TABLE invoices (
     CONSTRAINT uq_invoices_invoice_number
         UNIQUE (invoice_number),
 
-    CONSTRAINT chk_invoices_status
+    CONSTRAINT chk_invoices_invoice_status
         CHECK (
-            status IN (
+            invoice_status IN (
                 'DRAFT',
                 'ISSUED',
                 'PARTIALLY_PAID',
@@ -397,8 +397,8 @@ CREATE TABLE invoices (
             )
         ),
 
-    CONSTRAINT chk_invoices_record_status
-        CHECK (record_status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
+    CONSTRAINT chk_invoices_status
+        CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
 
     CONSTRAINT chk_invoices_dates
         CHECK (due_date >= issue_date),
@@ -433,7 +433,7 @@ CREATE TABLE invoices (
 
     CONSTRAINT chk_invoices_cancellation
         CHECK (
-            status <> 'CANCELLED'
+            invoice_status <> 'CANCELLED'
             OR cancelled_at IS NOT NULL
         )
 );
@@ -441,8 +441,8 @@ CREATE TABLE invoices (
 CREATE INDEX idx_invoices_customer_id
     ON invoices (customer_id);
 
-CREATE INDEX idx_invoices_status
-    ON invoices (status);
+CREATE INDEX idx_invoices_invoice_status
+    ON invoices (invoice_status);
 
 CREATE INDEX idx_invoices_issue_date
     ON invoices (issue_date DESC);
@@ -458,7 +458,7 @@ CREATE INDEX idx_invoices_recent
 
 CREATE INDEX idx_invoices_outstanding
     ON invoices (due_date, balance)
-    WHERE status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE');
+    WHERE invoice_status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE');
 
 CREATE TRIGGER trg_invoices_set_updated_at
 BEFORE UPDATE ON invoices
@@ -680,7 +680,7 @@ SELECT
     i.id AS invoice_id,
     i.invoice_number,
     i.customer_id,
-    i.status,
+    i.invoice_status,
     i.currency,
     i.total,
     i.paid_amount,
@@ -697,7 +697,7 @@ GROUP BY
     i.id,
     i.invoice_number,
     i.customer_id,
-    i.status,
+    i.invoice_status,
     i.currency,
     i.total,
     i.paid_amount,
@@ -712,7 +712,7 @@ SELECT
 FROM invoice_items ii
 JOIN invoices i
     ON i.id = ii.invoice_id
-WHERE i.status IN ('ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE')
+WHERE i.invoice_status IN ('ISSUED', 'PARTIALLY_PAID', 'PAID', 'OVERDUE')
 GROUP BY
     ii.product_id,
     ii.title;

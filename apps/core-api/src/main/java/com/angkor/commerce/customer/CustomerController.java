@@ -1,34 +1,37 @@
 package com.angkor.commerce.customer;
 
 import com.angkor.commerce.common.ApiConstants;
-import java.util.List;
+import com.angkor.commerce.common.dto.PageResponse;
+import com.angkor.commerce.customer.dto.response.CustomerResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(ApiConstants.CUSTOMER_BASE)
 class CustomerController {
 
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
 
-    CustomerController(CustomerRepository customerRepository) {
-        this.customerRepository = customerRepository;
+    public CustomerController(CustomerService customerService) {
+        this.customerService = customerService;
     }
 
     @GetMapping
-    List<CustomerResponse> list() {
-        return customerRepository.findAll().stream().map(CustomerResponse::from).toList();
+    public ResponseEntity<PageResponse<CustomerResponse>> listCustomers(
+        @RequestParam(defaultValue = "0") int skip,
+        @RequestParam(defaultValue = "30") int limit,
+        @RequestParam(required = false) String search
+    ) {
+        PageResponse<CustomerResponse> result = customerService.listCustomers(skip, limit, search);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<CustomerResponse> get(@PathVariable Long id) {
-        return customerRepository
-            .findById(id)
-            .map(CustomerResponse::from)
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<CustomerResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 }
