@@ -6,7 +6,6 @@ import com.angkor.commerce.category.CategoryService;
 import com.angkor.commerce.category.dto.request.CreateCategoryRequest;
 import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
 import com.angkor.commerce.category.dto.response.CategoryResponse;
-import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
 import java.util.List;
@@ -27,11 +26,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponse> listCategories() {
-        return categoryRepository
-            .findByRecordStatusOrderBySortOrderAscNameAsc(RecordStatus.ACTIVE)
-            .stream()
-            .map(CategoryResponse::from)
-            .toList();
+        return categoryRepository.findAllByOrderBySortOrderAscNameAsc().stream().map(CategoryResponse::from).toList();
     }
 
     @Override
@@ -44,17 +39,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse createCategory(CreateCategoryRequest request) {
         if (categoryRepository.existsBySlug(request.slug())) {
-            throw new ValidationException(
-                "Slug is already in use.",
-                Map.of("slug", "This slug is already in use.")
-            );
+            throw new ValidationException("Slug is already in use.", Map.of("slug", "This slug is already in use."));
         }
         if (request.parentId() != null) {
             findCategoryOrThrow(request.parentId());
         }
 
         Integer sortOrder = request.sortOrder() != null ? request.sortOrder() : nextSortOrder(request.parentId());
-        Category category = new Category(request.parentId(), request.name(), request.slug(), sortOrder);
+        Category category = new Category();
+        category.setParentId(request.parentId());
+        category.setName(request.name());
+        category.setSlug(request.slug());
+        category.setSortOrder(sortOrder);
         return CategoryResponse.from(categoryRepository.save(category));
     }
 
@@ -62,9 +58,10 @@ public class CategoryServiceImpl implements CategoryService {
     // group so ordering stays self-maintaining without the caller having to
     // compute the next value by hand.
     private int nextSortOrder(Long parentId) {
-        Optional<Category> lastSibling = parentId != null
-            ? categoryRepository.findTopByParentIdOrderBySortOrderDesc(parentId)
-            : categoryRepository.findTopByParentIdIsNullOrderBySortOrderDesc();
+        Optional<Category> lastSibling =
+            parentId != null
+                ? categoryRepository.findTopByParentIdOrderBySortOrderDesc(parentId)
+                : categoryRepository.findTopByParentIdIsNullOrderBySortOrderDesc();
 
         return lastSibling.map(sibling -> sibling.getSortOrder() + 10).orElse(0);
     }
@@ -99,9 +96,6 @@ public class CategoryServiceImpl implements CategoryService {
         if (request.sortOrder() != null) {
             category.setSortOrder(request.sortOrder());
         }
-        if (request.recordStatus() != null) {
-            category.setRecordStatus(request.recordStatus());
-        }
 
         return CategoryResponse.from(categoryRepository.save(category));
     }
@@ -110,8 +104,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryResponse archiveCategory(Long id) {
         Category category = findCategoryOrThrow(id);
-        category.setRecordStatus(RecordStatus.DELETED);
-        return CategoryResponse.from(categoryRepository.save(category));
+        CategoryResponse response = CategoryResponse.from(category);
+        categoryRepository.delete(category);
+        return response;
     }
 
     private Category findCategoryOrThrow(Long id) {

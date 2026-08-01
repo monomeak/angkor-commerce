@@ -23,7 +23,7 @@ public class HttpRequestLoggingFilter extends OncePerRequestFilter {
         } finally {
             long duration = System.currentTimeMillis() - startedAt;
             log.info(
-                "{} {} -> {} ({} ms) [ip={}] [userAgent={}]",
+                "{} {} -> {} ({} ms)",
                 request.getMethod(),
                 buildRequestPath(request),
                 response.getStatus(),

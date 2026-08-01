@@ -53,7 +53,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticatedUserResponse> refresh(
-        @CookieValue(name = "refreshToken", required = false) String refreshToken,
+        @CookieValue(name = REFRESH_COOKIE, required = false) String refreshToken,
         HttpServletResponse response
     ) {
         if (refreshToken == null) {
@@ -74,7 +74,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-        @CookieValue(name = "refreshToken", required = true) String refreshToken,
+        @CookieValue(name = REFRESH_COOKIE, required = true) String refreshToken,
         HttpServletResponse response
     ) {
         authService.logout(refreshToken);

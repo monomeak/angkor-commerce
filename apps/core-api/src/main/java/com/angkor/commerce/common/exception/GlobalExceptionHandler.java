@@ -14,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -89,6 +90,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "Forbidden", "You do not have permission to perform this action", request);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        // Routine (source maps, favicons, ...) — a real error would come from an app
+        // exception, not a missing static file. No stack trace, no ERROR-level noise.
+        log.debug("Static resource not found: {}", request.getRequestURI());
+        return build(HttpStatus.NOT_FOUND, "Not Found", "The requested resource was not found", request);
     }
 
     @ExceptionHandler(Exception.class)

@@ -66,14 +66,13 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             throw new ValidationException("Email already in use", Map.of("email", "Email already in use"));
         }
 
-        Customer customer = new Customer(
-            request.firstName(),
-            request.lastName(),
-            request.companyName(),
-            request.email(),
-            passwordEncoder.encode(request.password()),
-            request.phone()
-        );
+        Customer customer = new Customer();
+        customer.setFirstName(request.firstName());
+        customer.setLastName(request.lastName());
+        customer.setCompanyName(request.companyName());
+        customer.setEmail(request.email());
+        customer.setPasswordHash(passwordEncoder.encode(request.password()));
+        customer.setPhone(request.phone());
         customerRepository.save(customer);
 
         return issueTokens(customer);
@@ -87,7 +86,7 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPasswordHash()))
             .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
-        if (customer.getRecordStatus() != RecordStatus.ACTIVE) {
+        if (customer.getStatus() != RecordStatus.ACTIVE) {
             throw new BadCredentialsException("Invalid email or password");
         }
 
@@ -140,7 +139,7 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             customer.getCompanyName(),
             customer.getEmail(),
             customer.getPhone(),
-            customer.getRecordStatus()
+            customer.getStatus()
         );
     }
 

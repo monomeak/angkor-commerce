@@ -1,6 +1,5 @@
 package com.angkor.commerce.category.dto.request;
 
-import com.angkor.commerce.common.enums.RecordStatus;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -17,7 +16,5 @@ public record UpdateCategoryRequest(
     )
     String slug,
 
-    Integer sortOrder,
-
-    RecordStatus recordStatus
+    Integer sortOrder
 ) {}
