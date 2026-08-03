@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 public record RegisterCustomerRequest(
     @NotBlank(message = "First name is required") String firstName,
     @NotBlank(message = "Last name is required") String lastName,
-    String companyName,
     @NotBlank(message = "Email is required") @Email(message = "Email must be valid") String email,
-    @NotBlank(message = "Password is required") @StrongPassword() String password,
-    String phone
+    @NotBlank(message = "Password is required") @StrongPassword() String password
 ) {}

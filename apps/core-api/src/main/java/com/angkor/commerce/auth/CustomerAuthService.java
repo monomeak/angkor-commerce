@@ -2,6 +2,7 @@ package com.angkor.commerce.auth;
 
 import com.angkor.commerce.auth.dto.request.CustomerLoginRequest;
 import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
+import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
 
@@ -12,4 +13,5 @@ public interface CustomerAuthService {
     CustomerLoginResultResponse refresh(String refreshToken);
     void logout(String refreshToken);
     CurrentCustomerResponse getCurrentCustomer(String email);
+    CurrentCustomerResponse updateCurrentUser(Long userId, UpdateCustomerProfileRequest request);
 }

@@ -5,10 +5,10 @@ import com.angkor.commerce.auth.CustomerRefreshToken;
 import com.angkor.commerce.auth.CustomerRefreshTokenRepository;
 import com.angkor.commerce.auth.dto.request.CustomerLoginRequest;
 import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
+import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
-import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
@@ -69,10 +69,8 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         Customer customer = new Customer();
         customer.setFirstName(request.firstName());
         customer.setLastName(request.lastName());
-        customer.setCompanyName(request.companyName());
         customer.setEmail(request.email());
         customer.setPasswordHash(passwordEncoder.encode(request.password()));
-        customer.setPhone(request.phone());
         customerRepository.save(customer);
 
         return issueTokens(customer);
@@ -131,16 +129,7 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             .findByEmailIgnoreCase(email)
             .orElseThrow(() -> ResourceNotFoundException.of("Customer", email));
 
-        return new CurrentCustomerResponse(
-            customer.getId(),
-            customer.getDisplayName(),
-            customer.getFirstName(),
-            customer.getLastName(),
-            customer.getCompanyName(),
-            customer.getEmail(),
-            customer.getPhone(),
-            customer.getStatus()
-        );
+        return toCurrentCustomerResponse(customer);
     }
 
     private CustomerLoginResultResponse issueTokens(Customer customer) {
@@ -164,5 +153,52 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         );
 
         return new CustomerLoginResultResponse(authenticatedCustomerResponse, accessToken, rawRefreshToken);
+    }
+
+    @Override
+    @Transactional
+    public CurrentCustomerResponse updateCurrentUser(Long customerId, UpdateCustomerProfileRequest request) {
+        Customer customer = customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> ResourceNotFoundException.of("Customer", customerId));
+
+        if (request.email() != null && !request.email().equalsIgnoreCase(customer.getEmail())) {
+            if (customerRepository.existsByEmailIgnoreCase(request.email())) {
+                throw new ValidationException("Email already in use", Map.of("email", "Email already in use"));
+            }
+            customer.setEmail(request.email());
+        }
+        if (request.firstName() != null) {
+            customer.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            customer.setLastName(request.lastName());
+        }
+        if (request.companyName() != null) {
+            customer.setCompanyName(request.companyName());
+        }
+        if (request.phone() != null) {
+            customer.setPhone(request.phone());
+        }
+        if (request.image() != null) {
+            customer.setImage(request.image());
+        }
+
+        customerRepository.save(customer);
+        return toCurrentCustomerResponse(customer);
+    }
+
+    private CurrentCustomerResponse toCurrentCustomerResponse(Customer customer) {
+        return new CurrentCustomerResponse(
+            customer.getId(),
+            customer.getDisplayName(),
+            customer.getFirstName(),
+            customer.getLastName(),
+            customer.getCompanyName(),
+            customer.getEmail(),
+            customer.getPhone(),
+            customer.getImage(),
+            customer.getStatus()
+        );
     }
 }

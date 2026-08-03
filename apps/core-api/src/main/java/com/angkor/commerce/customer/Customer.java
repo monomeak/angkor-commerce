@@ -36,6 +36,9 @@ public class Customer extends BaseEntity {
 
     private String phone;
 
+    @Column(length = 500)
+    private String image;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private RecordStatus status = RecordStatus.ACTIVE;

@@ -2,6 +2,7 @@ package com.angkor.commerce.auth;
 
 import com.angkor.commerce.auth.dto.request.CustomerLoginRequest;
 import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
+import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,6 +92,14 @@ public class StorefrontAuthController {
     @GetMapping("/me")
     public ResponseEntity<CurrentCustomerResponse> me(@AuthenticationPrincipal AuthenticatedCustomer principal) {
         return ResponseEntity.ok(customerAuthService.getCurrentCustomer(principal.email()));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<CurrentCustomerResponse> updateMe(
+        @AuthenticationPrincipal AuthenticatedCustomer principal,
+        @RequestBody @Valid UpdateCustomerProfileRequest request
+    ) {
+        return ResponseEntity.ok(customerAuthService.updateCurrentUser(principal.id(), request));
     }
 
     private void setAuthCookies(HttpServletResponse response, CustomerLoginResultResponse result) {
