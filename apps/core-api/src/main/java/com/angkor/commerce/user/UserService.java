@@ -11,6 +11,6 @@ public interface UserService {
     UserResponse getUserById(Long id);
     PageResponse<UserResponse> listUsers(int skip, int limit, String search);
     UserResponse createUser(CreateUserRequest request);
-    UserResponse updateUser(Long id, UpdateUserRequest request);
-    UserResponse archiveUser(Long id);
+    UserResponse updateUser(Long id, UpdateUserRequest request, Long actorId, Role actorRole);
+    UserResponse archiveUser(Long id, Long actorId, Role actorRole);
 }

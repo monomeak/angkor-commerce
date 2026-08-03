@@ -1,6 +1,7 @@
 package com.angkor.commerce.auth;
 
 import com.angkor.commerce.auth.dto.request.LoginRequest;
+import com.angkor.commerce.auth.dto.request.UpdateProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedUserResponse;
 import com.angkor.commerce.auth.dto.response.CurrentUserResponse;
 import com.angkor.commerce.auth.dto.response.LoginResultResponse;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,5 +86,13 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
         return ResponseEntity.ok(authService.getCurrentUser(principal.usernmae()));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<CurrentUserResponse> updateMe(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @RequestBody @Valid UpdateProfileRequest request
+    ) {
+        return ResponseEntity.ok(authService.updateCurrentUser(principal.id(), request));
     }
 }
