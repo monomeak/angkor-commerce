@@ -78,6 +78,7 @@ Use `.env.example` as the template for local environment variables.
 - Keep backend code organized by domain package under `com.angkor.commerce`, such as `customer`, `invoice`, `payment`, `product`, `dashboard`, `report`, `audit`, `auth`, `user`, `security`, `config`, and `common`.
 - Do not introduce broad refactors while implementing a feature. Match the current file layout and naming style.
 - Do not overwrite unrelated working tree changes. Check `git status --short` before broad edits.
+- Do not add a `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` (or any AI co-author) trailer to commits in this repo.
 
 ## Frontend Guidelines
 
