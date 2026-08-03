@@ -7,7 +7,6 @@ import com.angkor.commerce.auth.dto.response.LoginResultResponse;
 import com.angkor.commerce.auth.shared.AuthCookieService;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedUser;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +82,6 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal AuthenticatedUser principal) {
         return ResponseEntity.ok(authService.getCurrentUser(principal.usernmae()));
     }

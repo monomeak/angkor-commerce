@@ -2,6 +2,7 @@ package com.angkor.commerce.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -13,10 +14,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Reads the {@code Authorization: Bearer <token>} header, validates the JWT, and
- * populates the security context directly from the token's claims (no DB lookup
- * per request). Requests without a valid token simply pass through unauthenticated;
- * downstream authorization rules in {@link SecurityConfig} decide what that's allowed to reach.
+ * Reads the JWT from the {@code accessToken} httpOnly cookie set by {@code AuthCookieService},
+ * validates it, and populates the security context directly from its claims (no DB lookup per
+ * request). Requests without a valid token simply pass through unauthenticated; downstream
+ * authorization rules in {@link SecurityConfig} decide what that's allowed to reach.
  *
  * Handles both principal types (staff and customer): the token's {@code typ} claim
  * (see {@link JwtTokenProvider}) decides which principal record and authority to build.
@@ -26,8 +27,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String HEADER_NAME = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ACCESS_COOKIE_NAME = "accessToken";
     private final JwtTokenProvider jwtTokenProvider;
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -74,9 +74,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String extractToken(HttpServletRequest request) {
-        String header = request.getHeader(HEADER_NAME);
-        if (header != null && header.startsWith(BEARER_PREFIX)) {
-            return header.substring(BEARER_PREFIX.length()); // start from at the sub string  ""Bearer eyJhbG.ada.signature" => eyJhbG.ada.signature
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (ACCESS_COOKIE_NAME.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
         }
         return null;
     }

@@ -8,7 +8,6 @@ import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
 import com.angkor.commerce.auth.shared.AuthCookieService;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedCustomer;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -89,7 +88,6 @@ public class StorefrontAuthController {
     }
 
     @GetMapping("/me")
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CurrentCustomerResponse> me(@AuthenticationPrincipal AuthenticatedCustomer principal) {
         return ResponseEntity.ok(customerAuthService.getCurrentCustomer(principal.email()));
     }
