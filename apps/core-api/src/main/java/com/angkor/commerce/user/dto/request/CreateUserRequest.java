@@ -1,5 +1,6 @@
 package com.angkor.commerce.user.dto.request;
 
+import com.angkor.commerce.auth.dto.StrongPassword;
 import com.angkor.commerce.user.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -27,10 +28,7 @@ public record CreateUserRequest(
     @NotBlank(message = "Email is required") @Email(message = "Email must be a valid email address") String email,
 
     String phone,
-
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
-    String password,
+    @NotBlank(message = "Password is required") @StrongPassword String password,
 
     @NotNull(message = "Role is required") Role role
 ) {}
