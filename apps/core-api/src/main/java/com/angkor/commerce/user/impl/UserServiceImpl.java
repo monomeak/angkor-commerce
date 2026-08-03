@@ -4,6 +4,10 @@ import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
+import com.angkor.commerce.common.storage.ImagePurpose;
+import com.angkor.commerce.common.storage.ImageReplacedEvent;
+import com.angkor.commerce.common.storage.ImageStorageService;
+import com.angkor.commerce.common.storage.StoredImage;
 import com.angkor.commerce.user.Role;
 import com.angkor.commerce.user.User;
 import com.angkor.commerce.user.UserRepository;
@@ -12,6 +16,7 @@ import com.angkor.commerce.user.dto.request.CreateUserRequest;
 import com.angkor.commerce.user.dto.request.UpdateUserRequest;
 import com.angkor.commerce.user.dto.response.UserResponse;
 import java.util.Map;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,16 +26,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ImageStorageService imageStorageService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        ImageStorageService imageStorageService,
+        ApplicationEventPublisher eventPublisher
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.imageStorageService = imageStorageService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -179,5 +194,19 @@ public class UserServiceImpl implements UserService {
         if (role == Role.SUPER_ADMIN && actorRole != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("Only a super admin can " + action + ".");
         }
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateImage(Long userId, MultipartFile file) {
+        User user = findUserOrThrow(userId);
+
+        String oldImage = user.getImage(); // ignore if it return null
+        StoredImage newImage = this.imageStorageService.upload(file, ImagePurpose.STAFF_AVATAR, user.getId());
+        user.setImage(newImage.objectKey());
+
+        eventPublisher.publishEvent(new ImageReplacedEvent(oldImage));
+
+        return UserResponse.from(user);
     }
 }

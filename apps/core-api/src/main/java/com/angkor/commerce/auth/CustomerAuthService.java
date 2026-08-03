@@ -5,6 +5,7 @@ import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
 import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 // declare contract and will be implemented later
 public interface CustomerAuthService {
@@ -14,4 +15,5 @@ public interface CustomerAuthService {
     void logout(String refreshToken);
     CurrentCustomerResponse getCurrentCustomer(String email);
     CurrentCustomerResponse updateCurrentUser(Long userId, UpdateCustomerProfileRequest request);
+    CurrentCustomerResponse updateProfleImage(Long userId, MultipartFile file);
 }

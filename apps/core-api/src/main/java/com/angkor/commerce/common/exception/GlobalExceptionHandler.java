@@ -1,7 +1,8 @@
 package com.angkor.commerce.common.exception;
 
+import com.angkor.commerce.common.storage.ImageStorageException;
+import com.angkor.commerce.common.storage.InvalidImageException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.file.AccessDeniedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -89,7 +91,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        return build(HttpStatus.FORBIDDEN, "Forbidden", "You do not have permission to perform this action", request);
+        String message = ex.getMessage() != null ? ex.getMessage() : "You do not have permission to perform this action";
+        return build(HttpStatus.FORBIDDEN, "Forbidden", message, request);
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Validation Failed", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ImageStorageException.class)
+    public ResponseEntity<ErrorResponse> handleImageStorage(ImageStorageException ex, HttpServletRequest request) {
+        log.error("Image storage failure on {}: {}", request.getRequestURI(), ex.getMessage(), ex.getCause());
+        return build(HttpStatus.BAD_GATEWAY, "Bad Gateway", "Image storage is currently unavailable", request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

@@ -8,18 +8,25 @@ import com.angkor.commerce.auth.dto.response.LoginResultResponse;
 import com.angkor.commerce.auth.shared.AuthCookieService;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedUser;
+import com.angkor.commerce.user.UserService;
+import com.angkor.commerce.user.dto.response.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(ApiConstants.AUTH_BASE)
@@ -30,10 +37,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthCookieService authCookieService;
+    private final UserService userService;
 
-    public AuthController(AuthService authService, AuthCookieService authCookieService) {
+    public AuthController(AuthService authService, AuthCookieService authCookieService, UserService userService) {
         this.authService = authService;
         this.authCookieService = authCookieService;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -94,5 +103,14 @@ public class AuthController {
         @RequestBody @Valid UpdateProfileRequest request
     ) {
         return ResponseEntity.ok(authService.updateCurrentUser(principal.id(), request));
+    }
+
+    @PutMapping(value = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponse> updateMeyImage(
+        @AuthenticationPrincipal AuthenticatedUser principal,
+        @RequestPart("image") MultipartFile image
+    ) {
+        UserResponse response = this.userService.updateImage(principal.id(), image);
+        return ResponseEntity.ok(response);
     }
 }

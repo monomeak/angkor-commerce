@@ -13,6 +13,10 @@ import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
+import com.angkor.commerce.common.storage.ImagePurpose;
+import com.angkor.commerce.common.storage.ImageReplacedEvent;
+import com.angkor.commerce.common.storage.ImageStorageService;
+import com.angkor.commerce.common.storage.StoredImage;
 import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.security.JwtTokenProvider;
@@ -21,9 +25,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Deliberately doesn't go through Spring Security's {@code AuthenticationManager}/
@@ -42,6 +48,8 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final long refreshTokenTtlDays;
+    private final ImageStorageService imageStorageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CustomerAuthServiceImpl(
         CustomerRepository customerRepository,
@@ -49,7 +57,9 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         RefreshTokenCrypto refreshTokenCrypto,
         JwtTokenProvider jwtTokenProvider,
         PasswordEncoder passwordEncoder,
-        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays
+        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays,
+        ImageStorageService imageStorageService,
+        ApplicationEventPublisher eventPublisher
     ) {
         this.customerRepository = customerRepository;
         this.customerRefreshTokenRepository = customerRefreshTokenRepository;
@@ -57,6 +67,8 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenTtlDays = refreshTokenTtlDays;
+        this.imageStorageService = imageStorageService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -200,5 +212,19 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             customer.getImage(),
             customer.getStatus()
         );
+    }
+
+    @Override
+    public CurrentCustomerResponse updateProfleImage(Long userId, MultipartFile file) {
+        Customer customer = customerRepository
+            .findById(userId)
+            .orElseThrow(() -> ResourceNotFoundException.of("Customer", userId));
+
+        String oldImage = customer.getImage();
+        StoredImage result = imageStorageService.upload(file, ImagePurpose.CUSTOMER_AVATAR, userId);
+        eventPublisher.publishEvent(new ImageReplacedEvent(oldImage));
+
+        customer.setImage(result.objectKey());
+        return toCurrentCustomerResponse(customer);
     }
 }
