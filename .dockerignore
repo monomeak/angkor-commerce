@@ -1,0 +1,17 @@
+**/node_modules
+**/.next
+**/.turbo
+**/out
+.git
+*.md
+!docs/**/*.md
+
+# Environment files — never bake secrets into an image
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+apps/core-api
+apps/back-office-portal/.next
+apps/customer-portal/.next
