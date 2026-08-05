@@ -39,6 +39,8 @@ angkor:
     cookie:
         secure: false
         same-site: Lax
+    product:
+        max_images: 5
     jwt:
         # HS256 secret; must be at least 256 bits. Override via env var in every real environment.
         secret: ${JWT_SECRET:this-is-a-development-only-let-make-change-for-security-purpose}
