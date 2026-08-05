@@ -64,7 +64,7 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
     @Override
     @Transactional
     public AddressResponse updateAddress(Long customerId, Long addressId, UpdateAddressRequest request) {
-        CustomerAddress address = load(customerId, addressId);
+        CustomerAddress address = load(addressId, customerId);
 
         // Save check
         if (request.label() != null) address.setLabel(request.label());
@@ -85,16 +85,14 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
     @Transactional
     public void deleteAddress(Long customerId, Long addressId) {
         CustomerAddress address = load(addressId, customerId);
+        boolean wasDefault = address.isDefault();
         address.setStatus(RecordStatus.DELETED);
         address.setDefault(false);
         // Promote the next  address so the customer as a default one
-        if (address.isDefault()) {
+        if (wasDefault) {
             addressRepository
-                .findActiveByIdAndCustomerId(addressId, customerId)
-                .stream()
-                .filter(a -> !a.getId().equals(addressId))
-                .findFirst()
-                .ifPresent(a -> a.setDefault(true));
+                .findFirstByCustomerIdAndStatusAndIdNotOrderByCreatedAtAsc(customerId, RecordStatus.ACTIVE, addressId)
+                .ifPresent(nextDefault -> nextDefault.setDefault(true));
         }
     }
 
