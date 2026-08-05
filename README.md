@@ -4,16 +4,16 @@ A learning-focused, production-shaped invoice management system — customers, p
 
 ## Structure
 
-| App | What it is |
-| --- | --- |
-| [`apps/back-office-portal`](apps/back-office-portal) | Staff dashboard — Next.js, the main product UI |
-| [`apps/customer-portal`](apps/customer-portal) | Customer-facing storefront/self-service portal — Next.js, newly scaffolded |
-| [`apps/core-api`](apps/core-api) | Backend API — Java 21, Spring Boot, PostgreSQL |
+| App                                                  | What it is                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------------- |
+| [`apps/back-office-portal`](apps/back-office-portal) | Staff dashboard — Next.js, the main product UI                             |
+| [`apps/customer-portal`](apps/customer-portal)       | Customer-facing storefront/self-service portal — Next.js, newly scaffolded |
+| [`apps/core-api`](apps/core-api)                     | Backend API — Java 21, Spring Boot, PostgreSQL                             |
 
 Each app owns its own README/AGENTS file for setup and conventions specific to it. `docs/` holds the project-wide details:
 
 - [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md) — what the project is, core flows, roles, architecture, tech stack, and current status
-- [`docs/learning-notes/`](docs/learning-notes) — write-ups of *why* specific backend decisions were made
+- [`docs/learning-notes/`](docs/learning-notes) — write-ups of _why_ specific backend decisions were made
 - [`AGENTS.md`](AGENTS.md) — instructions for AI coding agents working in this repo
 
 ## Getting started

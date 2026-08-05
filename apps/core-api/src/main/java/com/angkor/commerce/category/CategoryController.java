@@ -2,7 +2,7 @@ package com.angkor.commerce.category;
 
 import com.angkor.commerce.category.dto.request.CreateCategoryRequest;
 import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
-import com.angkor.commerce.category.dto.response.CategoryResponse;
+import com.angkor.commerce.category.dto.response.CategoryFullResponse;
 import com.angkor.commerce.common.ApiConstants;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -33,28 +33,28 @@ public class CategoryController {
     // in apps/customer-portal does today).
 
     @GetMapping
-    public List<CategoryResponse> list() {
+    public List<CategoryFullResponse> list() {
         return categoryService.listCategories();
     }
 
     @GetMapping("/{id}")
-    public CategoryResponse get(@PathVariable Long id) {
+    public CategoryFullResponse get(@PathVariable Long id) {
         return categoryService.getCategoryById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse create(@RequestBody @Valid CreateCategoryRequest request) {
+    public CategoryFullResponse create(@RequestBody @Valid CreateCategoryRequest request) {
         return categoryService.createCategory(request);
     }
 
     @PutMapping("/{id}")
-    public CategoryResponse update(@PathVariable Long id, @RequestBody @Valid UpdateCategoryRequest request) {
+    public CategoryFullResponse update(@PathVariable Long id, @RequestBody @Valid UpdateCategoryRequest request) {
         return categoryService.updateCategory(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public CategoryResponse archive(@PathVariable Long id) {
+    public CategoryFullResponse archive(@PathVariable Long id) {
         return categoryService.archiveCategory(id);
     }
 }

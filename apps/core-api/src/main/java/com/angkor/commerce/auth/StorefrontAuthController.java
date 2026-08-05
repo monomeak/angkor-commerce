@@ -2,24 +2,30 @@ package com.angkor.commerce.auth;
 
 import com.angkor.commerce.auth.dto.request.CustomerLoginRequest;
 import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
+import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
 import com.angkor.commerce.auth.shared.AuthCookieService;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedCustomer;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Mirrors {@link AuthController}'s shape (register/login/refresh/logout/me, same cookie
@@ -89,9 +95,24 @@ public class StorefrontAuthController {
     }
 
     @GetMapping("/me")
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<CurrentCustomerResponse> me(@AuthenticationPrincipal AuthenticatedCustomer principal) {
         return ResponseEntity.ok(customerAuthService.getCurrentCustomer(principal.email()));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<CurrentCustomerResponse> updateMe(
+        @AuthenticationPrincipal AuthenticatedCustomer principal,
+        @RequestBody @Valid UpdateCustomerProfileRequest request
+    ) {
+        return ResponseEntity.ok(customerAuthService.updateCurrentUser(principal.id(), request));
+    }
+
+    @PutMapping(value = "/me/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CurrentCustomerResponse> updateMyProfileImage(
+        @AuthenticationPrincipal AuthenticatedCustomer principal,
+        @RequestPart("image") MultipartFile image
+    ) {
+        return ResponseEntity.ok(customerAuthService.updateProfleImage(principal.id(), image));
     }
 
     private void setAuthCookies(HttpServletResponse response, CustomerLoginResultResponse result) {

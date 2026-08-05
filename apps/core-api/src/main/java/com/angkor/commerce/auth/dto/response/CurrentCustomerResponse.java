@@ -10,5 +10,6 @@ public record CurrentCustomerResponse(
     String companyName,
     String email,
     String phone,
+    String image,
     RecordStatus status
 ) {}

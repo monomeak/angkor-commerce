@@ -1,7 +1,7 @@
 package com.angkor.commerce.order;
 
-import com.angkor.commerce.product.Product;
-import com.angkor.commerce.product.ProductVariant;
+import com.angkor.commerce.product.entities.Product;
+import com.angkor.commerce.product.entities.ProductVariant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

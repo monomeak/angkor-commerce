@@ -5,14 +5,15 @@ import com.angkor.commerce.auth.CustomerRefreshToken;
 import com.angkor.commerce.auth.CustomerRefreshTokenRepository;
 import com.angkor.commerce.auth.dto.request.CustomerLoginRequest;
 import com.angkor.commerce.auth.dto.request.RegisterCustomerRequest;
+import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
 import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
-import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
+import com.angkor.commerce.common.storage.*;
 import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.security.JwtTokenProvider;
@@ -20,10 +21,14 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Deliberately doesn't go through Spring Security's {@code AuthenticationManager}/
@@ -34,6 +39,8 @@ import org.springframework.stereotype.Service;
  * identity chain" intent in CORE_API_DATA_MODEL.md decision 7.
  */
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class CustomerAuthServiceImpl implements CustomerAuthService {
 
     private final CustomerRepository customerRepository;
@@ -41,23 +48,12 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
     private final RefreshTokenCrypto refreshTokenCrypto;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final long refreshTokenTtlDays;
+    @Value("${angkor.jwt.refresh-token-ttl-days}")
+    private long refreshTokenTtlDays;
+    private final ImageStorageService imageStorageService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final StorageCleanup storageCleanup;
 
-    public CustomerAuthServiceImpl(
-        CustomerRepository customerRepository,
-        CustomerRefreshTokenRepository customerRefreshTokenRepository,
-        RefreshTokenCrypto refreshTokenCrypto,
-        JwtTokenProvider jwtTokenProvider,
-        PasswordEncoder passwordEncoder,
-        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays
-    ) {
-        this.customerRepository = customerRepository;
-        this.customerRefreshTokenRepository = customerRefreshTokenRepository;
-        this.refreshTokenCrypto = refreshTokenCrypto;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.passwordEncoder = passwordEncoder;
-        this.refreshTokenTtlDays = refreshTokenTtlDays;
-    }
 
     @Override
     @Transactional
@@ -69,10 +65,8 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         Customer customer = new Customer();
         customer.setFirstName(request.firstName());
         customer.setLastName(request.lastName());
-        customer.setCompanyName(request.companyName());
         customer.setEmail(request.email());
         customer.setPasswordHash(passwordEncoder.encode(request.password()));
-        customer.setPhone(request.phone());
         customerRepository.save(customer);
 
         return issueTokens(customer);
@@ -131,16 +125,7 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
             .findByEmailIgnoreCase(email)
             .orElseThrow(() -> ResourceNotFoundException.of("Customer", email));
 
-        return new CurrentCustomerResponse(
-            customer.getId(),
-            customer.getDisplayName(),
-            customer.getFirstName(),
-            customer.getLastName(),
-            customer.getCompanyName(),
-            customer.getEmail(),
-            customer.getPhone(),
-            customer.getStatus()
-        );
+        return toCurrentCustomerResponse(customer);
     }
 
     private CustomerLoginResultResponse issueTokens(Customer customer) {
@@ -164,5 +149,68 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         );
 
         return new CustomerLoginResultResponse(authenticatedCustomerResponse, accessToken, rawRefreshToken);
+    }
+
+    @Override
+    @Transactional
+    public CurrentCustomerResponse updateCurrentUser(Long customerId, UpdateCustomerProfileRequest request) {
+        Customer customer = customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> ResourceNotFoundException.of("Customer", customerId));
+
+        if (request.email() != null && !request.email().equalsIgnoreCase(customer.getEmail())) {
+            if (customerRepository.existsByEmailIgnoreCase(request.email())) {
+                throw new ValidationException("Email already in use", Map.of("email", "Email already in use"));
+            }
+            customer.setEmail(request.email());
+        }
+        if (request.firstName() != null) {
+            customer.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            customer.setLastName(request.lastName());
+        }
+        if (request.companyName() != null) {
+            customer.setCompanyName(request.companyName());
+        }
+        if (request.phone() != null) {
+            customer.setPhone(request.phone());
+        }
+        if (request.image() != null) {
+            customer.setImage(request.image());
+        }
+
+        customerRepository.save(customer);
+        return toCurrentCustomerResponse(customer);
+    }
+
+    private CurrentCustomerResponse toCurrentCustomerResponse(Customer customer) {
+        return new CurrentCustomerResponse(
+            customer.getId(),
+            customer.getDisplayName(),
+            customer.getFirstName(),
+            customer.getLastName(),
+            customer.getCompanyName(),
+            customer.getEmail(),
+            customer.getPhone(),
+            customer.getImage(),
+            customer.getStatus()
+        );
+    }
+
+    @Override
+    public CurrentCustomerResponse updateProfleImage(Long userId, MultipartFile file) {
+        Customer customer = customerRepository
+            .findById(userId)
+            .orElseThrow(() -> ResourceNotFoundException.of("Customer", userId));
+
+        String oldImage = customer.getImage();
+        StoredImage result = imageStorageService.upload(file, ImagePurpose.CUSTOMER_AVATAR, userId);
+        eventPublisher.publishEvent(new ImageReplacedEvent(oldImage));
+
+        customer.setImage(result.objectKey());
+
+        storageCleanup.onRollback(result.objectKey());
+        return toCurrentCustomerResponse(customer);
     }
 }

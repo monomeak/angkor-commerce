@@ -10,4 +10,9 @@ public class ApiConstants {
     public static final String CATEGORIES_BASE = API_BASE + "/categories";
     public static final String STOREFRONT_BASE = API_BASE + "/storefront";
     public static final String STOREFRONT_AUTH_BASE = STOREFRONT_BASE + "/auth";
+    public static final String PRODUCES_BASE = API_BASE + "/products";
+
+    public static final String PATH_ID = "/{id}";
+    public static final String PRODUCT_VARIANTS = PATH_ID + "/variants";
+    public static final String PRODUCT_IMAGES = PATH_ID + "/images";
 }

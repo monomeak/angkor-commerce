@@ -1,6 +1,6 @@
 package com.angkor.commerce.invoice;
 
-import com.angkor.commerce.product.Product;
+import com.angkor.commerce.product.entities.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

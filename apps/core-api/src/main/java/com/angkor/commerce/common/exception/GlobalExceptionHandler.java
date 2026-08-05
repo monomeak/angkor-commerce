@@ -1,14 +1,21 @@
 package com.angkor.commerce.common.exception;
 
+import com.angkor.commerce.common.storage.ImageStorageException;
+import com.angkor.commerce.common.storage.InvalidImageException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.file.AccessDeniedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -89,11 +96,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        return build(HttpStatus.FORBIDDEN, "Forbidden", "You do not have permission to perform this action", request);
+        String message =
+            ex.getMessage() != null ? ex.getMessage() : "You do not have permission to perform this action";
+        return build(HttpStatus.FORBIDDEN, "Forbidden", message, request);
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Validation Failed", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ImageStorageException.class)
+    public ResponseEntity<ErrorResponse> handleImageStorage(ImageStorageException ex, HttpServletRequest request) {
+        log.error("Image storage failure on {}: {}", request.getRequestURI(), ex.getMessage(), ex.getCause());
+        return build(HttpStatus.BAD_GATEWAY, "Bad Gateway", "Image storage is currently unavailable", request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(
+        NoResourceFoundException ex,
+        HttpServletRequest request
+    ) {
         // Routine (source maps, favicons, ...) — a real error would come from an app
         // exception, not a missing static file. No stack trace, no ERROR-level noise.
         log.debug("Static resource not found: {}", request.getRequestURI());
@@ -107,6 +130,47 @@ public class GlobalExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR,
             "Internal Server Error",
             "An unexpected error occurred",
+            request
+        );
+    }
+
+    // common/exception/GlobalExceptionHandler.java
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadable(
+        HttpMessageNotReadableException ex,
+        HttpServletRequest request
+    ) {
+        String message = switch (ex.getCause()) {
+            case InvalidFormatException ife -> "Invalid value for field '%s': expected %s".formatted(
+                fieldPath(ife),
+                ife.getTargetType().getSimpleName()
+            );
+            case MismatchedInputException mie -> "Invalid type for field '%s'".formatted(fieldPath(mie));
+            case JsonParseException ignored -> "Request body is not valid JSON";
+            case null, default -> "Request body is missing or malformed";
+        };
+
+        log.warn("Malformed request body on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return build(HttpStatus.BAD_REQUEST, message, ex.getMessage(), request);
+    }
+
+    private String fieldPath(MismatchedInputException ex) {
+        return ex
+            .getPath()
+            .stream()
+            .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "[" + ref.getIndex() + "]")
+            .collect(Collectors.joining("."));
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponse> handleStorage(StorageException ex, HttpServletRequest request) {
+        log.error("Storage failure on {}", request.getRequestURI(), ex);
+        return build(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Could not process the uploaded file. Please try again.",
+            ex.getMessage(),
             request
         );
     }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ApiConstants.CUSTOMER_BASE)
 class CustomerController {
 
-    private final CustomerService customerService;
+    private final CustomerService customerService; // final allow this object assign exactly once
 
     public CustomerController(CustomerService customerService) {
         this.customerService = customerService;
@@ -26,12 +26,12 @@ class CustomerController {
         @RequestParam(defaultValue = "30") int limit,
         @RequestParam(required = false) String search
     ) {
-        PageResponse<CustomerResponse> result = customerService.listCustomers(skip, limit, search);
+        PageResponse<CustomerResponse> result = this.customerService.listCustomers(skip, limit, search);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> get(@PathVariable Long id) {
-        return ResponseEntity.ok(customerService.getCustomerById(id));
+        return ResponseEntity.ok(this.customerService.getCustomerById(id));
     }
 }

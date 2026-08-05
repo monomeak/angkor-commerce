@@ -9,7 +9,10 @@ spring:
         hakari:
             pool-namea: angkor-commerce-pool
             maximum-pool-size: 10
-
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 10MB
     jpa:
         hibernate:
             ddl-auto: validate
@@ -36,11 +39,21 @@ angkor:
     cookie:
         secure: false
         same-site: Lax
+    product:
+        max_images: 5
     jwt:
         # HS256 secret; must be at least 256 bits. Override via env var in every real environment.
         secret: ${JWT_SECRET:this-is-a-development-only-let-make-change-for-security-purpose}
         access-token-ttl-minutes: ${JWT_ACCESS_TOKEN_TTL_MINUTES:15}
         refresh-token-ttl-days: ${JWT_REFRESH_TOKEN_TTL_DAYS:10}
+    storage:
+        minio:
+            endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+            access-key: ${MINIO_ACCESS_KEY:minioadmin}
+            secret-key: ${MINIO_SECRET_KEY:minioadmin}
+            bucket: ${MINIO_BUCKET:angkor-commerce-media}
+            public-base-url: ${MINIO_PUBLIC_BASE_URL:http://localhost:9000/angkor-commerce-media}
+
 management:
     endpoints:
         web:

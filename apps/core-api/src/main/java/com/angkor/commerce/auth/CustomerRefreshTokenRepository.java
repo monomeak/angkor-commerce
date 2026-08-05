@@ -13,7 +13,9 @@ public interface CustomerRefreshTokenRepository extends JpaRepository<CustomerRe
     Optional<CustomerRefreshToken> findByTokenHash(String tokenHash);
 
     @Modifying
-    @Query("update CustomerRefreshToken rt set rt.revoked = true where rt.customer.id = :customerId and rt.revoked = false")
+    @Query(
+        "update CustomerRefreshToken rt set rt.revoked = true where rt.customer.id = :customerId and rt.revoked = false"
+    )
     void revokeAllForCustomer(@Param("customerId") Long customerId);
 
     @Modifying

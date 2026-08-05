@@ -1,4 +1,4 @@
-package com.angkor.commerce.product;
+package com.angkor.commerce.product.entities;
 
 import com.angkor.commerce.category.Category;
 import com.angkor.commerce.common.BaseEntity;
@@ -18,7 +18,7 @@ import lombok.Setter;
 
 /**
  * Stock/sku deliberately don't live here: every product has at least one
- * {@link com.angkor.commerce.product.ProductVariant} row (variants are the single
+ * {@link com.angkor.commerce.product.entities.ProductVariant} row (variants are the single
  * source of truth), per CORE_API_DATA_MODEL.md decision 9.
  */
 @Getter
@@ -29,7 +29,7 @@ import lombok.Setter;
 public class Product extends BaseEntity {
 
     @Column(nullable = false, length = 200)
-    private String title;
+    private String name;
 
     @Column(columnDefinition = "TEXT")
     private String description;

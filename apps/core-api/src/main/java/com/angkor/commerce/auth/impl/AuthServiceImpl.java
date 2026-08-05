@@ -4,25 +4,38 @@ import com.angkor.commerce.auth.AuthService;
 import com.angkor.commerce.auth.RefreshToken;
 import com.angkor.commerce.auth.RefreshTokenRepository;
 import com.angkor.commerce.auth.dto.request.LoginRequest;
+import com.angkor.commerce.auth.dto.request.UpdateProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedUserResponse;
 import com.angkor.commerce.auth.dto.response.CurrentUserResponse;
 import com.angkor.commerce.auth.dto.response.LoginResultResponse;
 import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
+import com.angkor.commerce.common.exception.ValidationException;
+import com.angkor.commerce.common.storage.*;
+import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.security.JwtTokenProvider;
 import com.angkor.commerce.user.User;
 import com.angkor.commerce.user.UserRepository;
+import com.angkor.commerce.user.UserService;
+import com.angkor.commerce.user.dto.response.UserResponse;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -30,23 +43,31 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenCrypto refreshTokenCrypto;
     private final JwtTokenProvider jwtTokenProvider;
-    private final long refreshTokenTtlDays;
+    private final ImageStorageService imageStorageService;
+    private final ApplicationEventPublisher eventPublisher;
+    @Value("${angkor.jwt.refresh-token-ttl-days}")
+    private long refreshTokenTtlDays;
+    private final StorageCleanup storageCleanup;
 
-    public AuthServiceImpl(
-        AuthenticationManager authenticationManager,
-        UserRepository userRepository,
-        RefreshTokenRepository refreshTokenRepository,
-        RefreshTokenCrypto refreshTokenCrypto,
-        JwtTokenProvider jwtTokenProvider,
-        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays
-    ) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.refreshTokenCrypto = refreshTokenCrypto;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.refreshTokenTtlDays = refreshTokenTtlDays;
-    }
+//    public AuthServiceImpl(
+//        AuthenticationManager authenticationManager,
+//        UserRepository userRepository,
+//        RefreshTokenRepository refreshTokenRepository,
+//        RefreshTokenCrypto refreshTokenCrypto,
+//        JwtTokenProvider jwtTokenProvider,
+//        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays,
+//        ImageStorageService imageStorageService,
+//        ApplicationEventPublisher eventPublisher
+//    ) {
+//        this.authenticationManager = authenticationManager;
+//        this.userRepository = userRepository;
+//        this.refreshTokenRepository = refreshTokenRepository;
+//        this.refreshTokenCrypto = refreshTokenCrypto;
+//        this.jwtTokenProvider = jwtTokenProvider;
+//        this.refreshTokenTtlDays = refreshTokenTtlDays;
+//        this.imageStorageService = imageStorageService;
+//        this.eventPublisher = eventPublisher;
+//    }
 
     @Override
     @Transactional
@@ -103,6 +124,37 @@ public class AuthServiceImpl implements AuthService {
             .findByUsernameOrEmail(username, username)
             .orElseThrow(() -> ResourceNotFoundException.of("User", username));
 
+        return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public CurrentUserResponse updateCurrentUser(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> ResourceNotFoundException.of("User", userId));
+
+        if (request.email() != null && !request.email().equalsIgnoreCase(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new ValidationException(
+                    "Email is already registered",
+                    Map.of("email", "This email is already in use.")
+                );
+            }
+            user.setEmail(request.email());
+        }
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
+        if (request.phone() != null) {
+            user.setPhone(request.phone());
+        }
+        if (request.image() != null) {
+            user.setImage(request.image());
+        }
+
+        userRepository.save(user);
         return new CurrentUserResponse(
             user.getId(),
             user.getFirstName(),
@@ -141,5 +193,32 @@ public class AuthServiceImpl implements AuthService {
         );
 
         return new LoginResultResponse(authenticatedUserResponse, accessToken, rawRefreshToken);
+    }
+
+    @Override
+    public CurrentUserResponse updateProfleImage(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId).orElseThrow(() -> ResourceNotFoundException.of("User", userId));
+
+        String oldImage = user.getImage();
+        StoredImage result = imageStorageService.upload(file, ImagePurpose.STAFF_AVATAR, userId);
+        eventPublisher.publishEvent(new ImageReplacedEvent(oldImage));
+
+        user.setImage(result.objectKey());
+        storageCleanup.onRollback(result.objectKey());
+        return toUserResponse(user);
+    }
+
+    private CurrentUserResponse toUserResponse(User user) {
+        return new CurrentUserResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getPhone(),
+            user.getImage(),
+            user.getRole(),
+            user.getStatus()
+        );
     }
 }
