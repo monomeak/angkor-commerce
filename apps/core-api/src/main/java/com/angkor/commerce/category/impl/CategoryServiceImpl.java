@@ -5,7 +5,7 @@ import com.angkor.commerce.category.CategoryRepository;
 import com.angkor.commerce.category.CategoryService;
 import com.angkor.commerce.category.dto.request.CreateCategoryRequest;
 import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
-import com.angkor.commerce.category.dto.response.CategoryResponse;
+import com.angkor.commerce.category.dto.response.CategoryFullResponse;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
 import java.util.List;
@@ -25,19 +25,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryResponse> listCategories() {
-        return categoryRepository.findAllByOrderBySortOrderAscNameAsc().stream().map(CategoryResponse::from).toList();
+    public List<CategoryFullResponse> listCategories() {
+        return categoryRepository.findAllByOrderBySortOrderAscNameAsc().stream().map(CategoryFullResponse::from).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CategoryResponse getCategoryById(Long id) {
-        return CategoryResponse.from(findCategoryOrThrow(id));
+    public CategoryFullResponse getCategoryById(Long id) {
+        return CategoryFullResponse.from(findCategoryOrThrow(id));
     }
 
     @Override
     @Transactional
-    public CategoryResponse createCategory(CreateCategoryRequest request) {
+    public CategoryFullResponse createCategory(CreateCategoryRequest request) {
         if (categoryRepository.existsBySlug(request.slug())) {
             throw new ValidationException("Slug is already in use.", Map.of("slug", "This slug is already in use."));
         }
@@ -51,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(request.name());
         category.setSlug(request.slug());
         category.setSortOrder(sortOrder);
-        return CategoryResponse.from(categoryRepository.save(category));
+        return CategoryFullResponse.from(categoryRepository.save(category));
     }
 
     // Gap-of-10 scheme: append after the last sibling in the same parentId
@@ -68,7 +68,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse updateCategory(Long id, UpdateCategoryRequest request) {
+    public CategoryFullResponse updateCategory(Long id, UpdateCategoryRequest request) {
         Category category = findCategoryOrThrow(id);
 
         if (request.slug() != null && !request.slug().equals(category.getSlug())) {
@@ -97,14 +97,14 @@ public class CategoryServiceImpl implements CategoryService {
             category.setSortOrder(request.sortOrder());
         }
 
-        return CategoryResponse.from(categoryRepository.save(category));
+        return CategoryFullResponse.from(categoryRepository.save(category));
     }
 
     @Override
     @Transactional
-    public CategoryResponse archiveCategory(Long id) {
+    public CategoryFullResponse archiveCategory(Long id) {
         Category category = findCategoryOrThrow(id);
-        CategoryResponse response = CategoryResponse.from(category);
+        CategoryFullResponse response = CategoryFullResponse.from(category);
         categoryRepository.delete(category);
         return response;
     }

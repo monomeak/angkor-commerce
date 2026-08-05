@@ -2,17 +2,17 @@ package com.angkor.commerce.category;
 
 import com.angkor.commerce.category.dto.request.CreateCategoryRequest;
 import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
-import com.angkor.commerce.category.dto.response.CategoryResponse;
+import com.angkor.commerce.category.dto.response.CategoryFullResponse;
 import java.util.List;
 
 public interface CategoryService {
-    List<CategoryResponse> listCategories();
+    List<CategoryFullResponse> listCategories();
 
-    CategoryResponse getCategoryById(Long id);
+    CategoryFullResponse getCategoryById(Long id);
 
-    CategoryResponse createCategory(CreateCategoryRequest request);
+    CategoryFullResponse createCategory(CreateCategoryRequest request);
 
-    CategoryResponse updateCategory(Long id, UpdateCategoryRequest request);
+    CategoryFullResponse updateCategory(Long id, UpdateCategoryRequest request);
 
-    CategoryResponse archiveCategory(Long id);
+    CategoryFullResponse archiveCategory(Long id);
 }

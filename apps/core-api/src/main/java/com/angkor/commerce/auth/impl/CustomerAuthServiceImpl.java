@@ -13,10 +13,7 @@ import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
-import com.angkor.commerce.common.storage.ImagePurpose;
-import com.angkor.commerce.common.storage.ImageReplacedEvent;
-import com.angkor.commerce.common.storage.ImageStorageService;
-import com.angkor.commerce.common.storage.StoredImage;
+import com.angkor.commerce.common.storage.*;
 import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.security.JwtTokenProvider;
@@ -24,6 +21,8 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +39,8 @@ import org.springframework.web.multipart.MultipartFile;
  * identity chain" intent in CORE_API_DATA_MODEL.md decision 7.
  */
 @Service
+@Transactional
+@RequiredArgsConstructor
 public class CustomerAuthServiceImpl implements CustomerAuthService {
 
     private final CustomerRepository customerRepository;
@@ -47,29 +48,12 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
     private final RefreshTokenCrypto refreshTokenCrypto;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    private final long refreshTokenTtlDays;
+    @Value("${angkor.jwt.refresh-token-ttl-days}")
+    private long refreshTokenTtlDays;
     private final ImageStorageService imageStorageService;
     private final ApplicationEventPublisher eventPublisher;
+    private final StorageCleanup storageCleanup;
 
-    public CustomerAuthServiceImpl(
-        CustomerRepository customerRepository,
-        CustomerRefreshTokenRepository customerRefreshTokenRepository,
-        RefreshTokenCrypto refreshTokenCrypto,
-        JwtTokenProvider jwtTokenProvider,
-        PasswordEncoder passwordEncoder,
-        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays,
-        ImageStorageService imageStorageService,
-        ApplicationEventPublisher eventPublisher
-    ) {
-        this.customerRepository = customerRepository;
-        this.customerRefreshTokenRepository = customerRefreshTokenRepository;
-        this.refreshTokenCrypto = refreshTokenCrypto;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.passwordEncoder = passwordEncoder;
-        this.refreshTokenTtlDays = refreshTokenTtlDays;
-        this.imageStorageService = imageStorageService;
-        this.eventPublisher = eventPublisher;
-    }
 
     @Override
     @Transactional
@@ -225,6 +209,8 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         eventPublisher.publishEvent(new ImageReplacedEvent(oldImage));
 
         customer.setImage(result.objectKey());
+
+        storageCleanup.onRollback(result.objectKey());
         return toCurrentCustomerResponse(customer);
     }
 }

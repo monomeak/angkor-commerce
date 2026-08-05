@@ -9,10 +9,17 @@ import com.angkor.commerce.common.storage.StoredImage;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.errors.ErrorResponseException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.KeyFactory;
+import java.util.Collection;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 public class MinioImageStorageService implements ImageStorageService {
 
     private final MinioClient minioClient;
@@ -72,5 +79,55 @@ public class MinioImageStorageService implements ImageStorageService {
             return null;
         }
         return "%s/%s".formatted(properties.publicBaseUrl(), objectKey);
+    }
+
+    @Override
+    public StoredImage uploadBytes(
+        byte[] content,
+        String contentType,
+        String extension,
+        ImagePurpose purpose,
+        Long entityId
+    ) {
+        String objectKey = this.keyFactory.create(purpose, entityId, extension);
+        try (InputStream in = new ByteArrayInputStream(content)) {
+            minioClient.putObject(
+                PutObjectArgs.builder()
+                    .bucket(properties.bucket())
+                    .object(objectKey)
+                    .stream(in, content.length, -1)
+                    .contentType(contentType)
+                    .build()
+            );
+            return new StoredImage(objectKey, contentType, content.length);
+        } catch (Exception e) {
+            throw new ImageStorageException("Failed to upload image bytes", e);
+        }
+    }
+
+    @Override
+    public void deleteQuietly(Collection<String> objectKeys) {
+        objectKeys
+            .stream()
+            .filter(StringUtils::hasText)
+            .forEach(key -> {
+                try {
+                    delet(key);
+                } catch (ImageStorageException e) {
+                    log.warn("Orphaned object left in bucket: {} ({})", key, e.getMessage());
+                }
+            });
+    }
+
+    @Override
+    public boolean exists(String objectKey) {
+        try {
+            minioClient.statObject(StatObjectArgs.builder().bucket(properties.bucket()).object(objectKey).build());
+            return true;
+        } catch (ErrorResponseException e) {
+            return false;
+        } catch (Exception e) {
+            throw new ImageStorageException("Failed to stat object" + objectKey, e);
+        }
     }
 }

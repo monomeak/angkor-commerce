@@ -1,5 +1,19 @@
 package com.angkor.commerce.user.impl;
 
+import java.util.Map;
+
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
@@ -15,38 +29,18 @@ import com.angkor.commerce.user.UserService;
 import com.angkor.commerce.user.dto.request.CreateUserRequest;
 import com.angkor.commerce.user.dto.request.UpdateUserRequest;
 import com.angkor.commerce.user.dto.response.UserResponse;
-import java.util.Map;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ImageStorageService imageStorageService;
     private final ApplicationEventPublisher eventPublisher;
-
-    public UserServiceImpl(
-        UserRepository userRepository,
-        PasswordEncoder passwordEncoder,
-        ImageStorageService imageStorageService,
-        ApplicationEventPublisher eventPublisher
-    ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.imageStorageService = imageStorageService;
-        this.eventPublisher = eventPublisher;
-    }
+    private static final String COLLECTION_KEY = "users";
 
     @Override
     @Transactional(readOnly = true)
@@ -69,8 +63,8 @@ public class UserServiceImpl implements UserService {
         }
 
         // :: lamda syntax
-        var users = page.getContent().stream().map(UserResponse::from).toList();
-        return new PageResponse<>(users, page.getTotalElements(), skip, safeLimit);
+        var items = page.getContent().stream().map(UserResponse::from).toList();
+        return PageResponse.of(COLLECTION_KEY, items, page.getTotalElements(), skip, safeLimit); // another style by using  .of
     }
 
     @Override
