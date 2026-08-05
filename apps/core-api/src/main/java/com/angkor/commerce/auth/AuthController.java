@@ -12,6 +12,7 @@ import com.angkor.commerce.user.UserService;
 import com.angkor.commerce.user.dto.response.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,7 +20,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(ApiConstants.AUTH_BASE)
 public class AuthController {
 
@@ -39,11 +40,11 @@ public class AuthController {
     private final AuthCookieService authCookieService;
     private final UserService userService;
 
-    public AuthController(AuthService authService, AuthCookieService authCookieService, UserService userService) {
-        this.authService = authService;
-        this.authCookieService = authCookieService;
-        this.userService = userService;
-    }
+    // public AuthController(AuthService authService, AuthCookieService authCookieService, UserService userService) {
+    //     this.authService = authService;
+    //     this.authCookieService = authCookieService;
+    //     this.userService = userService;
+    // }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticatedUserResponse> login(
