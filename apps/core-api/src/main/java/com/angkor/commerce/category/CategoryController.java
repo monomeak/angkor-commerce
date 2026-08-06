@@ -4,6 +4,7 @@ import com.angkor.commerce.category.dto.request.CreateCategoryRequest;
 import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
 import com.angkor.commerce.category.dto.response.CategoryFullResponse;
 import com.angkor.commerce.common.ApiConstants;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(ApiConstants.CATEGORIES_BASE)
+@Tag(name = "Category Module")
 public class CategoryController {
 
     private final CategoryService categoryService;

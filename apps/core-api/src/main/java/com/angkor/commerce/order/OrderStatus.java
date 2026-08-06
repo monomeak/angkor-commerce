@@ -1,15 +1,23 @@
 package com.angkor.commerce.order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /** See CORE_API_DATA_MODEL.md section 4: PENDING -> INVOICED, or PENDING -> CANCELLED. */
 public enum OrderStatus {
-    @JsonProperty("pending")
     PENDING,
-
-    @JsonProperty("invoiced")
     INVOICED,
+    CANCELLED;
 
-    @JsonProperty("cancelled")
-    CANCELLED
+    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
+
+    public boolean canTransitionTo(OrderStatus next) {
+        return switch (this) {
+            case PENDING -> next == INVOICED || next == CANCELLED;
+            case INVOICED, CANCELLED -> false; // terminal
+        };
+    }
 }

@@ -1,23 +1,18 @@
 package com.angkor.commerce.invoice;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum InvoiceStatus {
-    @JsonProperty("draft")
     DRAFT,
-
-    @JsonProperty("issued")
     ISSUED,
-
-    @JsonProperty("partially_paid")
     PARTIALLY_PAID,
-
-    @JsonProperty("paid")
     PAID,
-
-    @JsonProperty("overdue")
     OVERDUE,
+    CANCELLED;
 
-    @JsonProperty("cancelled")
-    CANCELLED
+    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
 }

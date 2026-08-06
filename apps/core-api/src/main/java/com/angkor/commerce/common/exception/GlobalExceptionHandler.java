@@ -164,6 +164,14 @@ public class GlobalExceptionHandler {
             .collect(Collectors.joining("."));
     }
 
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(
+        InsufficientStockException ex,
+        HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+    }
+
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ErrorResponse> handleStorage(StorageException ex, HttpServletRequest request) {
         log.error("Storage failure on {}", request.getRequestURI(), ex);

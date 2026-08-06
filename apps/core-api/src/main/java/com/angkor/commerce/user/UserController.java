@@ -6,6 +6,7 @@ import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedUser;
 import com.angkor.commerce.user.dto.request.CreateUserRequest;
 import com.angkor.commerce.user.dto.request.UpdateUserRequest;
 import com.angkor.commerce.user.dto.response.UserResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(ApiConstants.USERS_BASE)
+@Tag(name = "Internal User")
 public class UserController {
 
     private static final int MAX_PAGE_LIMIT = 100;

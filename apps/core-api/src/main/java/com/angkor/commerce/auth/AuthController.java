@@ -10,6 +10,7 @@ import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.security.JwtAuthenticationFilter.AuthenticatedUser;
 import com.angkor.commerce.user.UserService;
 import com.angkor.commerce.user.dto.response.UserResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(ApiConstants.AUTH_BASE)
+@Tag(name = "Auth (Back office)")
 public class AuthController {
 
     private static final String ACCESS_COOKIE = "accessToken";

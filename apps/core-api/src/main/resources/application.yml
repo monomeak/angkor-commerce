@@ -1,6 +1,7 @@
 spring:
     application:
-        name: angkor-commerce-core-api
+        name: angkor-commerce-core-apie
+    # Jackson enum/date settings live in config/JacksonConfig.java
 
 server:
     port: ${SERVER_PORT:8080}

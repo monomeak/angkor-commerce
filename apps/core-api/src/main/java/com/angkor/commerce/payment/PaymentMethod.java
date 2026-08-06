@@ -1,20 +1,17 @@
 package com.angkor.commerce.payment;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PaymentMethod {
-    @JsonProperty("cash")
     CASH,
-
-    @JsonProperty("bank_transfer")
     BANK_TRANSFER,
-
-    @JsonProperty("qr_code")
     QR_CODE,
-
-    @JsonProperty("card")
     CARD,
+    OTHER;
 
-    @JsonProperty("other")
-    OTHER
+    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
 }

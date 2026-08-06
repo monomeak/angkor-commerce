@@ -1,14 +1,15 @@
 package com.angkor.commerce.payment;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PaymentStatus {
-    @JsonProperty("completed")
     COMPLETED,
-
-    @JsonProperty("voided")
     VOIDED,
+    REFUNDED;
 
-    @JsonProperty("refunded")
-    REFUNDED
+    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
 }

@@ -1,7 +1,6 @@
 package com.angkor.commerce.order;
 
 import com.angkor.commerce.product.entities.Product;
-import com.angkor.commerce.product.entities.ProductVariant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -43,19 +42,20 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
-    private Product product;
+    private Long productId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    // @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    private Long productVariantId;
 
+    // -- Snapshot field, froze at checkout
     @Column(length = 100)
     private String sku;
 
     @Column(nullable = false, length = 200)
-    private String title;
+    private String title; // Aggregate name  + varaint name
 
     @Column(name = "thumbnail_url", columnDefinition = "TEXT")
     private String thumbnailUrl;

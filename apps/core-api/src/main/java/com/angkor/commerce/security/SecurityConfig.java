@@ -69,7 +69,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout")
                     .authenticated()
-                    .requestMatchers(ApiConstants.STOREFRONT_AUTH_BASE + "/me", ApiConstants.STOREFRONT_AUTH_BASE + "/logout")
+                    .requestMatchers(
+                        ApiConstants.STOREFRONT_AUTH_BASE + "/me",
+                        ApiConstants.STOREFRONT_AUTH_BASE + "/logout"
+                    )
                     .authenticated()
                     .requestMatchers("/api/v1/users/**")
                     .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
@@ -80,6 +83,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(ApiConstants.CATEGORIES_BASE + "/**")
                     .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
+                    .requestMatchers("/api/v1/storefront/**")
+                    .hasRole("CUSTOMER")
+                    .requestMatchers("/api/v1/orders/**")
+                    .hasAnyRole("SHOP_ADMIN", "SUPER_ADMIN")
                     .anyRequest()
                     .authenticated()
             )

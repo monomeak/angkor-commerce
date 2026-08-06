@@ -1,14 +1,15 @@
 package com.angkor.commerce.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Role {
-    @JsonProperty("super_admin")
     SUPER_ADMIN,
-
-    @JsonProperty("shop_admin")
     SHOP_ADMIN,
+    STAFF;
 
-    @JsonProperty("staff")
-    STAFF
+    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
+    @JsonValue
+    public String toJson() {
+        return name().toLowerCase();
+    }
 }
