@@ -3,6 +3,8 @@ package com.angkor.commerce.security;
 import com.angkor.commerce.common.ApiConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,7 +58,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource)
         throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(handling ->
@@ -65,33 +68,66 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth ->
                 auth
+                    // ── PUBLIC — no token. Everything open lives here, together. ──
+
                     .requestMatchers(PUBLIC_ENDPOINTS)
                     .permitAll()
-                    .requestMatchers("/api/v1/auth/me", "/api/v1/auth/logout")
-                    .authenticated()
+                    // Gateway pushbacks: ABA cannot present a JWT. Safe because the
+                    // payload is never trusted — see AbaPayWayGatewayAdapter.
+                    .requestMatchers("/api/v1/payment-callbacks/**")
+                    .permitAll()
+
+                    // Catalogue browsing: storefront reads before login.
                     .requestMatchers(
+                        HttpMethod.GET,
+                        ApiConstants.CATEGORIES_BASE,
+                        ApiConstants.CATEGORIES_BASE + "/**",
+                        ApiConstants.PRODUCTS_BASE,
+                        ApiConstants.PRODUCTS_BASE + "/**"
+                    )
+                    .permitAll()
+                    // ── AUTHENTICATED, either principal type ──
+                    .requestMatchers(
+                        ApiConstants.AUTH_BASE + "/me",
+                        ApiConstants.AUTH_BASE + "/logout",
                         ApiConstants.STOREFRONT_AUTH_BASE + "/me",
                         ApiConstants.STOREFRONT_AUTH_BASE + "/logout"
                     )
                     .authenticated()
-                    .requestMatchers("/api/v1/users/**")
-                    .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
-                    // Public catalog read: category browsing needs no auth for
-                    // either back-office or the future storefront. Writes stay
-                    // staff-only, same roles as user management.
-                    .requestMatchers(HttpMethod.GET, ApiConstants.CATEGORIES_BASE, ApiConstants.CATEGORIES_BASE + "/**")
-                    .permitAll()
-                    .requestMatchers(ApiConstants.CATEGORIES_BASE + "/**")
-                    .hasAnyRole("SUPER_ADMIN", "SHOP_ADMIN")
+                    // ── CUSTOMER ──
                     .requestMatchers("/api/v1/storefront/**")
                     .hasRole("CUSTOMER")
-                    .requestMatchers("/api/v1/orders/**")
+
+                    // ── STAFF ── (catalogue writes fall here: GET was matched above)
+                    .requestMatchers(
+                        "/api/v1/users/**",
+                        "/api/v1/customers/**",
+                        "/api/v1/products/**",
+                        "/api/v1/categories/**",
+                        "/api/v1/orders/**",
+                        "/api/v1/invoices/**",
+                        "/api/v1/payments/**",
+                        "/api/v1/payment-intents/**",
+                        "/api/v1/reports/**"
+                    )
                     .hasAnyRole("SHOP_ADMIN", "SUPER_ADMIN")
+
+                    // ── Everything unlisted requires a token ──
                     .anyRequest()
                     .authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+        return http.build();
+    }
+
+    @Bean
+    @Profile("!prod")
+    @Order(1) // evaluated before the main chain
+    SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        http.securityMatcher("/api/v1/dev/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         return http.build();
     }
 

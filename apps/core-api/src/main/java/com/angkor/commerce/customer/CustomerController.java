@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(ApiConstants.CUSTOMER_BASE)
+@RequestMapping(ApiConstants.CUSTOMERS_BASE)
 @Tag(name = "Customer Module")
 class CustomerController {
 

@@ -6,13 +6,13 @@ import com.angkor.commerce.common.CollectionKeys;
 import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
+import com.angkor.commerce.common.util.DocumentNumberGenerator;
 import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.customer.address.CustomerAddress;
 import com.angkor.commerce.customer.address.CustomerAddressRepository;
 import com.angkor.commerce.order.Order;
 import com.angkor.commerce.order.OrderItem;
-import com.angkor.commerce.order.OrderNumberGenerator;
 import com.angkor.commerce.order.OrderRepository;
 import com.angkor.commerce.order.OrderService;
 import com.angkor.commerce.order.OrderStatus;
@@ -51,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerRepository customerRepository;
     private final CustomerAddressRepository addressRepository;
     private final ProductStockPort productStockPort;
-    private final OrderNumberGenerator orderNumberGenerator;
+    private final DocumentNumberGenerator orderNumberGenerator;
     private final OrderMapper orderMapper;
 
     @Value("${angkor.order.shipping-fee:0}")

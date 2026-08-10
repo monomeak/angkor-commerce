@@ -45,9 +45,18 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_method", nullable = false, length = 30)
     private PaymentMethod paymentMethod;
 
+    /** STAFF typed it in, or GATEWAY wrote it automatically. From V7. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PaymentSource source = PaymentSource.GATEWAY;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20)
     private PaymentStatus paymentStatus = PaymentStatus.COMPLETED;
+
+    /** Links a gateway payment back to its intent. From V7. */
+    @Column(name = "payment_intent_id")
+    private Long paymentIntentId;
 
     @Column(name = "payment_date", nullable = false)
     private LocalDate paymentDate;

@@ -3,6 +3,8 @@ package com.angkor.commerce.invoice;
 import com.angkor.commerce.common.BaseEntity;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.customer.Customer;
+import com.angkor.commerce.payment.Payment;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,10 +12,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,10 +30,10 @@ import lombok.Setter;
  * (see CORE_API_DATA_MODEL.md and the customers/categories/products {@code status} columns).
  */
 
-@Getter
-@Setter
 @NoArgsConstructor
 @Entity
+@Getter
+@Setter
 @Table(name = "invoices")
 public class Invoice extends BaseEntity {
 
@@ -38,19 +44,35 @@ public class Invoice extends BaseEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    /** Plain Long — the order module stays unimported. Null for manual invoices. */
+    @Column(name = "order_id")
+    private Long orderId;
+
+    /** The billing lifecycle. */
     @Enumerated(EnumType.STRING)
     @Column(name = "invoice_status", nullable = false, length = 30)
-    private InvoiceStatus invoiceStatus = InvoiceStatus.DRAFT;
+    private InvoiceStatus invoiceStatus = InvoiceStatus.PAID;
 
+    /** The unrelated soft-delete flag shared with other records. */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RecordStatus status = RecordStatus.ACTIVE;
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("lineNumber ASC")
+    private List<InvoiceItem> items = new ArrayList<>();
+
+    /** No cascade — payments are independent financial records. */
+    @OneToMany(mappedBy = "invoice", fetch = FetchType.LAZY)
+    private List<Payment> payments = new ArrayList<>();
 
     @Column(name = "issue_date", nullable = false)
     private LocalDate issueDate;
 
     @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
+
+    // ── Money ──────────────────────────────────────────────
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal subtotal = BigDecimal.ZERO;
@@ -96,4 +118,27 @@ public class Invoice extends BaseEntity {
 
     @Column(name = "cancellation_reason", columnDefinition = "TEXT")
     private String cancellationReason;
+
+    /** Null when the gateway created it — no human did this. */
+    @Column(name = "created_by")
+    private Long createdBy;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
+
+    // ── Helpers ────────────────────────────────────────────
+    // Similar to order items
+    public void addItem(InvoiceItem item) {
+        item.setLineNumber(items.size() + 1);
+        items.add(item);
+        item.setInvoice(this);
+    }
+
+    /**
+     * The database enforces balance = total - paid_amount.
+     * Call after ANY change to either field.
+     */
+    public void recalculateBalance() {
+        this.balance = total.subtract(paidAmount);
+    }
 }

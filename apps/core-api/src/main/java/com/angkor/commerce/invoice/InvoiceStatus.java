@@ -1,18 +1,21 @@
 package com.angkor.commerce.invoice;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum InvoiceStatus {
-    DRAFT,
     ISSUED,
     PARTIALLY_PAID,
     PAID,
-    OVERDUE,
     CANCELLED;
 
-    /** Lowercase on the wire. Reads are case-insensitive via JacksonConfig. */
-    @JsonValue
-    public String toJson() {
-        return name().toLowerCase();
+    public boolean canTransitionTo(InvoiceStatus next) {
+        return switch (this) {
+            case ISSUED -> next == PAID || next == CANCELLED;
+            case PAID -> next == PARTIALLY_PAID; // a payment was voided
+            case PARTIALLY_PAID -> next == PAID || next == CANCELLED;
+            case CANCELLED -> false; // terminal
+        };
+    }
+
+    public boolean acceptsPayment() {
+        return this == ISSUED || this == PARTIALLY_PAID;
     }
 }

@@ -41,13 +41,15 @@ public class InvoiceItem {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    /** Nullable — FK is ON DELETE SET NULL; manual lines have none. */
+
+    @Column(name = "product_id")
+    private Long productId;
 
     @Column(name = "line_number", nullable = false)
     private Integer lineNumber;
 
+    // ── Snapshots — frozen forever ─────────────────────────
     @Column(length = 100)
     private String sku;
 
@@ -83,6 +85,6 @@ public class InvoiceItem {
     private Instant createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, updatable = false)
     private Instant updatedAt;
 }
