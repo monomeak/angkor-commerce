@@ -2,10 +2,12 @@ package com.angkor.commerce.product.repositories;
 
 import com.angkor.commerce.product.dto.response.ProductAggregate;
 import com.angkor.commerce.product.entities.ProductVariant;
+import jakarta.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,4 +33,17 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
         """
     )
     List<ProductAggregate> aggragateByProductIds(@Param("productIds") Collection<Long> productIds);
+
+    @Query(
+        """
+        select v from ProductVariant v
+          join fetch v.product p
+        where v.id in :ids
+        """
+    )
+    List<ProductVariant> findAllWithProductByIdIn(@Param("ids") Collection<Long> ids);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select v from ProductVariant v where v.id in :ids order by v.id asc")
+    List<ProductVariant> lockAllByIdIn(@Param("ids") Collection<Long> ids);
 }

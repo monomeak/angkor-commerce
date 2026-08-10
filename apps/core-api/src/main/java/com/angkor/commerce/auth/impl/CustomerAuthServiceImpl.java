@@ -9,11 +9,16 @@ import com.angkor.commerce.auth.dto.request.UpdateCustomerProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CurrentCustomerResponse;
 import com.angkor.commerce.auth.dto.response.CustomerLoginResultResponse;
+import com.angkor.commerce.auth.shared.JwtProperties;
 import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
-import com.angkor.commerce.common.storage.*;
+import com.angkor.commerce.common.storage.ImagePurpose;
+import com.angkor.commerce.common.storage.ImageReplacedEvent;
+import com.angkor.commerce.common.storage.ImageStorageService;
+import com.angkor.commerce.common.storage.StorageCleanup;
+import com.angkor.commerce.common.storage.StoredImage;
 import com.angkor.commerce.customer.Customer;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.security.JwtTokenProvider;
@@ -21,9 +26,7 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,12 +51,10 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
     private final RefreshTokenCrypto refreshTokenCrypto;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
-    @Value("${angkor.jwt.refresh-token-ttl-days}")
-    private long refreshTokenTtlDays;
+    private final JwtProperties jwtProperties;
     private final ImageStorageService imageStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final StorageCleanup storageCleanup;
-
 
     @Override
     @Transactional
@@ -135,7 +136,7 @@ public class CustomerAuthServiceImpl implements CustomerAuthService {
         CustomerRefreshToken refreshToken = new CustomerRefreshToken();
         refreshToken.setCustomer(customer);
         refreshToken.setTokenHash(refreshTokenCrypto.hash(rawRefreshToken));
-        refreshToken.setExpiresAt(Instant.now().plus(refreshTokenTtlDays, ChronoUnit.DAYS));
+        refreshToken.setExpiresAt(Instant.now().plus(jwtProperties.refreshTokenTtlDays(), ChronoUnit.DAYS));
         customerRefreshTokenRepository.save(refreshToken);
 
         AuthenticatedCustomerResponse authenticatedCustomerResponse = new AuthenticatedCustomerResponse(

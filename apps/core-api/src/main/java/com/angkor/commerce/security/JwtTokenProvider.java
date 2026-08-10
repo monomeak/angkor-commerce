@@ -1,5 +1,6 @@
 package com.angkor.commerce.security;
 
+import com.angkor.commerce.auth.shared.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
@@ -38,12 +39,9 @@ public class JwtTokenProvider {
         return accessTokenTtlMinutes;
     }
 
-    public JwtTokenProvider(
-        @Value("${angkor.jwt.secret}") String secret,
-        @Value("${angkor.jwt.access-token-ttl-minutes}") long accessTokenTtlMinutes
-    ) {
-        this.signingKey = resolveKey(secret);
-        this.accessTokenTtlMinutes = accessTokenTtlMinutes;
+    public JwtTokenProvider(JwtProperties jwtProperties) {
+        this.signingKey = resolveKey(jwtProperties.secret());
+        this.accessTokenTtlMinutes = jwtProperties.accessTokenTtlMinutes();
     }
 
     private static SecretKey resolveKey(String secret) {

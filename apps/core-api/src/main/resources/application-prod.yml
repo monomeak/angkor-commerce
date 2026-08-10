@@ -48,6 +48,23 @@ angkor:
             secret-key: ${MINIO_SECRET_KEY}
             bucket: ${MINIO_BUCKET}
             public-base-url: ${MINIO_PUBLIC_BASE_URL}
+    default-currency: USD
+    image:
+        max-width: ${IMAGE_MAX_WIDTH:400}
+        max-height: ${IMAGE_MAX_HEIGHT:400}
+        quality: ${IMAGE_QUALITY:0.8}
+        max-file-size: ${IMAGE_MAX_FILE_SIZE:5MB}
+        max-per-product: ${MAX_PER_PRODUCT:5}
+
+    allowed-types:
+        - image/jpeg
+        - image/png
+        - image/webp
+
+    extensions:
+        "[image/jpeg]": jpg
+        "[image/png]": png
+        "[image/webp]": webp
 management:
     endpoints:
         web:

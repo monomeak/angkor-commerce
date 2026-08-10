@@ -2,7 +2,6 @@ package com.angkor.commerce.auth.shared;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -21,16 +20,11 @@ public class AuthCookieService {
     private final Duration accessTokenTtl;
     private final Duration refreshTokenTtl;
 
-    public AuthCookieService(
-        @Value("${angkor.cookie.secure}") boolean cookieSecure,
-        @Value("${angkor.cookie.same-site}") String cookieSameSite,
-        @Value("${angkor.jwt.access-token-ttl-minutes}") long accessTokenTtlMinutes,
-        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays
-    ) {
-        this.cookieSecure = cookieSecure;
-        this.cookieSameSite = cookieSameSite;
-        this.accessTokenTtl = Duration.ofMinutes(accessTokenTtlMinutes);
-        this.refreshTokenTtl = Duration.ofDays(refreshTokenTtlDays);
+    public AuthCookieService(CookieProperties cookieProperties, JwtProperties jwtProperties) {
+        this.cookieSecure = cookieProperties.secure();
+        this.cookieSameSite = cookieProperties.sameSite();
+        this.accessTokenTtl = Duration.ofMinutes(jwtProperties.accessTokenTtlMinutes());
+        this.refreshTokenTtl = Duration.ofDays(jwtProperties.refreshTokenTtlDays());
     }
 
     public void setAuthCookies(

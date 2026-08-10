@@ -1,14 +1,9 @@
 package com.angkor.commerce.common.exception;
 
-import com.angkor.commerce.common.storage.ImageStorageException;
-import com.angkor.commerce.common.storage.InvalidImageException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +17,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import com.angkor.commerce.common.storage.ImageStorageException;
+import com.angkor.commerce.common.storage.InvalidImageException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -164,6 +167,14 @@ public class GlobalExceptionHandler {
             .collect(Collectors.joining("."));
     }
 
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(
+        InsufficientStockException ex,
+        HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+    }
+
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ErrorResponse> handleStorage(StorageException ex, HttpServletRequest request) {
         log.error("Storage failure on {}", request.getRequestURI(), ex);
@@ -171,6 +182,19 @@ public class GlobalExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR,
             "Could not process the uploaded file. Please try again.",
             ex.getMessage(),
+            request
+        );
+    }
+
+    // GlobalExceptionHandler — the customer sees a clean message,
+    // the log gets the real cause
+    @ExceptionHandler(PaymentGatewayException.class)
+    public ResponseEntity<ErrorResponse> handleGateway(PaymentGatewayException ex, HttpServletRequest request) {
+        log.error("Payment gateway error", ex);
+        return build(
+            HttpStatus.BAD_GATEWAY,
+            "The payment service is unavailable. Please try again shortly.",
+            null,
             request
         );
     }
@@ -184,5 +208,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(
             ErrorResponse.of(status.value(), error, message, request.getRequestURI())
         );
+    }
+
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientBalance(
+            InsufficientBalanceException ex, HttpServletRequest request) {
+        return build(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), null, request);
+    }
+
+    @ExceptionHandler(AlreadyProcessedException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyProcessed(
+            AlreadyProcessedException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
     }
 }

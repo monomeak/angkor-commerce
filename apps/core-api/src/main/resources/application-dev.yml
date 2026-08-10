@@ -53,6 +53,37 @@ angkor:
             secret-key: ${MINIO_SECRET_KEY:minioadmin}
             bucket: ${MINIO_BUCKET:angkor-commerce-media}
             public-base-url: ${MINIO_PUBLIC_BASE_URL:http://localhost:9000/angkor-commerce-media}
+    order:
+        shipping-fee: 0
+    default-currency: USD
+    image:
+        max-width: ${IMAGE_MAX_WIDTH:400}
+        max-height: ${IMAGE_MAX_HEIGHT:400}
+        quality: ${IMAGE_QUALITY:0.8}
+        max-file-size: ${IMAGE_MAX_FILE_SIZE:5MB}
+        max-per-product: ${MAX_PER_PRODUCT:5}
+
+        allowed-types:
+            - image/jpeg
+            - image/png
+            - image/webp
+
+        extensions:
+            "[image/jpeg]": jpg
+            "[image/png]": png
+            "[image/webp]": webp
+    payment:
+        default-provider: ABA_PAYWAY
+        aba:
+            base-url: ${ABA_BASE_URL:https://checkout-sandbox.payway.com.kh}
+            merchant-id: ${ABA_MERCHANT_ID}
+            api-key: ${ABA_API_KEY}
+            callback-url: ${ABA_CALLBACK_URLZ:https://checkout-sandbox.payway.com.kh/callbacks}
+            lifetime-minutes: 15
+            payment-option: abapay_khqr
+    wallet:
+        seed:
+            enabled: true
 
 management:
     endpoints:

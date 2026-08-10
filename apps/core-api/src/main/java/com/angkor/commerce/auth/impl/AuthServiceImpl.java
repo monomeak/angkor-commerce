@@ -8,23 +8,23 @@ import com.angkor.commerce.auth.dto.request.UpdateProfileRequest;
 import com.angkor.commerce.auth.dto.response.AuthenticatedUserResponse;
 import com.angkor.commerce.auth.dto.response.CurrentUserResponse;
 import com.angkor.commerce.auth.dto.response.LoginResultResponse;
+import com.angkor.commerce.auth.shared.JwtProperties;
 import com.angkor.commerce.auth.shared.RefreshTokenCrypto;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
-import com.angkor.commerce.common.storage.*;
-import com.angkor.commerce.customer.Customer;
+import com.angkor.commerce.common.storage.ImagePurpose;
+import com.angkor.commerce.common.storage.ImageReplacedEvent;
+import com.angkor.commerce.common.storage.ImageStorageService;
+import com.angkor.commerce.common.storage.StorageCleanup;
+import com.angkor.commerce.common.storage.StoredImage;
 import com.angkor.commerce.security.JwtTokenProvider;
 import com.angkor.commerce.user.User;
 import com.angkor.commerce.user.UserRepository;
-import com.angkor.commerce.user.UserService;
-import com.angkor.commerce.user.dto.response.UserResponse;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,29 +45,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final ImageStorageService imageStorageService;
     private final ApplicationEventPublisher eventPublisher;
-    @Value("${angkor.jwt.refresh-token-ttl-days}")
-    private long refreshTokenTtlDays;
+    private final JwtProperties jwtProperties;
     private final StorageCleanup storageCleanup;
-
-//    public AuthServiceImpl(
-//        AuthenticationManager authenticationManager,
-//        UserRepository userRepository,
-//        RefreshTokenRepository refreshTokenRepository,
-//        RefreshTokenCrypto refreshTokenCrypto,
-//        JwtTokenProvider jwtTokenProvider,
-//        @Value("${angkor.jwt.refresh-token-ttl-days}") long refreshTokenTtlDays,
-//        ImageStorageService imageStorageService,
-//        ApplicationEventPublisher eventPublisher
-//    ) {
-//        this.authenticationManager = authenticationManager;
-//        this.userRepository = userRepository;
-//        this.refreshTokenRepository = refreshTokenRepository;
-//        this.refreshTokenCrypto = refreshTokenCrypto;
-//        this.jwtTokenProvider = jwtTokenProvider;
-//        this.refreshTokenTtlDays = refreshTokenTtlDays;
-//        this.imageStorageService = imageStorageService;
-//        this.eventPublisher = eventPublisher;
-//    }
 
     @Override
     @Transactional
@@ -180,7 +159,7 @@ public class AuthServiceImpl implements AuthService {
         // set to the record
         refreshToken.setUser(user);
         refreshToken.setTokenHash(refreshTokenCrypto.hash(rawRefreshToken));
-        refreshToken.setExpiresAt(Instant.now().plus(refreshTokenTtlDays, ChronoUnit.DAYS));
+        refreshToken.setExpiresAt(Instant.now().plus(jwtProperties.refreshTokenTtlDays(), ChronoUnit.DAYS));
         refreshTokenRepository.save(refreshToken);
         AuthenticatedUserResponse authenticatedUserResponse = new AuthenticatedUserResponse(
             user.getId(),

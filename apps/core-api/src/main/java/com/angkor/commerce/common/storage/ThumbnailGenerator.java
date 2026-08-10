@@ -6,25 +6,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.IIOException;
+import lombok.RequiredArgsConstructor;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
+@RequiredArgsConstructor
 public class ThumbnailGenerator {
 
-    //[HACK]: load from properties or env instead later
-    private static final int MAX_WIDTH = 400;
-    private static final int MAX_HEIGHT = 400;
-    private static final double QUALITY = 0.8;
+    private final ImageProperties imageProperties;
 
     public byte[] generate(MultipartFile file) {
         try (InputStream in = file.getInputStream(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Thumbnails.of(in)
-                .size(MAX_WIDTH, MAX_HEIGHT)
+                .size(imageProperties.maxWidth(), imageProperties.maxHeight())
                 .keepAspectRatio(true)
                 .outputFormat("jpg")
-                .outputQuality(QUALITY)
+                .outputQuality(imageProperties.quality())
                 .toOutputStream(out);
 
             return out.toByteArray();

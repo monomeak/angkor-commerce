@@ -1,23 +1,21 @@
 package com.angkor.commerce.invoice;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public enum InvoiceStatus {
-    @JsonProperty("draft")
-    DRAFT,
-
-    @JsonProperty("issued")
     ISSUED,
-
-    @JsonProperty("partially_paid")
     PARTIALLY_PAID,
-
-    @JsonProperty("paid")
     PAID,
+    CANCELLED;
 
-    @JsonProperty("overdue")
-    OVERDUE,
+    public boolean canTransitionTo(InvoiceStatus next) {
+        return switch (this) {
+            case ISSUED -> next == PAID || next == CANCELLED;
+            case PAID -> next == PARTIALLY_PAID; // a payment was voided
+            case PARTIALLY_PAID -> next == PAID || next == CANCELLED;
+            case CANCELLED -> false; // terminal
+        };
+    }
 
-    @JsonProperty("cancelled")
-    CANCELLED
+    public boolean acceptsPayment() {
+        return this == ISSUED || this == PARTIALLY_PAID;
+    }
 }

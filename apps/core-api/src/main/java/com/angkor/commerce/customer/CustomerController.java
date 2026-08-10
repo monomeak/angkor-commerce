@@ -3,6 +3,7 @@ package com.angkor.commerce.customer;
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.customer.dto.response.CustomerResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(ApiConstants.CUSTOMER_BASE)
+@RequestMapping(ApiConstants.CUSTOMERS_BASE)
+@Tag(name = "Customer Module")
 class CustomerController {
 
     private final CustomerService customerService; // final allow this object assign exactly once

@@ -55,7 +55,8 @@ public class ProductServiceImpl implements ProductService {
 
     // Inject repositories and another helpers here --
     // load from property instead
-    private static int MAX_IMAGES_PER_PRODUCT = 10;
+
+    private final ImageProperties imageProperties;
     private final ProductRepository productRepository;
     private final ProductVariantRepository variantRepository;
     private final ProductImageRepository imageRepository;
@@ -66,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     private final ImageValidator imageValidator;
     private final StorageCleanup storageCleanup;
 
-    @Value("${app.default-currency:USD}")
+    @Value("${angkor.default-currency:USD}")
     private String defaultCurrency;
 
     private static final String COLLECTION_KEY = "products";
@@ -91,10 +92,10 @@ public class ProductServiceImpl implements ProductService {
 
         variantRepository.saveAll(variants); // batch save
 
-//        List<ProductImage> images = buildImages(saved, request.images());
-//        if (!images.isEmpty()) {
-//            imageRepository.saveAll(images);
-//        }
+        //        List<ProductImage> images = buildImages(saved, request.images());
+        //        if (!images.isEmpty()) {
+        //            imageRepository.saveAll(images);
+        //        }
         return buildFullResponse(saved);
     }
 
@@ -203,8 +204,8 @@ public class ProductServiceImpl implements ProductService {
     @Transactional()
     public ProductImageResponse addImage(Long productId, MultipartFile file, Integer order) {
         Product product = loadProduct(productId);
-        if (imageRepository.countByProductId(productId) >= MAX_IMAGES_PER_PRODUCT) {
-            throw new ValidationException("A product cannot have more than " + MAX_IMAGES_PER_PRODUCT + " images");
+        if (imageRepository.countByProductId(productId) >= maxImagesPerProduct()) {
+            throw new ValidationException("A product cannot have more than " + maxImagesPerProduct() + " images");
         }
 
         imageValidator.validate(file); // magic-byte check, throws on bad input
@@ -271,7 +272,6 @@ public class ProductServiceImpl implements ProductService {
         imageRepository.delete(image); // delete from repo
         // Objects go only once  the row is durably gone.
         storageCleanup.onCommit(imageKey, thumbnailKey);
-
     }
 
     // ── Helpers ───────────────────────────────────────────────
@@ -357,5 +357,9 @@ public class ProductServiceImpl implements ProductService {
             variantRepository.findByProductIdOrderByIdAsc(product.getId()),
             imageRepository.findByProductIdOrderByDisplayOrderAscIdAsc(product.getId())
         );
+    }
+
+    private long maxImagesPerProduct() {
+        return imageProperties.maxPerProduct();
     }
 }
