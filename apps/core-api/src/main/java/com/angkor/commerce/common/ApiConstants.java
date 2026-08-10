@@ -24,6 +24,8 @@ public final class ApiConstants {
     public static final String STOREFRONT_AUTH_BASE = STOREFRONT_BASE + "/auth";
     public static final String STOREFRONT_ADDRESSES = STOREFRONT_BASE + "/addresses";
     public static final String STOREFRONT_ORDERS = STOREFRONT_BASE + "/orders";
+    public static final String STOREFRONT_WISHLIST = STOREFRONT_BASE + "/my-wishlist";
+
     //  Shared api
     public static final String CATEGORIES_BASE = API_BASE + "/categories";
 }
