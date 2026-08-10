@@ -77,7 +77,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {related.length > 0 && (
           <section className="mt-16">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">You might also like</h2>
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {related.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
@@ -88,7 +88,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         {otherProducts.length > 0 && (
           <section className="mt-16">
             <h2 className="text-2xl font-semibold tracking-[-0.03em]">Other products you may like</h2>
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {otherProducts.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
