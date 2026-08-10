@@ -47,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class CheckoutSeviceImpl implements CheckoutService {
+public class CheckoutServiceImpl implements CheckoutService {
 
     private final PaymentIntentRepository intentRepository;
     private final OrderRepository orderRepository;
@@ -63,6 +63,9 @@ public class CheckoutSeviceImpl implements CheckoutService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Phnom_Penh");
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final String ALPHANUMERIC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I lookalikes
+
+    /** Backstop for intents the gateway never gives a straight answer about. */
+    private static final int MAX_POLL_ATTEMPTS = 60;
 
     @Override
     @Transactional
@@ -169,14 +172,30 @@ public class CheckoutSeviceImpl implements CheckoutService {
                 intent.setIntentStatus(IntentStatus.FAILED);
                 intent.setFailureReason("Declined by " + intent.getProvider());
             }
-            case PENDING -> {
-                if (intent.isExpired()) {
-                    intent.setIntentStatus(IntentStatus.EXPIRED);
-                    intent.setFailureReason("Payment window elapsed");
-                }
-                // else HACK
+            case PENDING -> stopPollingIfExhausted(intent, "Payment window elapsed");
+            case UNKNOWN -> {
+                log.debug("No answer for {} yet; will retry", reference);
+                stopPollingIfExhausted(intent, "No answer from " + intent.getProvider());
             }
-            case UNKNOWN -> log.debug("No answer for {} yet; will retry", reference);
+        }
+    }
+
+    /**
+     * Every non-terminal intent must eventually leave the poller's queue, or
+     * findStalePending keeps handing it back: it orders by lastPolledAt ascending,
+     * so the most neglected rows sit at the head of the batch and crowd out real
+     * work. Expiry covers the normal case. The poll cap covers UNKNOWN, where
+     * expiresAt may never have been set because the gateway never answered.
+     */
+    private void stopPollingIfExhausted(PaymentIntent intent, String giveUpReason) {
+        if (intent.isExpired()) {
+            intent.setIntentStatus(IntentStatus.EXPIRED);
+            intent.setFailureReason("Payment window elapsed");
+        } else if (intent.getPollCount() >= MAX_POLL_ATTEMPTS) {
+            intent.setIntentStatus(IntentStatus.EXPIRED);
+            intent.setFailureReason(giveUpReason + " after " + MAX_POLL_ATTEMPTS + " checks");
+
+            log.warn("Giving up on intent {} after {} checks", intent.getReference(), intent.getPollCount());
         }
     }
 

@@ -31,4 +31,6 @@ public final class CollectionKeys {
     // ── Operations ──
     public static final String AUDIT_LOGS = "auditLogs";
     public static final String REPORTS = "reports";
+
+    public static final String WISHLIST = "wishlist";
 }

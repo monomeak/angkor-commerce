@@ -23,7 +23,7 @@ public class PaymentReconciliationJob {
     private final CheckoutService checkoutService;
 
     @Scheduled(fixedDelayString = "${angkor.payment.reconcile-interval:30000}")
-    public void reconsile() {
+    public void reconcile() {
         Instant cutoff = Instant.now().minus(POLL_AFTER);
         List<PaymentIntent> stale = intentRepository.findStalePending(cutoff, PageRequest.of(0, BATCH));
         for (PaymentIntent intent : stale) {
