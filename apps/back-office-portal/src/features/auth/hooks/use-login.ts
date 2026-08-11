@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAppConfig } from "@/components/providers/app-config-provider";
 import { loginRequest, fetchCurrentUser } from "../api/auth-api";
 import { mapToAuthSession } from "../mappers/auth.mapper";
 import { loginRequestSchema } from "../schemas/login.schema";
@@ -6,7 +7,10 @@ import { sessionStorageAdapter } from "../lib/session-storage";
 import { authKeys } from "../lib/query-keys";
 import type { AuthSession, LoginPayload } from "../types/auth";
 
-async function performLogin(payload: LoginPayload): Promise<AuthSession> {
+async function performLogin(
+  apiBaseUrl: string,
+  payload: LoginPayload,
+): Promise<AuthSession> {
   const parsed = loginRequestSchema.safeParse(payload);
 
   if (!parsed.success) {
@@ -15,14 +19,14 @@ async function performLogin(payload: LoginPayload): Promise<AuthSession> {
     throw new Error(message);
   }
 
-  const dto = await loginRequest(payload);
+  const dto = await loginRequest(apiBaseUrl, payload);
 
   // Role isn't in the login response, so fetch it separately.
   // Falls back to "user" if this call fails, so login still succeeds.
   let rawRole = "user";
 
   try {
-    const me = await fetchCurrentUser(dto.accessToken);
+    const me = await fetchCurrentUser(apiBaseUrl, dto.accessToken);
     rawRole = me.role;
   } catch {}
 
@@ -39,9 +43,11 @@ async function performLogin(payload: LoginPayload): Promise<AuthSession> {
  */
 export function useLogin() {
   const queryClient = useQueryClient();
+  const { apiBaseUrl } = useAppConfig();
+
   return useMutation({
     mutationKey: authKeys.login(),
-    mutationFn: performLogin,
+    mutationFn: (payload: LoginPayload) => performLogin(apiBaseUrl, payload),
     onSuccess: (session) => {
       queryClient.setQueryData(authKeys.currentUser(), session.user);
     },

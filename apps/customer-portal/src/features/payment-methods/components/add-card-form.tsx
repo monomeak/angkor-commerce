@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { detectCardBrand } from "../lib/card-brand";
 import { formatCardNumber, formatDigitsOnly, formatExpiry } from "../lib/card-format";
-import { addCardSchema } from "../lib/payment-methods-schemas";
+import { addCardSchema } from "../schemas/card.schema";
 import { addSavedCard } from "../lib/payment-methods-storage";
 import type { SavedCard } from "../types/payment-method";
 

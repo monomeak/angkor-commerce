@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search, User, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, Search, User, LogOut, Loader2 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -16,6 +18,8 @@ import {
     navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useAuthSession } from "@/src/features/auth/hooks/use-current-customer";
+import { useLogout } from "@/src/features/auth/hooks/use-logout";
 import { CartSheet } from "@/src/features/cart/components/cart-sheet";
 import { getChildCategories, getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
 import type { Category } from "@/src/features/categories/types/category";
@@ -84,42 +88,82 @@ export function SiteHeader() {
                 </form>
 
                 <div className="ml-auto flex items-center gap-1 sm:ml-2">
-                    {/* future check if user is authenticated or not here  if not show button shop now otherwise you card and account*/}
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Account"
-                        nativeButton={false}
-                        render={<Link href="/account" />}
-                    >
-                        <User className="size-5" />
-                    </Button>
-                    <CartSheet />
-
-                    <Button
-                        variant="accent"
-                        size="sm"
-                        className="hidden h-9 px-4 text-sm sm:inline-flex"
-                        nativeButton={false}
-                        render={<Link href="/login" />}
-                    >
-                        Shop now
-                    </Button>
-
-                    {/* <Button
-                        variant="accent"
-                        size="sm"
-                        className="hidden h-9 px-4 text-sm sm:inline-flex"
-                        nativeButton={false}
-                        render={<LogOut href="/login" />}
-                    >
-                        Shop now
-                    </Button> */}
-                    <LogOut />
+                    <HeaderAuthActions />
                 </div>
             </div>
         </header>
+    );
+}
+
+function HeaderAuthActions() {
+    const router = useRouter();
+    const { isAuthenticated, isResolving } = useAuthSession();
+    const logout = useLogout();
+
+    // Leave the page before the session is dropped: `useLogout` clears the /me cache,
+    // which would otherwise let `RequireCustomer` bounce an account page to /login
+    // and win the race against this redirect.
+    const handleLogout = () => {
+        if (logout.isPending) return;
+        router.push("/");
+        logout.mutate();
+    };
+
+    // While /me is in flight we don't know yet — hold the space with placeholders so the
+    // header doesn't flash "Log in" at someone signed in, or jump once the answer lands.
+    if (isResolving) {
+        return (
+            <>
+                <Skeleton className="size-8 rounded-lg" />
+                <CartSheet />
+                <Skeleton className="hidden h-9 w-20 rounded-lg sm:block" />
+            </>
+        );
+    }
+
+    return (
+        <>
+            {isAuthenticated && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Account"
+                    nativeButton={false}
+                    render={<Link href="/account" />}
+                >
+                    <User className="size-5" />
+                </Button>
+            )}
+
+            <CartSheet />
+
+            {isAuthenticated ? (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={logout.isPending ? "Logging out" : "Log out"}
+                    aria-busy={logout.isPending}
+                    disabled={logout.isPending}
+                    onClick={handleLogout}
+                >
+                    {logout.isPending ? (
+                        <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                        <LogOut className="size-5" />
+                    )}
+                </Button>
+            ) : (
+                <Button
+                    variant="accent"
+                    size="sm"
+                    className="hidden h-9 px-4 text-sm sm:inline-flex"
+                    nativeButton={false}
+                    render={<Link href="/login" />}
+                >
+                    Log in
+                </Button>
+            )}
+        </>
     );
 }
 

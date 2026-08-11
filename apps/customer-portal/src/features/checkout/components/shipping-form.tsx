@@ -8,15 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAccount } from "@/src/features/account/lib/account-context";
+import { useSavedAddress } from "@/src/features/account/lib/address-context";
+import { useCurrentCustomer } from "@/src/features/auth/hooks/use-current-customer";
 import { useCart } from "@/src/features/cart/lib/cart-context";
-import { shippingAddressSchema } from "../lib/checkout-schemas";
+import { shippingAddressSchema } from "../schemas/shipping-address.schema";
 import { getShippingDraft, saveShippingDraft } from "../lib/shipping-draft-storage";
 
 export function ShippingForm() {
   const router = useRouter();
   const { items } = useCart();
-  const { customer, savedAddress, saveAddress } = useAccount();
+  const { savedAddress, saveAddress } = useSavedAddress();
+  const { data: customer } = useCurrentCustomer();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -25,8 +27,19 @@ export function ShippingForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const [isPrefilled, setIsPrefilled] = useState(false);
+
   useEffect(() => {
+    // Auto-fill exactly once, but not before the sources exist: the saved address is
+    // restored after hydration and the customer arrives with the /me query. Typing is
+    // never clobbered, because the flag latches on the first fill.
+    if (isPrefilled) {
+      return;
+    }
+
     const draft = getShippingDraft() ?? savedAddress;
+
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (draft) {
       setFullName(draft.fullName);
       setPhone(draft.phone);
@@ -34,13 +47,17 @@ export function ShippingForm() {
       setCity(draft.city);
       setPostalCode(draft.postalCode ?? "");
       setNotes(draft.notes ?? "");
-    } else {
-      setFullName(`${customer.firstName} ${customer.lastName}`);
+      setIsPrefilled(true);
+      return;
     }
-    // Only auto-fill once on mount — typing shouldn't get clobbered by a
-    // later account/context update.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    if (customer) {
+      setFullName(`${customer.firstName} ${customer.lastName}`);
+      setPhone(customer.phone ?? "");
+      setIsPrefilled(true);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [customer, savedAddress, isPrefilled]);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();

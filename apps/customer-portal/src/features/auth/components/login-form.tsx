@@ -2,22 +2,28 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { ApiError } from "@/lib/api-client";
 import { AuthField } from "./auth-field";
-import { loginSchema } from "../lib/auth-schemas";
+import { useLogin } from "../hooks/use-login";
+import { loginSchema } from "../schemas/login.schema";
+import { safeRedirectPath } from "../lib/redirect";
 
-export function LoginForm() {
+type LoginFormProps = {
+  readonly next?: string;
+};
+
+export function LoginForm({ next }: LoginFormProps) {
+  const router = useRouter();
+  const login = useLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -26,12 +32,20 @@ export function LoginForm() {
 
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? "Please check your input.");
-      setSuccess(false);
       return;
     }
 
     setError(null);
-    setSuccess(true);
+    login.mutate(result.data, {
+      onSuccess: () => {
+        router.replace(safeRedirectPath(next));
+      },
+      onError: (cause) => {
+        setError(
+          cause instanceof ApiError ? cause.displayMessage : "Could not sign you in. Try again.",
+        );
+      },
+    });
   }
 
   return (
@@ -75,15 +89,7 @@ export function LoginForm() {
             }
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-            <Label htmlFor="remember" className="font-normal text-foreground">
-              <Checkbox
-                id="remember"
-                checked={remember}
-                onCheckedChange={setRemember}
-              />
-              Remember my account
-            </Label>
+          <div className="flex flex-wrap items-center justify-end gap-3 text-sm">
             <Link
               href="#"
               className="font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
@@ -93,7 +99,6 @@ export function LoginForm() {
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
-          {success && <p className="text-sm text-emerald-600">Signed in.</p>}
         </div>
       </div>
 
@@ -104,8 +109,13 @@ export function LoginForm() {
             Register Now
           </Link>
         </p>
-        <Button type="submit" size="lg" className="h-full shrink-0 rounded-none px-10 text-base">
-          Login
+        <Button
+          type="submit"
+          size="lg"
+          disabled={login.isPending}
+          className="h-full shrink-0 rounded-none px-10 text-base"
+        >
+          {login.isPending ? "Logging in…" : "Login"}
         </Button>
       </div>
     </form>

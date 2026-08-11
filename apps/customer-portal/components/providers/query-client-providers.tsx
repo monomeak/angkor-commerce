@@ -4,13 +4,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-const isDev = process.env.NODE_ENV === "development";
+import { useAppConfig } from "./app-config-provider";
 
 export function QueryClientProviderConfig({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { environment } = useAppConfig();
+  const isDev = environment === "development";
   const [queryClient] = useState(
     () =>
       new QueryClient({

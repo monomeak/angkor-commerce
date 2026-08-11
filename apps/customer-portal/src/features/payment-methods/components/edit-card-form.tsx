@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatExpiry } from "../lib/card-format";
-import { editCardSchema } from "../lib/payment-methods-schemas";
+import { editCardSchema } from "../schemas/card.schema";
 import { updateSavedCard } from "../lib/payment-methods-storage";
 import type { SavedCard } from "../types/payment-method";
 

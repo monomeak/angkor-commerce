@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import z from "zod";
+import { env } from "@/lib/env";
 
 // Server-only — NEVER prefix these with NEXT_PUBLIC_, or they'd ship to the browser.
 const requestSchema = z.object({
@@ -24,8 +25,8 @@ const requestSchema = z.object({
     }),
   ),
 });
-const AI_API_KEY = process.env.AI_API_KEY;
-const AI_MODEL = process.env.AI_MODEL ?? "gemini-3.5-flash";
+const AI_API_KEY = env.AI_API_KEY;
+const AI_MODEL = env.AI_MODEL;
 
 const SYSTEM_PROMPT = `You are a financial analyst assistant for a small invoicing business.
 You will be given aggregated invoice data (never raw customer records) as JSON.

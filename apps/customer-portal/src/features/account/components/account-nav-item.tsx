@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import type { AccountNavigationItem } from "../constants/account-navigation";
+import type { AccountNavigationItem } from "../types/account";
 
 type AccountNavItemProps = {
   readonly item: AccountNavigationItem;

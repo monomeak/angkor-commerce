@@ -1,7 +1,7 @@
-export type AccountCustomer = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
+import type { LucideIcon } from "lucide-react";
+
+export type AccountNavigationItem = {
+    label: string;
+    href: string;
+    icon: LucideIcon;
 };

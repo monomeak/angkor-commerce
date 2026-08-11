@@ -1,5 +1,11 @@
-import { AuthPage } from "@/src/features/auth/components/auth-page";
+import { AuthView } from "@/src/features/auth/views/auth-view";
 
-export default function LoginPage() {
-  return <AuthPage mode="login" />;
+type LoginPageProps = {
+  readonly searchParams: Promise<{ next?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { next } = await searchParams;
+
+  return <AuthView mode="login" next={next} />;
 }

@@ -10,19 +10,34 @@ Public storefront for Angkor Commerce: browsing, self-registration, and order/in
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4. No backend integration yet; product data is local mock data shaped like future HTTP calls.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4. Auth and the customer profile talk to `apps/core-api`; product/category data is still local mock data shaped like future HTTP calls.
 
 ## Structure and conventions
 
 Mirrors `apps/back-office-portal`:
 
-- Routes live in `app/`; feature code lives in `src/features/<feature>/` (`api/`, `data/`, `hooks/`, `lib/`, `types/`, and `mappers/`/`schemas/` once a real API exists). Keep `app` and `src` separate.
-- Route pages compose feature views and stay small; feature logic lives in the feature folder.
+- Routes live in `app/`; feature code lives in `src/features/<feature>/` using the same folder set as `apps/back-office-portal`: `api/`, `components/`, `data/`, `hooks/`, `lib/`, `schemas/`, `types/`, `views/` (plus `mappers/` once an API response shape needs mapping). Keep `app` and `src` separate.
+- Zod schemas belong in `schemas/<name>.schema.ts`, not in `lib/`. `lib/` is for helpers, contexts, storage adapters, and query keys.
+- Route pages compose feature views and stay small; feature logic lives in the feature folder. A page that does more than assemble the site chrome around a view has logic in the wrong place — see `products/views/search-view.tsx`.
 - Query keys are owned by the feature that defines them (`src/features/<feature>/lib/query-keys.ts`).
-- Theme is a hand-rolled context (`app/providers/theme-provider.tsx`), not `next-themes` — follow that pattern rather than reaching for the `next-themes` package.
-- TanStack Query provider/devtools: `app/providers/query-client-providers.tsx`, gated on `process.env.NODE_ENV`.
+- Providers live in `components/providers/` and are composed by `providers.tsx`, which the root layout renders with the server-built config. Theme is a hand-rolled context (`theme-provider.tsx`), not `next-themes` — follow that pattern rather than reaching for the `next-themes` package.
+- TanStack Query provider/devtools: `components/providers/query-client-providers.tsx`, gated on `AppConfig.environment`.
 - Forms use local React state + Zod; React Hook Form and the shadcn `Form` component are not installed — don't add them without checking whether that decision has changed.
+- Every API call goes through `apiFetch` in `lib/api-client.ts` (`credentials: "include"`, one refresh-and-replay on 401, `ApiError` with the API's field errors). Don't call `fetch` against core-api directly.
+- Validate every core-api response with `parseResponse(schema, data)` from the same file before it reaches domain code — it throws `ApiError(502)` and logs the failing fields in dev. Don't hand-roll `safeParse` in a feature's `api/` module.
+- Config reaches the browser the same way as in `apps/back-office-portal`: `lib/env.ts` parses `process.env` on the server, `lib/app-config.server.ts` narrows it to the public `AppConfig` shape, and `<AppConfigProvider>` publishes it. Nothing uses `NEXT_PUBLIC_*`, so the same build runs in every environment. See `.env.example`.
+- `AppConfig` is only readable from a hook, so `apiFetch` and `resolveMediaUrl` take `apiBaseUrl`/`mediaBaseUrl` as their first argument: the hook calls `useAppConfig()` and passes it to the feature's api function. Don't reach for a module-level base URL, and never call `useAppConfig()` outside a component or hook.
+
+## Auth
+
+The storefront browser calls core-api directly — there is no BFF/proxy layer. core-api owns the session in **httpOnly cookies** (`accessToken` 15 min, `refreshToken` 10 days, set by `AuthCookieService` on the API origin), so:
+
+- Next middleware and server components cannot see the session. `GET /storefront/auth/me` is the only source of truth, exposed as `useCurrentCustomer()` — `null` means anonymous, `undefined` means not resolved yet.
+- Route protection is the client-side `RequireCustomer` guard (`src/features/auth/components/require-customer.tsx`) wrapped around `app/account/layout.tsx`, not `proxy.ts`.
+- The 15-minute access token makes refresh-and-replay on 401 routine, not exceptional; it's handled once inside `apiFetch`.
+- Signed-in customer state lives in the TanStack Query cache under `authKeys.currentCustomer()`. Mutations write to that key rather than to a parallel context.
+- `CurrentCustomerResponse.image` is a raw MinIO **object key**, unlike the staff `UserMapper` which resolves it — `lib/media.ts` builds the public URL.
 
 ## Current state
 
-Phase 1 (scaffold and foundations) only: shadcn/ui initialized and base component set added, TanStack Query wired into `app/layout.tsx`, `products` feature with domain types, mock data, and query hooks. No pages ported from the legacy app yet, no `.env`/API base URL configured, no route protection (`proxy.ts`) — those land in later migration phases per `docs/NEXTJS_MIGRATION_PLAN.md`.
+Pages ported with mock data (landing, category, product detail, search, cart/checkout, account). Real backend integration covers auth and the customer profile only: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, and avatar upload via `PUT /storefront/auth/me/image`. Products, categories, orders, favorites, payment methods, and the saved shipping address are still mock/localStorage — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`.

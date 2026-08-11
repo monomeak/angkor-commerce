@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { isExpiryInFuture, isValidCardNumber } from "./card-format";
+import { isExpiryInFuture, isValidCardNumber } from "../lib/card-format";
 
 const expirySchema = z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Enter expiry as MM/YY.");
 

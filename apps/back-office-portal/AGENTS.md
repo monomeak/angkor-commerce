@@ -15,6 +15,8 @@ Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base U
 - UI components must not call DummyJSON (or any transport) directly — always go through a feature's API function.
 - DummyJSON response shapes stay separate from domain types; validate external responses with Zod before mapping into domain objects.
 - Query keys are owned by the feature that defines them.
+- Config reaches the browser through `lib/env.ts` (server-side `process.env` parsing) → `lib/app-config.server.ts` (the public `AppConfig` shape) → `<AppConfigProvider>`. No `NEXT_PUBLIC_*`, so one build runs in every environment; secrets stay in `lib/env.ts` and must never enter `AppConfig`.
+- `AppConfig` is only readable from a hook, so api functions take `apiBaseUrl` as their first argument and the calling hook supplies it via `useAppConfig()`. Never call `useAppConfig()` at module scope — it throws on import.
 - URL search params are the source of truth for shareable list filters and pagination.
 - Forms currently use local React state + Zod; React Hook Form is not installed — don't add it without checking whether the stack decision has changed.
 

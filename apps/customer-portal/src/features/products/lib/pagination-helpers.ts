@@ -1,3 +1,6 @@
+/** Products shown per page on the category and search grids. */
+export const PRODUCTS_PAGE_SIZE = 8;
+
 // Collapses a long page run into first/last + a window around the current
 // page, e.g. [1, "ellipsis", 4, 5, 6, "ellipsis", 20].
 export function getPageRange(currentPage: number, totalPages: number): (number | "ellipsis")[] {

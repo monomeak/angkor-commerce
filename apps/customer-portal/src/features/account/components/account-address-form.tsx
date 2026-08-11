@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { shippingAddressSchema } from "@/src/features/checkout/lib/checkout-schemas";
+import { shippingAddressSchema } from "@/src/features/checkout/schemas/shipping-address.schema";
 import type { ShippingAddress } from "@/src/features/orders/types/order";
 
 type AccountAddressFormProps = {

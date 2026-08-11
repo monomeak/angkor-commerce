@@ -3,33 +3,33 @@
 // should only ever see the domain types in `auth.ts`.
 
 export interface DummyLoginResponse {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  image: string;
-  accessToken: string;
-  refreshToken: string;
+    id: number;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    // gender: string;
+    image: string;
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface DummyRegisterResponse {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  image?: string;
+    id: number;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    image?: string;
 }
 
 export interface DummyCurrentUserResponse {
-  id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  image: string;
-  role: string;
+    id: number;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    gender: string;
+    image: string;
+    role: string;
 }

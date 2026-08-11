@@ -19,12 +19,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    // const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login({ username, password, rememberMe });
+            await login({ username, password });
             onSuccess?.();
         } catch {
             setPassword("");
@@ -94,7 +94,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                             </button>
                         </div>
                     </div>
-
+                    {/* 
                     <div className="flex items-center gap-2">
                         <Input
                             id="rememberMe"
@@ -107,7 +107,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                         <Label htmlFor="rememberMe" className="text-sm font-medium text-muted-foreground">
                             Remember me
                         </Label>
-                    </div>
+                    </div> */}
 
                     {error && (
                         <p className="text-sm text-destructive">

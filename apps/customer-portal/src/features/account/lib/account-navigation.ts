@@ -1,10 +1,6 @@
-import { CreditCard, Heart, Lock, ShoppingCart, User, type LucideIcon } from "lucide-react";
+import { Heart, Lock, ShoppingCart, User } from "lucide-react";
 
-export type AccountNavigationItem = {
-    label: string;
-    href: string;
-    icon: LucideIcon;
-};
+import type { AccountNavigationItem } from "../types/account";
 
 export const accountNavigation: AccountNavigationItem[] = [
     {

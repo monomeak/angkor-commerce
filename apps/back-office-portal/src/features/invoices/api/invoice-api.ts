@@ -1,12 +1,11 @@
-import { env } from "@/config/env";
 import { cartsResponseSchema } from "../schemas/cart.schema";
 import { mapCartToInvoice } from "../mappers/invoice.mapper";
 import type { Invoice } from "../types/invoice";
 
-const BASE_URL = env.apiBaseUrl;
+// Base URL comes from <AppConfigProvider> via the calling hook — see auth-api.ts.
 
-export async function fetchAllInvoices(): Promise<Invoice[]> {
-  const res = await fetch(`${BASE_URL}/carts?limit=0`);
+export async function fetchAllInvoices(apiBaseUrl: string): Promise<Invoice[]> {
+  const res = await fetch(`${apiBaseUrl}/carts?limit=0`);
   if (!res.ok) {
     throw new Error(`Failed to fetch invoices: ${res.status}`);
   }

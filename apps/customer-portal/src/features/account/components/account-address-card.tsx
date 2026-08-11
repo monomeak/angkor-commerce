@@ -5,11 +5,11 @@ import { MapPin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ShippingAddress } from "@/src/features/orders/types/order";
-import { useAccount } from "../lib/account-context";
+import { useSavedAddress } from "../lib/address-context";
 import { AccountAddressForm } from "./account-address-form";
 
 export function AccountAddressCard() {
-  const { savedAddress, saveAddress } = useAccount();
+  const { savedAddress, saveAddress } = useSavedAddress();
   const [isEditing, setIsEditing] = useState(false);
 
   function handleSaved(address: ShippingAddress) {
