@@ -1,53 +1,27 @@
-import type { DummyLoginResponse, DummyRegisterResponse, DummyCurrentUserResponse } from "../types/dummy-auth";
-import type { AuthSession, AuthUser } from "../types/auth";
-import { mapApiRoleToAppRole, parseApiRole } from "./role.mapper";
+import type { AuthenticatedUserDto, CurrentUserDto } from "../schemas/user.schema";
+import type { AuthUser, CurrentUser } from "../types/auth";
 
 /**
- * DummyJSON's /auth/login response doesn't include a role field,
- * so it's passed in separately (fetched via /auth/me, or defaulted
- * to "user" for a simple app that doesn't need per-user roles yet).
+ * core-api leaves firstName/lastName null on accounts created before the profile
+ * fields existed, but the UI treats them as strings everywhere (initials, greetings,
+ * table cells). Normalising to "" here keeps every consumer free of null checks.
  */
-export function mapToAuthSession(dto: DummyLoginResponse, rawRole: string = "user"): AuthSession {
-    const user: AuthUser = {
+export function mapToAuthUser(dto: AuthenticatedUserDto): AuthUser {
+    return {
         id: dto.id,
         username: dto.username,
         email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        // gender: dto.gender as AuthUser["gender"],
+        firstName: dto.firstName ?? "",
+        lastName: dto.lastName ?? "",
         image: dto.image,
-        role: mapApiRoleToAppRole(parseApiRole(rawRole))
-    };
-
-    return {
-        user,
-        accessToken: dto.accessToken,
-        refreshToken: dto.refreshToken
+        role: dto.role
     };
 }
 
-export function mapCurrentUserToAuthUser(dto: DummyCurrentUserResponse): AuthUser {
+export function mapToCurrentUser(dto: CurrentUserDto): CurrentUser {
     return {
-        id: dto.id,
-        username: dto.username,
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        // gender: dto.gender as AuthUser["gender"],
-        image: dto.image,
-        role: mapApiRoleToAppRole(parseApiRole(dto.role))
-    };
-}
-
-export function mapRegisterResponseToUser(
-    dto: DummyRegisterResponse
-): Pick<AuthUser, "id" | "username" | "email" | "firstName" | "lastName" | "image"> {
-    return {
-        id: dto.id,
-        username: dto.username,
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        image: dto.image ?? ""
+        ...mapToAuthUser(dto),
+        phone: dto.phone,
+        status: dto.status
     };
 }

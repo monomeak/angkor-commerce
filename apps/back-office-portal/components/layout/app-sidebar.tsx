@@ -61,8 +61,10 @@ export default function AppSidebar() {
 
     setIsLoggingOut(true);
 
-    window.setTimeout(() => {
-      logout();
+    window.setTimeout(async () => {
+      // Await it: the cookies are httpOnly, so they are only gone once the API has
+      // responded. Redirecting first would land on /login with a live session.
+      await logout();
       router.replace("/login");
     }, LOGOUT_DELAY_MS);
   };

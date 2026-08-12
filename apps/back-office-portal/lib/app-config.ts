@@ -4,6 +4,8 @@
  */
 export interface AppConfig {
     apiBaseUrl: string;
+    mediaBaseUrl: string;
+    /** Fallback only — records that carry their own currency (products, invoices) win. */
     currency: string;
     locale: string;
     timezone: string;

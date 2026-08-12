@@ -5,18 +5,17 @@ import { registerRequest } from "../api/auth-api";
 import { authKeys } from "../lib/query-keys";
 import { registerRequestSchema } from "../schemas/register.schema";
 import type { RegisterPayload } from "../types/auth";
-import type { DummyRegisterResponse } from "../types/dummy-auth";
 
 async function performRegister(
   apiBaseUrl: string,
   payload: RegisterPayload,
-): Promise<DummyRegisterResponse> {
+): Promise<never> {
   const parsed = registerRequestSchema.safeParse(payload);
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
   }
 
-  return registerRequest(apiBaseUrl, parsed.data);
+  return registerRequest();
 }
 
 export function useRegister() {

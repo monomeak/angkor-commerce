@@ -1,5 +1,5 @@
 import { ROLE } from "@/src/shared/role.type";
-import { getRoleRank } from "../../auth/mappers/role.mapper";
+import { getRoleRank } from "../../auth/lib/role-hierarchy";
 import { AppRole } from "../../auth/types/auth";
 import { TeamMember } from "../types/team";
 export function canManageTeam(actorRole: AppRole): boolean {

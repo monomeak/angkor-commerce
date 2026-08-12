@@ -10,7 +10,7 @@ export const profileSchema = z.object({
   image: z.url(),
   gender: z.enum(["male", "female"]),
   birthDate: z.string(),
-  role: z.enum(["admin", "user", "moderator"]),
+  role: z.enum(["super_admin", "shop_admin", "staff"]),
   company: z.object({
     name: z.string(),
     department: z.string(),

@@ -1,3 +1,5 @@
+import type { AppRole } from "@/src/features/auth/types/auth";
+
 export interface UserProfile {
   id: number;
   firstName: string;
@@ -8,7 +10,7 @@ export interface UserProfile {
   image: string;
   gender: "male" | "female";
   birthDate: string;
-  role: "admin" | "user" | "moderator";
+  role: AppRole;
   company: {
     name: string;
     department: string;
