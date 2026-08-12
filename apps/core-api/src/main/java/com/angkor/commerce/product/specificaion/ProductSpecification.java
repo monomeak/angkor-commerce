@@ -15,8 +15,7 @@ import java.util.List;
 public final class ProductSpecification {
     public static Specification<Product> from(ProductQueryParams q) {
         return Specification
-                .where(notDeleted())
-                .and(status(q.status()))
+                .where(status(q.status()))
                 .and(category(q.categoryId(),q.categorySlug()))
                 .and(priceBetween(q.minPrice(), q.maxPrice()))
                 .and(search(q.q()))
@@ -24,13 +23,15 @@ public final class ProductSpecification {
                 .and(inStock(q.inStock()));
 
     }
-    private static Specification<Product> notDeleted() {
-        return (root, cq, cb) -> cb.notEqual(root.get("status"), RecordStatus.DELETED);
-    }
-
+    /**
+     * Archived (DELETED) products stay out of the default listing, but asking for them
+     * explicitly must return them — the back office needs an "archived" filter to undo a
+     * soft delete. An unconditional notDeleted() would have made them unreachable at any
+     * filter setting.
+     */
     private static Specification<Product> status(RecordStatus status) {
         return status == null
-                ? Specification.unrestricted()
+                ? (root, cq, cb) -> cb.notEqual(root.get("status"), RecordStatus.DELETED)
                 : (root, cq, cb) -> cb.equal(root.get("status"), status);
     }
 

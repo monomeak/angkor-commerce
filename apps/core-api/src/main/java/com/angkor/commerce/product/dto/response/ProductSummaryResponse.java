@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 
 public record ProductSummaryResponse(
     Long id,
-    String title,
+    String name,
     String category, // flattened to name for list views
     BigDecimal price, // min effective variant price
     String currency,

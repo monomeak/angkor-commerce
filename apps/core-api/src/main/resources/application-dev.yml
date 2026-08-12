@@ -35,7 +35,9 @@ server:
 
 angkor:
     cors:
-        allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+        # Both portals run `next dev`, which defaults to 3000 and falls back to 3001 when
+        # taken — so the port each one gets depends on start order. Allow both.
+        allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3001}
     cookie:
         secure: false
         same-site: Lax

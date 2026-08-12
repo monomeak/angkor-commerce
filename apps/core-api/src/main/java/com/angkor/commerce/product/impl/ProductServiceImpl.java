@@ -102,9 +102,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional()
     public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
-        Product product = loadProduct(id);
+        Product product = loadProductIncludingArchived(id);
 
-        if (request.title() != null) product.setName(request.title());
+        if (request.name() != null) product.setName(request.name());
         if (request.description() != null) product.setDescription(request.description());
         if (request.price() != null) product.setPrice(request.price());
         if (request.currency() != null) product.setCurrency(request.currency());
@@ -281,6 +281,15 @@ public class ProductServiceImpl implements ProductService {
             .findById(id)
             .filter(p -> p.getStatus() != RecordStatus.DELETED)
             .orElseThrow(() -> notFound(id));
+    }
+
+    /**
+     * Archived products are hidden from reads but must stay writable, otherwise a soft
+     * delete is a one-way door: restoring one means PATCHing status back to active, and
+     * loadProduct() would 404 before that could ever run.
+     */
+    private Product loadProductIncludingArchived(Long id) {
+        return productRepository.findById(id).orElseThrow(() -> notFound(id));
     }
 
     private ProductVariant loadProductVariant(Long productId, Long variantId) {
