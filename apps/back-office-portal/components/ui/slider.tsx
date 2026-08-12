@@ -10,11 +10,18 @@ function Slider({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
+  // Thumb count follows the value, not the bounds. A scalar value (a single-value
+  // slider) must render one thumb — falling through to [min, max] gave it two, and
+  // the second had no value behind it. The [min, max] fallback is only right when
+  // neither prop is supplied, i.e. an uncontrolled range slider.
+  const _scalar = value ?? defaultValue
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
       ? defaultValue
-      : [min, max]
+      : _scalar != null
+        ? [_scalar]
+        : [min, max]
 
   return (
     <SliderPrimitive.Root
