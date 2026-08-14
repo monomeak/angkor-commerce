@@ -2,11 +2,14 @@ import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Separator } from "@/components/ui/separator";
+import { getAppConfig } from "@/lib/app-config.server";
+import { fetchCategories } from "@/src/features/categories/api/category-api";
 import { getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
 
-const navCategories = getTopLevelCategories();
+// Server component, so the shop links are in the HTML rather than filled in after hydration.
+export async function SiteFooter() {
+    const navCategories = getTopLevelCategories(await fetchCategories(getAppConfig().apiBaseUrl));
 
-export function SiteFooter() {
     return (
         <footer className="border-t bg-muted/30">
             <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">

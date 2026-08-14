@@ -26,10 +26,12 @@ export function getPageRange(currentPage: number, totalPages: number): (number |
   return range;
 }
 
-export function resolvePage(pageParam: string | undefined, totalPages: number): number {
+/**
+ * The requested page, floored at 1. It cannot be clamped to the last page here any more:
+ * the total only comes back with the results, and the page number is what decides `skip` on
+ * the request that fetches them. Callers clamp for display once they have the total.
+ */
+export function resolvePage(pageParam: string | undefined): number {
   const requested = Number(pageParam);
-  return Math.min(
-    Math.max(Number.isFinite(requested) ? Math.trunc(requested) : 1, 1),
-    totalPages,
-  );
+  return Math.max(Number.isFinite(requested) ? Math.trunc(requested) : 1, 1);
 }

@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getAppConfig } from "@/lib/app-config.server";
 import { CategoryPill } from "@/src/features/categories/components/category-pill";
+import { fetchCategories } from "@/src/features/categories/api/category-api";
 import { getCategoryById, getCategoryBySlug, getChildCategories } from "@/src/features/categories/lib/category-helpers";
 import { fetchProducts } from "../api/product-api";
 import { ProductCard } from "../components/product-card";
+import { NoProductsInCategory } from "../components/product-empty-states";
 import { ProductPagination } from "../components/product-pagination";
 import { PriceRangeFilter } from "../components/price-range-filter";
 import { PRODUCTS_PAGE_SIZE, resolvePage } from "../lib/pagination-helpers";
-import { PRICE_FILTER_MAX, PRICE_FILTER_MIN, parsePriceParam } from "../lib/price-filter";
+import {
+    PRICE_FILTER_MAX,
+    PRICE_FILTER_MIN,
+    isPriceFiltered,
+    parsePriceParam,
+    toPriceFilter
+} from "../lib/price-filter";
 
 type CategoryViewProps = {
     readonly slug: string;
@@ -25,7 +34,9 @@ export async function CategoryView({
     minPriceParam,
     maxPriceParam
 }: CategoryViewProps) {
-    const category = getCategoryBySlug(slug);
+    const { apiBaseUrl } = getAppConfig();
+    const categories = await fetchCategories(apiBaseUrl);
+    const category = getCategoryBySlug(categories, slug);
 
     if (!category) {
         notFound();
@@ -33,20 +44,29 @@ export async function CategoryView({
 
     const minPrice = parsePriceParam(minPriceParam, PRICE_FILTER_MIN);
     const maxPrice = parsePriceParam(maxPriceParam, PRICE_FILTER_MAX);
-    const parent = category.parentId ? getCategoryById(category.parentId) : null;
-    const children = getChildCategories(category.id);
+    const parent = category.parentId ? getCategoryById(categories, category.parentId) : null;
+    const children = getChildCategories(categories, category.id);
     const activeChild =
         categoryParam && categoryParam !== "all" ? children.find((child) => child.slug === categoryParam) : undefined;
-    const allProducts = await fetchProducts({
+
+    /*
+     * Paging is the API's job now. It used to fetch every product and slice, which meant the
+     * page count was only ever right because the whole catalogue was in memory. `page` still
+     * has to be resolved before the request (it decides `skip`), so it is clamped against
+     * the total afterwards rather than before.
+     */
+    const requestedPage = resolvePage(pageParam);
+    const result = await fetchProducts(apiBaseUrl, {
         categorySlug: activeChild?.slug ?? slug,
-        minPrice,
-        maxPrice
+        ...toPriceFilter(minPrice, maxPrice),
+        skip: (requestedPage - 1) * PRODUCTS_PAGE_SIZE,
+        limit: PRODUCTS_PAGE_SIZE
     });
 
-    const totalPages = Math.max(1, Math.ceil(allProducts.length / PRODUCTS_PAGE_SIZE));
-    const currentPage = resolvePage(pageParam, totalPages);
-    const start = (currentPage - 1) * PRODUCTS_PAGE_SIZE;
-    const products = allProducts.slice(start, start + PRODUCTS_PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil(result.total / PRODUCTS_PAGE_SIZE));
+    const currentPage = Math.min(requestedPage, totalPages);
+    const products = result.products;
+    const isPriceFilterActive = isPriceFiltered(minPrice, maxPrice);
 
     return (
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">
@@ -101,7 +121,11 @@ export async function CategoryView({
                 {products.length > 0 ? (
                     products.map((product) => <ProductCard key={product.id} product={product} />)
                 ) : (
-                    <p className="col-span-full text-sm text-muted-foreground">No products in this category yet.</p>
+                    <NoProductsInCategory
+                        // Only offer a reset when a filter is actually responsible for the
+                        // empty grid; otherwise the button would clear nothing.
+                        resetHref={isPriceFilterActive ? buildCategoryHref(slug, activeChild?.slug) : undefined}
+                    />
                 )}
             </div>
 
@@ -116,11 +140,12 @@ export async function CategoryView({
     );
 }
 
+// minPrice/maxPrice default to the slider's ends, which is how a link drops the filter.
 function buildCategoryHref(
     slug: string,
     categoryParam: string | undefined,
-    minPrice: number,
-    maxPrice: number,
+    minPrice: number = PRICE_FILTER_MIN,
+    maxPrice: number = PRICE_FILTER_MAX,
     page?: number
 ): string {
     const params = new URLSearchParams();

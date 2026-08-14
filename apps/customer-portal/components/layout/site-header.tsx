@@ -22,11 +22,16 @@ import { useAuthSession } from "@/src/features/auth/hooks/use-current-customer";
 import { useLogout } from "@/src/features/auth/hooks/use-logout";
 import { CartSheet } from "@/src/features/cart/components/cart-sheet";
 import { getChildCategories, getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
+import { useCategories } from "@/src/features/categories/hooks/use-categories";
 import type { Category } from "@/src/features/categories/types/category";
 
-const navCategories = getTopLevelCategories();
-
 export function SiteHeader() {
+    // Was a module-level constant off mock data. It has to be read per render now that the
+    // tree comes from core-api; the query is cached and shared, so the menus, the footer and
+    // the grids all resolve to one request.
+    const categories = useCategories();
+    const navCategories = getTopLevelCategories(categories);
+
     return (
         <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
@@ -168,7 +173,7 @@ function HeaderAuthActions() {
 }
 
 function CategoryNavItem({ category }: { readonly category: Category }) {
-    const children = getChildCategories(category.id);
+    const children = getChildCategories(useCategories(), category.id);
 
     return (
         <NavigationMenuItem>
@@ -198,7 +203,7 @@ function CategoryNavItem({ category }: { readonly category: Category }) {
 }
 
 function MobileCategoryGroup({ category }: { readonly category: Category }) {
-    const children = getChildCategories(category.id);
+    const children = getChildCategories(useCategories(), category.id);
 
     return (
         <div className="py-1">

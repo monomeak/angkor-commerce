@@ -105,6 +105,18 @@ function buildRequest(apiBaseUrl: string, path: string, init: RequestInit): Requ
     });
 }
 
+/**
+ * `next: { revalidate, tags }` is a Next.js extension to RequestInit, and the `Request`
+ * constructor drops any property it does not recognise — so it has to ride along in fetch's
+ * second argument instead. Without this a server-side caller asking for ISR silently got an
+ * uncached request, baked in at build time and never revalidated.
+ *
+ * No effect in the browser, where the option is simply ignored.
+ */
+function nextFetchOptions(init: RequestInit): RequestInit | undefined {
+    return init.next ? { next: init.next } : undefined;
+}
+
 async function toApiError(response: Response): Promise<ApiError> {
     let body: ApiErrorBody | null = null;
 
@@ -135,14 +147,14 @@ export async function apiFetch<T>(apiBaseUrl: string, path: string, options: Api
 
     let response: Response;
     try {
-        response = await fetch(buildRequest(apiBaseUrl, path, init));
+        response = await fetch(buildRequest(apiBaseUrl, path, init), nextFetchOptions(init));
     } catch {
         throw new ApiError("Can't reach the server. Check your connection and try again.", 0);
     }
 
     if (response.status === 401 && retryOnUnauthorized && (await refreshSession(apiBaseUrl))) {
         // A Request body can only be read once, so rebuild rather than replay.
-        response = await fetch(buildRequest(apiBaseUrl, path, init));
+        response = await fetch(buildRequest(apiBaseUrl, path, init), nextFetchOptions(init));
     }
 
     if (!response.ok) {

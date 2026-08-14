@@ -1,50 +1,21 @@
-import { getDescendantCategoryIds } from "@/src/features/categories/lib/category-helpers";
-import type { Product } from "../types/product";
+import { applyDiscount } from "./pricing";
+import type { MockProduct } from "../types/product";
 
-export function getDiscountedPrice(product: Product): number {
-  const discount = (product.price * product.promotionPercentage) / 100;
-  return Math.round((product.price - discount) * 100) / 100;
+/*
+ * What is left for the cart and checkout, which still resolve product ids against local
+ * data. Two sets of helpers are gone from here:
+ *
+ * - filterProductsBy*, which only existed to fake the listing endpoint in memory. core-api
+ *   filters now — see api/product-api.ts.
+ * - getSizeOptions, which guessed sizes from the category name. Sizes are variant data and
+ *   come from GET /products/{id} — see lib/variants.ts.
+ */
+
+/** Mock-shape products spell the discount `promotionPercentage`; the API says discountPercentage. */
+export function getDiscountedPrice(product: MockProduct): number {
+    return applyDiscount(product.price, product.promotionPercentage);
 }
 
-const SHOE_SIZES = ["39", "40", "41", "42", "43", "44"];
-const APPAREL_SIZES = ["S", "M", "L", "XL"];
-
-export function getSizeOptions(categoryName: string): string[] {
-  return categoryName.toLowerCase().includes("shoe") ? SHOE_SIZES : APPAREL_SIZES;
-}
-
-export function filterProductsByCategory(
-  products: Product[],
-  categoryId: number,
-): Product[] {
-  const allowedCategoryIds = new Set(getDescendantCategoryIds(categoryId));
-  return products.filter((product) => allowedCategoryIds.has(product.categoryId));
-}
-
-export function getProductById(products: Product[], id: number): Product | undefined {
-  return products.find((product) => product.id === id);
-}
-
-export function filterProductsByQuery(products: Product[], query: string): Product[] {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) {
-    return products;
-  }
-
-  return products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(normalized) ||
-      product.description.toLowerCase().includes(normalized),
-  );
-}
-
-export function filterProductsByPriceRange(
-  products: Product[],
-  minPrice: number,
-  maxPrice: number,
-): Product[] {
-  return products.filter((product) => {
-    const price = getDiscountedPrice(product);
-    return price >= minPrice && price <= maxPrice;
-  });
+export function getProductById(products: MockProduct[], id: number): MockProduct | undefined {
+    return products.find((product) => product.id === id);
 }

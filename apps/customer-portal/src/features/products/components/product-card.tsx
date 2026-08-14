@@ -5,29 +5,33 @@ import { Heart, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-import { getCategoryById } from "@/src/features/categories/lib/category-helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useCart } from "@/src/features/cart/lib/cart-context";
-import { getDiscountedPrice, getSizeOptions } from "../lib/product-helpers";
-import type { Product } from "../types/product";
+import { useAppConfig } from "@/components/providers/app-config-provider";
+import { productImageSrc } from "../lib/product-image";
+import { applyDiscount, formatPrice } from "../lib/pricing";
+import type { ProductSummary } from "../types/product";
 
 type ProductCardProps = {
-    readonly product: Product;
+    readonly product: ProductSummary;
     readonly className?: string;
 };
 
 export function ProductCard({ product, className }: ProductCardProps) {
-    const category = getCategoryById(product.categoryId);
-    const hasDiscount = product.promotionPercentage > 0;
-    const discountedPrice = getDiscountedPrice(product);
-    const sizeOptions = getSizeOptions(category?.name ?? "");
-    const [selectedSize, setSelectedSize] = useState(sizeOptions[0]);
+    const { mediaBaseUrl, locale } = useAppConfig();
+    const hasDiscount = product.discountPercentage > 0;
+    const discountedPrice = applyDiscount(product.price, product.discountPercentage);
     const [isFavorite, setIsFavorite] = useState(false);
-    const detailHref = category ? `/product/${category.slug}/${product.id}` : undefined;
-    const { addItem } = useCart();
+    // Real count from the API, unlike the sizes themselves — enough to tell a shopper whether
+    // there is a choice waiting on the detail page.
+    const sizeCount = product.variantCount;
+    // The API flattens category to a name on list rows, but names repeat across the tree
+    // ("Shoes" exists under Men, Women and Children), so the link is built from the slug.
+    const detailHref = product.categorySlug ? `/product/${product.categorySlug}/${product.id}` : undefined;
+    const thumbnailSrc = productImageSrc(mediaBaseUrl, product.thumbnail, product.name);
+    const isSoldOut = product.totalStock <= 0;
 
     return (
         <Card
@@ -40,10 +44,17 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 href={detailHref ?? "#"}
                 className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-muted to-muted/40"
             >
-                <Image src="/image.png" alt={product.name} width={200} height={200} />
+                <Image
+                    src={thumbnailSrc}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover"
+                    unoptimized
+                />
                 {hasDiscount && (
                     <Badge variant="destructive" className="absolute top-2 left-2">
-                        -{product.promotionPercentage}%
+                        -{product.discountPercentage}%
                     </Badge>
                 )}
                 <button
@@ -73,10 +84,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
                         </span>
                     </h3>
                     <div className="flex shrink-0 flex-col items-end">
-                        <span className="text-lg font-bold">${discountedPrice.toFixed(2)}</span>
+                        <span className="text-lg font-bold">
+                            {formatPrice(discountedPrice, product.currency, locale)}
+                        </span>
                         {hasDiscount && (
                             <span className="text-xs text-muted-foreground line-through">
-                                ${product.price.toFixed(2)}
+                                {formatPrice(product.price, product.currency, locale)}
                             </span>
                         )}
                     </div>
@@ -84,35 +97,21 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
                 <p className="line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
 
-                <div>
-                    <p className="mb-2 text-sm">What is your size?</p>
-                    <div className="flex flex-wrap gap-2">
-                        {sizeOptions.map((size) => (
-                            <button
-                                key={size}
-                                type="button"
-                                onClick={() => setSelectedSize(size)}
-                                aria-pressed={size === selectedSize}
-                                className={cn(
-                                    "flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-sm font-medium transition-colors",
-                                    size === selectedSize
-                                        ? "border-primary bg-primary text-primary-foreground"
-                                        : "border-border text-muted-foreground hover:border-primary hover:text-foreground"
-                                )}
-                            >
-                                {size}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
+                {/*
+                 * Sizes used to be guessed from the category name and picked right here. They
+                 * live on variants, which the list endpoint does not return — so choosing one
+                 * happens on the detail page, where the real SKUs and their stock are known.
+                 * Adding to the cart from a grid would otherwise book a size that may not exist.
+                 */}
                 <Button
                     variant="accent"
                     size="lg"
                     className="w-full"
-                    onClick={() => addItem(product.id, selectedSize)}
+                    nativeButton={false}
+                    disabled={isSoldOut || !detailHref}
+                    render={<Link href={detailHref ?? "#"} />}
                 >
-                    Add to cart
+                    {isSoldOut ? "Sold out" : sizeCount > 1 ? `Choose from ${sizeCount} sizes` : "View product"}
                 </Button>
             </div>
         </Card>

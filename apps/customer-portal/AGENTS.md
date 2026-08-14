@@ -10,7 +10,7 @@ Public storefront for Angkor Commerce: browsing, self-registration, and order/in
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4. Auth and the customer profile talk to `apps/core-api`; product/category data is still local mock data shaped like future HTTP calls.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4. Auth, the customer profile, and the product catalogue talk to `apps/core-api`; the cart, checkout, orders and favorites are still local mock/localStorage data.
 
 ## Structure and conventions
 
@@ -38,6 +38,21 @@ The storefront browser calls core-api directly — there is no BFF/proxy layer. 
 - Signed-in customer state lives in the TanStack Query cache under `authKeys.currentCustomer()`. Mutations write to that key rather than to a parallel context.
 - `CurrentCustomerResponse.image` is a raw MinIO **object key**, unlike the staff `UserMapper` which resolves it — `lib/media.ts` builds the public URL.
 
+## Catalogue
+
+Products and categories come from core-api's **shared** `GET /products` and `GET /categories`, not a storefront-specific route — the `/storefront/products` controller in `docs/api-design-draft/PRODUCT_API_DESIGN.md` was never built. Both are `permitAll` for GET, so browsing needs no session.
+
+- The storefront always sends `status=active`. The API's default only excludes `deleted`, which is right for the back office and would leak off-sale products here.
+- `categorySlug` matches the category **and its descendants** (`CategoryService.getDescendantCategoryIds`), so `/product/men` lists the whole subtree. Products only ever hang off leaf categories, so exact matching returned nothing.
+- List rows (`ProductSummaryResponse`) and the detail record (`ProductResponse`) are genuinely different shapes, modelled separately as `ProductSummary` and `Product`. A list row has no variants — only `variantCount` — which is why sizes are chosen on the detail page and a card just links there.
+- Size, stock and SKU live on **variants**, never on the product. A product's `price` is the lowest effective variant price and its `totalStock` is the sum; what a shopper pays comes from the selected variant.
+- Images are MinIO object keys. `lib/product-image.ts` resolves them and, when a product has none — the common case while the catalogue is unphotographed — generates a watermark tile instead: the product's initials over the shop wordmark, as an inline SVG data URI. It is derived only from the product name (so server and client agree) and paints no background (so the themed container behind it supplies light/dark). Pass it to `<Image unoptimized>`; Next's optimiser cannot handle data URIs.
+- Empty grids are `components/product-empty-states.tsx`, which distinguishes "this category has nothing" from "your price filter excluded everything" and offers a reset link only in the second case.
+- Category and search pages fetch on the server (indexable, so products belong in the HTML); the home-page rows use React Query. Server components read `getAppConfig().apiBaseUrl` directly rather than `useAppConfig()`.
+- `fetchCategories` sets `next: { revalidate: 300 }`, which makes every otherwise-static route ISR. Note this means `next build` needs core-api reachable — those routes prerender at build time.
+
 ## Current state
 
-Pages ported with mock data (landing, category, product detail, search, cart/checkout, account). Real backend integration covers auth and the customer profile only: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, and avatar upload via `PUT /storefront/auth/me/image`. Products, categories, orders, favorites, payment methods, and the saved shipping address are still mock/localStorage — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`.
+Real backend integration covers auth, the customer profile, and the catalogue: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, plus product listing (landing rows, category browse, search) and product detail with variants.
+
+Still mock/localStorage: cart, checkout, orders, favorites, payment methods, and the saved shipping address — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.
