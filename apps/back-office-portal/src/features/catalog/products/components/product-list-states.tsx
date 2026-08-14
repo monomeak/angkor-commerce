@@ -45,7 +45,7 @@ export function ProductEmptyState({
                 <EmptyDescription>{t("emptyBody")}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-                <Button render={<Link href="/catalog/products/new">{t("addProduct")}</Link>} />
+                <Button nativeButton={false} render={<Link href="/catalog/products/new">{t("addProduct")}</Link>} />
             </EmptyContent>
         </Empty>
     );

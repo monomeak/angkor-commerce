@@ -408,7 +408,16 @@ export function ProductForm({
                             {t("back")}
                         </Button>
                     ) : (
-                        <Button type="button" variant="outline" render={<Link href={cancelHref}>{t("cancel")}</Link>} />
+                        /*
+                         * nativeButton={false}: this renders an <a>, so Base UI has to apply its
+                         * non-native handling rather than assume a real <button>. No type either —
+                         * an anchor cannot submit the form.
+                         */
+                        <Button
+                            variant="outline"
+                            nativeButton={false}
+                            render={<Link href={cancelHref}>{t("cancel")}</Link>}
+                        />
                     )}
 
                     {isWizard && step === 1 ? (

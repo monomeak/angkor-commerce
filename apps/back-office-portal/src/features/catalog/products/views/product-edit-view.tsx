@@ -97,6 +97,7 @@ export function ProductEditView({ productId }: { readonly productId: number }) {
                     variant="ghost"
                     size="icon"
                     aria-label={t("backToProducts")}
+                    nativeButton={false}
                     render={
                         <Link href={LIST_HREF}>
                             <ArrowLeft className="size-4" />

@@ -27,7 +27,7 @@ export default function UnauthorizedPage() {
         </CardHeader>
 
         <CardContent className="flex justify-center">
-          <Button render={<Link href="/overview"></Link>}>
+          <Button nativeButton={false} render={<Link href="/overview"></Link>}>
             Back to overview
           </Button>
         </CardContent>

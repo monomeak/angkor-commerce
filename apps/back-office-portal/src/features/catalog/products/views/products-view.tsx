@@ -53,6 +53,7 @@ export function ProductsView() {
                     <p className="text-muted-foreground text-sm">{t("productsSubtitle")}</p>
                 </div>
                 <Button
+                    nativeButton={false}
                     render={
                         <Link href="/catalog/products/new">
                             <Plus className="size-4" />
