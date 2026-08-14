@@ -47,10 +47,14 @@ public class ProductMapper {
 
     // Mapper struct can be used
     public ProductSummaryResponse toSummary(Product product, ProductAggregate aggregate) {
+        Category category = product.getCategory();
         return new ProductSummaryResponse(
             product.getId(),
             product.getName(),
-            categoryName(product.getCategory()),
+            product.getDescription(),
+            categoryName(category),
+            category != null ? category.getId() : null,
+            category != null ? category.getSlug() : null,
             minPrice(product, aggregate),
             product.getCurrency(),
             product.getDiscountPercentage(),

@@ -13,10 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 @NoArgsConstructor()
 public final class ProductSpecification {
-    public static Specification<Product> from(ProductQueryParams q) {
+    /**
+     * @param categoryIds the already-resolved category subtree, or null for "no category
+     *                    filter". Resolution lives in ProductServiceImpl: this class is
+     *                    static and has no repository to walk the category tree with.
+     */
+    public static Specification<Product> from(ProductQueryParams q, List<Long> categoryIds) {
         return Specification
                 .where(status(q.status()))
-                .and(category(q.categoryId(),q.categorySlug()))
+                .and(categoryIn(categoryIds))
                 .and(priceBetween(q.minPrice(), q.maxPrice()))
                 .and(search(q.q()))
                 .and(hasSize(q.size()))
@@ -35,10 +40,15 @@ public final class ProductSpecification {
                 : (root, cq, cb) -> cb.equal(root.get("status"), status);
     }
 
-    private static Specification<Product> category(Long id, String slug) {
-        if (id != null) return (root, cq, cb) -> cb.equal(root.get("category").get("id"), id);
-        if (slug != null) return (root, cq, cb) -> cb.equal(root.get("category").get("slug"), slug);
-        return Specification.unrestricted();
+    /**
+     * Matches the category subtree, not one category. Products hang off leaf categories
+     * only, so an exact match on a parent ("men") returned an empty grid — the storefront's
+     * top-level browse pages are all parents.
+     */
+    private static Specification<Product> categoryIn(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return Specification.unrestricted();
+        if (ids.size() == 1) return (root, cq, cb) -> cb.equal(root.get("category").get("id"), ids.getFirst());
+        return (root, cq, cb) -> root.get("category").get("id").in(ids);
     }
 
     private static Specification<Product> priceBetween(BigDecimal min, BigDecimal max) {
