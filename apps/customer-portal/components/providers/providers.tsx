@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { AddressProviderConfig } from "@/src/features/account/lib/address-context";
 import { CartProviderConfig } from "@/src/features/cart/lib/cart-context";
 import type { AppConfig } from "@/lib/app-config";
 import { AppConfigProvider } from "./app-config-provider";
@@ -17,9 +16,7 @@ export function Providers({ config, children }: AppProvidersProps) {
     <AppConfigProvider config={config}>
       <ThemeProviderConfig>
         <QueryClientProviderConfig>
-          <AddressProviderConfig>
-            <CartProviderConfig>{children}</CartProviderConfig>
-          </AddressProviderConfig>
+          <CartProviderConfig>{children}</CartProviderConfig>
         </QueryClientProviderConfig>
       </ThemeProviderConfig>
     </AppConfigProvider>

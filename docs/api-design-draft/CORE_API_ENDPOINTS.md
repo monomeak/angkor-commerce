@@ -103,7 +103,7 @@ today (see `AuthController`/`JwtAuthenticationFilter`). Every storefront query s
 | Products | `GET /storefront/products?skip=&limit=&categorySlug=&search=&minPrice=&maxPrice=` | 🆕 planned | Public catalog read — fully public, no auth (matches how `customer-portal` already browses/searches without a login gate). Query params intentionally mirror what `customer-portal`'s mock `fetchProducts` filter shape already supports (`categorySlug`, `query`, `minPrice`/`maxPrice`) — the real endpoint should be a drop-in replacement for that function, not a redesign. |
 | Products | `GET /storefront/products/{id}` | 🆕 planned | |
 | Categories | `GET /storefront/categories` | 🆕 planned | Same flat-list shape as the staff endpoint; likely just reuse the staff `GET /categories` since categories aren't staff-sensitive data — no need for a separate storefront copy. |
-| Addresses | `GET /storefront/addresses`, `POST`, `PUT /{id}`, `DELETE /{id}` | 🆕 planned | Scoped to the authenticated customer. Blocked on open question 2 in the data model doc (address shape reconciliation) before the request/response DTOs can be finalized. |
+| Addresses | `GET /storefront/addresses`, `GET /{id}`, `POST`, `PATCH /{id}`, `PUT /{id}/default`, `DELETE /{id}` | ✅ done | Scoped to the authenticated customer (`ROLE_CUSTOMER` via `/api/v1/storefront/**`). Max 3 active addresses — the fourth `POST` is a 400. The first one saved becomes the default whatever the payload says; the default only ever moves through `PUT /{id}/default`, never `PATCH`. `PATCH` is a true partial update: an omitted field is left alone, a blank one clears a nullable column. `DELETE` is a soft delete that promotes the oldest remaining address to default. Optional `latitude`/`longitude` (sent together or not at all) carry the storefront's map pin. |
 | Orders | `POST /storefront/orders` (checkout) | 🆕 planned | Body: shipping address (or `addressId`) + cart line items (`productId`, `size`, `quantity` — no price, server computes it). Creates `Order` + `OrderItem`s, auto-generates `Invoice`/`InvoiceItem`s in the same transaction per `CORE_API_DATA_MODEL.md` decision 4. |
 | Orders | `GET /storefront/orders?skip=&limit=`, `GET /storefront/orders/{id}` | 🆕 planned | Scoped to `token.customerId`. |
 | Invoices | `GET /storefront/invoices?skip=&limit=`, `GET /storefront/invoices/{id}` | 🆕 planned | Read-only, scoped to the customer. |
@@ -116,7 +116,7 @@ today (see `AuthController`/`JwtAuthenticationFilter`). Every storefront query s
 Matches the dependency order in `CORE_API_DATA_MODEL.md`:
 
 1. ~~`Category` entity + `GET /categories`~~ — done 2026-07-30.
-2. `CustomerAddress` entity — extend the table to match the frontend's `ShippingAddress` shape (data model doc, decision on open question 2).
+2. ~~`CustomerAddress` entity + address CRUD~~ — done. The table was rebuilt for Cambodian addressing rather than extended to match the frontend mock; see decision 2 in `CORE_API_DATA_MODEL.md`.
 3. `Product` entity + staff CRUD + `GET /storefront/products` — unblocks the back-office product screens *and* lets `customer-portal` swap its mock `fetchProducts` for a real call.
 4. `Order`/`OrderItem` — new migration, entities, `POST /storefront/orders` checkout endpoint.
 5. Wire `Invoice` auto-generation off `Order` checkout; fill in the rest of the invoice/payment (back-office) endpoints, since the frontend components for `/invoices` already exist and are just waiting on data.

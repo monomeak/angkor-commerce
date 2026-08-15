@@ -10,7 +10,7 @@ Public storefront for Angkor Commerce: browsing, self-registration, and order/in
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4. Auth, the customer profile, and the product catalogue talk to `apps/core-api`; the cart, checkout, orders and favorites are still local mock/localStorage data.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4, Leaflet + react-leaflet (the address map picker, and the only place either is used). Auth, the customer profile, the product catalogue and the address book talk to `apps/core-api`; the cart, checkout, orders and favorites are still local mock/localStorage data.
 
 ## Structure and conventions
 
@@ -51,8 +51,19 @@ Products and categories come from core-api's **shared** `GET /products` and `GET
 - Category and search pages fetch on the server (indexable, so products belong in the HTML); the home-page rows use React Query. Server components read `getAppConfig().apiBaseUrl` directly rather than `useAppConfig()`.
 - `fetchCategories` sets `next: { revalidate: 300 }`, which makes every otherwise-static route ISR. Note this means `next build` needs core-api reachable — those routes prerender at build time.
 
+## Addresses
+
+`src/features/addresses/` owns the whole address book against `/storefront/addresses`. Nothing address-shaped lives under `account/` anymore — the old localStorage `AddressProviderConfig` is gone, and the account page just renders `<AddressBook />`.
+
+- The API caps a customer at **3** addresses and keeps exactly one default. The client mirrors the cap (`MAX_SAVED_ADDRESSES`) to disable the add button, but the rules are the API's: every mutation invalidates `addressKeys.list()` rather than patching the cache, because deleting the default promotes another row and the list is ordered default-first.
+- `useAddressesQuery` is gated on `useCurrentCustomer()` — checkout renders this for anonymous shoppers, where the call would be a guaranteed 401.
+- Fields are Cambodian, not the old `{address, city}` mock: `line1` is house + street, `commune` the sangkat, `district` the khan, `province` the khaet. `PATCH` sends every field, so blanking an optional one clears it server-side.
+- The form has a **map picker** (`components/map-picker.tsx`, reusable and address-agnostic — it only emits coordinates). Click drops a pin, dragging moves it, and each drop reverse-geocodes through OpenStreetMap's Nominatim to fill the address fields; whatever the lookup can't name keeps what was typed. `latitude`/`longitude` are saved with the address as a pair. That fetch is the one call in the portal that deliberately skips `apiFetch` — it isn't core-api, and session cookies have no business going there.
+- Leaflet touches `window` on import, so `map-canvas.tsx` (the react-leaflet part, plus `leaflet/dist/leaflet.css`) is only ever loaded through `next/dynamic` with `ssr: false` from `map-picker.tsx`. Import the picker, never the canvas.
+- Checkout does not manage addresses: `/shipping` offers the saved ones as fill-in buttons and flattens the chosen one into its mock `ShippingAddress` through `checkout/lib/saved-address.ts`. That adapter is lossy on purpose and should be deleted once `POST /storefront/orders` accepts an `addressId`.
+
 ## Current state
 
-Real backend integration covers auth, the customer profile, and the catalogue: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, plus product listing (landing rows, category browse, search) and product detail with variants.
+Real backend integration covers auth, the customer profile, the catalogue and the address book: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, product listing (landing rows, category browse, search), product detail with variants, and address CRUD with a map pin.
 
-Still mock/localStorage: cart, checkout, orders, favorites, payment methods, and the saved shipping address — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.
+Still mock/localStorage: cart, checkout, orders, favorites and payment methods — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.

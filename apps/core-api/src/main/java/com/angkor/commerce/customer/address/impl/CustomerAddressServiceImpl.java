@@ -12,10 +12,13 @@ import com.angkor.commerce.customer.address.dto.request.CreateAddressRequest;
 import com.angkor.commerce.customer.address.dto.request.UpdateAddressRequest;
 import com.angkor.commerce.customer.address.dto.response.AddressResponse;
 import com.angkor.commerce.customer.address.mapper.CustomerAddressMapper;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,7 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
         if (addressRepository.countActiveByCustomerId(customerId) >= MAX_ADDRESSES) {
             throw new ValidationException("You cannot save more than " + MAX_ADDRESSES + " addresses");
         }
+        requirePairedCoordinates(request.latitude(), request.longitude());
         Customer customer = customerRepository
             .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer with ID " + customerId + " was not found"));
@@ -66,17 +70,26 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
     public AddressResponse updateAddress(Long customerId, Long addressId, UpdateAddressRequest request) {
         CustomerAddress address = load(addressId, customerId);
 
-        // Save check
-        if (request.label() != null) address.setLabel(request.label());
-        if (request.recipientName() != null) address.setRecipientName(request.recipientName());
-        if (request.recipientPhone() != null) address.setRecipientPhone(request.recipientPhone());
-        if (request.line1() != null) address.setLine1(request.line1());
-        if (request.line2() != null) address.setLine2(request.line2());
-        if (request.commune() != null) address.setCommune(request.commune());
-        if (request.district() != null) address.setDistrict(request.district());
-        if (request.province() != null) address.setProvince(request.province());
-        if (request.postalCode() != null) address.setPostalCode(request.postalCode());
-        if (request.country() != null) address.setCountry(request.country());
+        // PATCH semantics: a null field means "leave it alone". A blank one clears the column
+        // when it is nullable — the only way a customer can drop a building line or a postal
+        // code once it is saved — and is ignored on a required column, which cannot be blank.
+        applyRequired(request.recipientName(), address::setRecipientName);
+        applyRequired(request.recipientPhone(), address::setRecipientPhone);
+        applyRequired(request.line1(), address::setLine1);
+        applyRequired(request.district(), address::setDistrict);
+        applyRequired(request.province(), address::setProvince);
+        applyRequired(request.country(), address::setCountry);
+        applyOptional(request.label(), address::setLabel);
+        applyOptional(request.line2(), address::setLine2);
+        applyOptional(request.commune(), address::setCommune);
+        applyOptional(request.postalCode(), address::setPostalCode);
+
+        // Coordinates only move as a pair, and only when the customer touched the map.
+        requirePairedCoordinates(request.latitude(), request.longitude());
+        if (request.latitude() != null) {
+            address.setLatitude(request.latitude());
+            address.setLongitude(request.longitude());
+        }
         //  address is loaded and managed inside the @Transactional method. JPA dirty checking updates it when the transaction commits.
         return mapper.toResponse(address);
     }
@@ -108,7 +121,31 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
         return mapper.toResponse(addressRepository.save(address));
     }
 
-    // Helper
+    // Helpers
+    /**
+     * A pin is a point: half of one is a bug in the caller, and the DB rejects it anyway —
+     * better a 400 naming the problem than a constraint violation.
+     */
+    private static void requirePairedCoordinates(BigDecimal latitude, BigDecimal longitude) {
+        if ((latitude == null) != (longitude == null)) {
+            throw new ValidationException("Latitude and longitude must be sent together");
+        }
+    }
+
+    /** Applies a PATCH field to a NOT NULL column: a blank value is treated as "not provided". */
+    private static void applyRequired(String value, Consumer<String> setter) {
+        if (StringUtils.hasText(value)) {
+            setter.accept(value.trim());
+        }
+    }
+
+    /** Applies a PATCH field to a nullable column, where a blank value clears it. */
+    private static void applyOptional(String value, Consumer<String> setter) {
+        if (value != null) {
+            setter.accept(StringUtils.hasText(value) ? value.trim() : null);
+        }
+    }
+
     private CustomerAddress load(Long addressId, Long customerId) {
         return addressRepository
             .findActiveByIdAndCustomerId(addressId, customerId)
