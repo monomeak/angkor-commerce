@@ -1,8 +1,10 @@
 import { CategoryCard } from "@/components/home/category-card";
+import { getAppConfig } from "@/lib/app-config.server";
+import { fetchCategories } from "@/src/features/categories/api/category-api";
 import { getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
 
-export function CategorySection() {
-  const categories = getTopLevelCategories();
+export async function CategorySection() {
+  const categories = getTopLevelCategories(await fetchCategories(getAppConfig().apiBaseUrl));
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">

@@ -8,9 +8,11 @@ import com.angkor.commerce.category.dto.request.UpdateCategoryRequest;
 import com.angkor.commerce.category.dto.response.CategoryFullResponse;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
 import com.angkor.commerce.common.exception.ValidationException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,6 +109,32 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryFullResponse response = CategoryFullResponse.from(category);
         categoryRepository.delete(category);
         return response;
+    }
+
+    /*
+     * The tree is walked in memory rather than with a recursive CTE. Categories are the
+     * "small, unpaginated, tree-shaped" exception the endpoints doc already calls out —
+     * a couple of dozen rows — and every caller of this needs the whole set anyway.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getDescendantCategoryIds(Long categoryId) {
+        Map<Long, List<Category>> byParent = categoryRepository
+            .findAll()
+            .stream()
+            .filter(category -> category.getParentId() != null)
+            .collect(Collectors.groupingBy(Category::getParentId));
+
+        List<Long> ids = new ArrayList<>();
+        collectDescendants(categoryId, byParent, ids);
+        return ids;
+    }
+
+    private void collectDescendants(Long categoryId, Map<Long, List<Category>> byParent, List<Long> accumulator) {
+        accumulator.add(categoryId);
+        for (Category child : byParent.getOrDefault(categoryId, List.of())) {
+            collectDescendants(child.getId(), byParent, accumulator);
+        }
     }
 
     private Category findCategoryOrThrow(Long id) {

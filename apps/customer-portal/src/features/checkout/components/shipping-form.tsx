@@ -8,15 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAccount } from "@/src/features/account/lib/account-context";
+import { SavedAddressPicker } from "@/src/features/addresses/components/saved-address-picker";
+import { useAddresses, useDefaultAddress } from "@/src/features/addresses/hooks/use-addresses";
+import type { CustomerAddress } from "@/src/features/addresses/types/address";
+import { useCurrentCustomer } from "@/src/features/auth/hooks/use-current-customer";
 import { useCart } from "@/src/features/cart/lib/cart-context";
-import { shippingAddressSchema } from "../lib/checkout-schemas";
+import type { ShippingAddress } from "@/src/features/orders/types/order";
+import { shippingAddressSchema } from "../schemas/shipping-address.schema";
 import { getShippingDraft, saveShippingDraft } from "../lib/shipping-draft-storage";
+import { toShippingAddress } from "../lib/saved-address";
 
 export function ShippingForm() {
   const router = useRouter();
   const { items } = useCart();
-  const { customer, savedAddress, saveAddress } = useAccount();
+  const savedAddresses = useAddresses();
+  const defaultAddress = useDefaultAddress();
+  const { data: customer } = useCurrentCustomer();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -25,22 +32,48 @@ export function ShippingForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const [isPrefilled, setIsPrefilled] = useState(false);
+
+  function fillFrom(source: ShippingAddress) {
+    setFullName(source.fullName);
+    setPhone(source.phone);
+    setAddress(source.address);
+    setCity(source.city);
+    setPostalCode(source.postalCode ?? "");
+    setNotes(source.notes ?? "");
+  }
+
+  function fillFromSaved(saved: CustomerAddress) {
+    // Picking a saved address is an explicit choice, so it overwrites the fields — unlike the
+    // prefill below, which only ever runs on an untouched form.
+    fillFrom(toShippingAddress(saved));
+    setError(null);
+  }
+
   useEffect(() => {
-    const draft = getShippingDraft() ?? savedAddress;
-    if (draft) {
-      setFullName(draft.fullName);
-      setPhone(draft.phone);
-      setAddress(draft.address);
-      setCity(draft.city);
-      setPostalCode(draft.postalCode ?? "");
-      setNotes(draft.notes ?? "");
-    } else {
-      setFullName(`${customer.firstName} ${customer.lastName}`);
+    // Auto-fill exactly once, but not before the sources exist: the draft is read after
+    // hydration and the customer and their addresses arrive with their queries. Typing is
+    // never clobbered, because the flag latches on the first fill.
+    if (isPrefilled) {
+      return;
     }
-    // Only auto-fill once on mount — typing shouldn't get clobbered by a
-    // later account/context update.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    const draft = getShippingDraft() ?? (defaultAddress && toShippingAddress(defaultAddress));
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (draft) {
+      fillFrom(draft);
+      setIsPrefilled(true);
+      return;
+    }
+
+    if (customer) {
+      setFullName(`${customer.firstName} ${customer.lastName}`);
+      setPhone(customer.phone ?? "");
+      setIsPrefilled(true);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [customer, defaultAddress, isPrefilled]);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -61,7 +94,6 @@ export function ShippingForm() {
 
     setError(null);
     saveShippingDraft(result.data);
-    saveAddress(result.data);
     router.push("/checkout");
   }
 
@@ -79,6 +111,8 @@ export function ShippingForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-2xl border bg-card p-6">
       <h1 className="text-xl font-semibold">Shipping address</h1>
+
+      <SavedAddressPicker addresses={savedAddresses} onSelect={fillFromSaved} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">

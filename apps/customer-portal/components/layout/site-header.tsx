@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Menu, Search, User, LogOut } from "lucide-react";
+import { Menu, Search, User, LogOut, Loader2 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -16,13 +18,21 @@ import {
     navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { LogoutConfirmDialog } from "@/src/features/auth/components/logout-confirm-dialog";
+import { useAuthSession } from "@/src/features/auth/hooks/use-current-customer";
+import { useLogoutAndLeave } from "@/src/features/auth/hooks/use-logout";
 import { CartSheet } from "@/src/features/cart/components/cart-sheet";
 import { getChildCategories, getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
+import { useCategories } from "@/src/features/categories/hooks/use-categories";
 import type { Category } from "@/src/features/categories/types/category";
 
-const navCategories = getTopLevelCategories();
-
 export function SiteHeader() {
+    // Was a module-level constant off mock data. It has to be read per render now that the
+    // tree comes from core-api; the query is cached and shared, so the menus, the footer and
+    // the grids all resolve to one request.
+    const categories = useCategories();
+    const navCategories = getTopLevelCategories(categories);
+
     return (
         <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
@@ -84,47 +94,81 @@ export function SiteHeader() {
                 </form>
 
                 <div className="ml-auto flex items-center gap-1 sm:ml-2">
-                    {/* future check if user is authenticated or not here  if not show button shop now otherwise you card and account*/}
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Account"
-                        nativeButton={false}
-                        render={<Link href="/account" />}
-                    >
-                        <User className="size-5" />
-                    </Button>
-                    <CartSheet />
-
-                    <Button
-                        variant="accent"
-                        size="sm"
-                        className="hidden h-9 px-4 text-sm sm:inline-flex"
-                        nativeButton={false}
-                        render={<Link href="/login" />}
-                    >
-                        Shop now
-                    </Button>
-
-                    {/* <Button
-                        variant="accent"
-                        size="sm"
-                        className="hidden h-9 px-4 text-sm sm:inline-flex"
-                        nativeButton={false}
-                        render={<LogOut href="/login" />}
-                    >
-                        Shop now
-                    </Button> */}
-                    <LogOut />
+                    <HeaderAuthActions />
                 </div>
             </div>
         </header>
     );
 }
 
+function HeaderAuthActions() {
+    const { isAuthenticated, isResolving } = useAuthSession();
+    const { logout, isPending } = useLogoutAndLeave();
+    const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
+
+    // While /me is in flight we don't know yet — hold the space with placeholders so the
+    // header doesn't flash "Log in" at someone signed in, or jump once the answer lands.
+    if (isResolving) {
+        return (
+            <>
+                <Skeleton className="size-8 rounded-lg" />
+                <CartSheet />
+                <Skeleton className="hidden h-9 w-20 rounded-lg sm:block" />
+            </>
+        );
+    }
+
+    return (
+        <>
+            {isAuthenticated && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Account"
+                    nativeButton={false}
+                    render={<Link href="/account" />}
+                >
+                    <User className="size-5" />
+                </Button>
+            )}
+
+            <CartSheet />
+
+            {isAuthenticated ? (
+                <>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={isPending ? "Logging out" : "Log out"}
+                        aria-busy={isPending}
+                        disabled={isPending}
+                        onClick={() => setIsConfirmingLogout(true)}
+                    >
+                        {isPending ? <Loader2 className="size-5 animate-spin" /> : <LogOut className="size-5" />}
+                    </Button>
+                    <LogoutConfirmDialog
+                        open={isConfirmingLogout}
+                        onOpenChange={setIsConfirmingLogout}
+                        onConfirm={logout}
+                    />
+                </>
+            ) : (
+                <Button
+                    variant="accent"
+                    size="sm"
+                    className="hidden h-9 px-4 text-sm sm:inline-flex"
+                    nativeButton={false}
+                    render={<Link href="/login" />}
+                >
+                    Log in
+                </Button>
+            )}
+        </>
+    );
+}
+
 function CategoryNavItem({ category }: { readonly category: Category }) {
-    const children = getChildCategories(category.id);
+    const children = getChildCategories(useCategories(), category.id);
 
     return (
         <NavigationMenuItem>
@@ -154,7 +198,7 @@ function CategoryNavItem({ category }: { readonly category: Category }) {
 }
 
 function MobileCategoryGroup({ category }: { readonly category: Category }) {
-    const children = getChildCategories(category.id);
+    const children = getChildCategories(useCategories(), category.id);
 
     return (
         <div className="py-1">

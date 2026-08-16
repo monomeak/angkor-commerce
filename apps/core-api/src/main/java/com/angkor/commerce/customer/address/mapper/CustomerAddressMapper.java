@@ -30,6 +30,8 @@ public class CustomerAddressMapper {
             address.getProvince(),
             address.getPostalCode(),
             address.getCountry(),
+            address.getLatitude(),
+            address.getLongitude(),
             address.isDefault(),
             address.getCreatedAt(),
             address.getUpdatedAt()
@@ -49,6 +51,8 @@ public class CustomerAddressMapper {
         address.setProvince(request.province().trim());
         address.setPostalCode(trimToNull(request.postalCode()));
         address.setCountry(requireNonNullElse(trimToNull(request.country()), DEFAULT_COUNTRY));
+        address.setLatitude(request.latitude());
+        address.setLongitude(request.longitude());
         address.setStatus(RecordStatus.ACTIVE);
 
         // isDefault is decided by the service, not the mapper

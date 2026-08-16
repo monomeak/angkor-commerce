@@ -2,24 +2,32 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api-client";
 import { AuthField } from "./auth-field";
-import { signupSchema } from "../lib/auth-schemas";
+import { useRegister } from "../hooks/use-register";
+import { signupSchema } from "../schemas/signup.schema";
+import { safeRedirectPath } from "../lib/redirect";
 
-export function SignupForm() {
+type SignupFormProps = {
+  readonly next?: string;
+};
+
+export function SignupForm({ next }: SignupFormProps) {
+  const router = useRouter();
+  const register = useRegister();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -28,19 +36,37 @@ export function SignupForm() {
       firstName,
       lastName,
       email,
-      phone,
       password,
       confirmPassword,
     });
 
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? "Please check your input.");
-      setSuccess(false);
       return;
     }
 
     setError(null);
-    setSuccess(true);
+    // confirmPassword is a client-side check only — core-api's register DTO has no such field.
+    register.mutate(
+      {
+        firstName: result.data.firstName,
+        lastName: result.data.lastName,
+        email: result.data.email,
+        password: result.data.password,
+      },
+      {
+        onSuccess: () => {
+          router.replace(safeRedirectPath(next));
+        },
+        onError: (cause) => {
+          setError(
+            cause instanceof ApiError
+              ? cause.displayMessage
+              : "Could not create your account. Try again.",
+          );
+        },
+      },
+    );
   }
 
   return (
@@ -80,14 +106,6 @@ export function SignupForm() {
             value={email}
             onChange={setEmail}
             required
-          />
-
-          <AuthField
-            id="phone"
-            label="Phone (optional)"
-            type="tel"
-            value={phone}
-            onChange={setPhone}
           />
 
           <AuthField
@@ -132,8 +150,12 @@ export function SignupForm() {
             }
           />
 
+          <p className="text-xs text-muted-foreground">
+            Use at least 8 characters with an uppercase letter, a lowercase letter, a number,
+            and a special character.
+          </p>
+
           {error && <p className="text-sm text-destructive">{error}</p>}
-          {success && <p className="text-sm text-emerald-600">Account created.</p>}
         </div>
       </div>
 
@@ -144,8 +166,13 @@ export function SignupForm() {
             Log in
           </Link>
         </p>
-        <Button type="submit" size="lg" className="h-full shrink-0 rounded-none px-10 text-base">
-          Create account
+        <Button
+          type="submit"
+          size="lg"
+          disabled={register.isPending}
+          className="h-full shrink-0 rounded-none px-10 text-base"
+        >
+          {register.isPending ? "Creating…" : "Create account"}
         </Button>
       </div>
     </form>

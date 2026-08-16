@@ -3,9 +3,6 @@ package com.angkor.commerce.customer.address;
 import com.angkor.commerce.customer.address.dto.request.CreateAddressRequest;
 import com.angkor.commerce.customer.address.dto.request.UpdateAddressRequest;
 import com.angkor.commerce.customer.address.dto.response.AddressResponse;
-import okhttp3.Address;
-import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 
 public interface CustomerAddressService {

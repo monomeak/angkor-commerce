@@ -1,6 +1,6 @@
-import { AccountAddressCard } from "@/src/features/account/components/account-address-card";
 import { AccountContent } from "@/src/features/account/components/account-content";
 import { AccountProfileForm } from "@/src/features/account/components/account-profile-form";
+import { AddressBook } from "@/src/features/addresses/components/address-book";
 
 export default function AccountOverviewPage() {
   return (
@@ -10,10 +10,10 @@ export default function AccountOverviewPage() {
       </AccountContent>
 
       <AccountContent
-        title="Shipping address"
-        description="Saved here auto-fills checkout so you don't retype it every order."
+        title="Shipping addresses"
+        description="Save up to three. The default one fills in at checkout so you don't retype it every order."
       >
-        <AccountAddressCard />
+        <AddressBook />
       </AccountContent>
     </div>
   );

@@ -5,12 +5,14 @@ import { aggregateTopCustomer } from "../lib/aggregate-top-customers";
 import { useQueries } from "@tanstack/react-query";
 import { customerKeys } from "../../customers/lib/query-keys";
 import { fetchCustomerById } from "../../customers/api/customer-api";
+import { useAppConfig } from "@/components/providers/app-config-provider";
 import { filterInvoicesByRecentMonths } from "../lib/filter-invoices-by-recent-months";
 const TOP_N = 5;
 export function useTopCustomers(months?: number): {
   data: TopCustomerWithDetails[];
   isLoading: boolean;
 } {
+  const { apiBaseUrl } = useAppConfig();
   const { data: invoices, isLoading: invoiceLoading } = useInvoices();
   const topRevenue = useMemo(
     () =>
@@ -26,7 +28,7 @@ export function useTopCustomers(months?: number): {
   const customerQueries = useQueries({
     queries: topRevenue.map((entry) => ({
       queryKey: customerKeys.detail(entry.userId),
-      queryFn: () => fetchCustomerById(entry.userId),
+      queryFn: () => fetchCustomerById(apiBaseUrl, entry.userId),
       staletime: 5 * 60 * 1000,
     })),
   });

@@ -1,38 +1,67 @@
-import { getCategoryBySlug } from "@/src/features/categories/lib/category-helpers";
-import { products } from "../data/products.data";
-import {
-  filterProductsByCategory,
-  filterProductsByPriceRange,
-  filterProductsByQuery,
-} from "../lib/product-helpers";
-import type { Product } from "../types/product";
+import { ApiError, apiFetch, parseResponse } from "@/lib/api-client";
+import { mapProduct, mapProductList } from "../mappers/product.mapper";
+import { productDtoSchema, productListDtoSchema } from "../schemas/product-api.schema";
+import type { Product, ProductListParams, ProductListResult } from "../types/product";
 
-// No backend yet (see docs/NEXTJS_MIGRATION_PLAN.md). These resolve against
-// local mock data but are shaped like future HTTP calls to apps/core-api.
-export async function fetchProducts(filters?: {
-  categorySlug?: string;
-  query?: string;
-  minPrice?: number;
-  maxPrice?: number;
-}): Promise<Product[]> {
-  let results = products;
+/*
+ * The only place the storefront catalogue talks HTTP. Components go through hooks (client)
+ * or await this directly (server components); apiBaseUrl is passed in because it comes from
+ * AppConfig, which a module cannot read on its own.
+ *
+ * GET /products is public, so none of this needs a session.
+ */
 
-  if (filters?.categorySlug) {
-    const category = getCategoryBySlug(filters.categorySlug);
-    results = category ? filterProductsByCategory(results, category.id) : [];
-  }
+const PRODUCTS_BASE = "/products";
 
-  if (filters?.query) {
-    results = filterProductsByQuery(results, filters.query);
-  }
+export const DEFAULT_PRODUCT_LIMIT = 30;
 
-  if (filters?.minPrice !== undefined && filters?.maxPrice !== undefined) {
-    results = filterProductsByPriceRange(results, filters.minPrice, filters.maxPrice);
-  }
+/**
+ * Empty and undefined values are dropped rather than sent blank: `?status=` fails enum
+ * conversion with a 400 rather than being read as "no filter".
+ */
+function toSearchParams(params: ProductListParams): string {
+    const search = new URLSearchParams();
 
-  return results;
+    // A shopper must never see a product staff have taken off sale. The API's default only
+    // excludes `deleted`, which is right for the back office and wrong here.
+    search.set("status", "active");
+    search.set("skip", String(params.skip ?? 0));
+    search.set("limit", String(params.limit ?? DEFAULT_PRODUCT_LIMIT));
+
+    if (params.q) search.set("q", params.q);
+    if (params.categorySlug) search.set("categorySlug", params.categorySlug);
+    if (params.minPrice !== undefined) search.set("minPrice", String(params.minPrice));
+    if (params.maxPrice !== undefined) search.set("maxPrice", String(params.maxPrice));
+
+    return search.toString();
 }
 
-export async function fetchProductById(id: number): Promise<Product | null> {
-  return products.find((product) => product.id === id) ?? null;
+export async function fetchProducts(apiBaseUrl: string, params: ProductListParams = {}): Promise<ProductListResult> {
+    const data = await apiFetch<unknown>(apiBaseUrl, `${PRODUCTS_BASE}?${toSearchParams(params)}`);
+
+    return mapProductList(parseResponse(productListDtoSchema, data));
+}
+
+/**
+ * The full record — variants, images and the nested category the list row lacks.
+ *
+ * Returns null for a product that does not exist, so a route can render notFound() instead
+ * of a 500. Anything else — an unreachable API, a schema mismatch — still throws, because
+ * those are failures, not missing pages.
+ *
+ * GET /products/{id} is public but not status-filtered, so an inactive or archived product
+ * is treated as absent rather than shown to a shopper.
+ */
+export async function findProduct(apiBaseUrl: string, id: number): Promise<Product | null> {
+    try {
+        const data = await apiFetch<unknown>(apiBaseUrl, `${PRODUCTS_BASE}/${id}`);
+        const dto = parseResponse(productDtoSchema, data);
+
+        return dto.status === "active" ? mapProduct(dto) : null;
+    } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+            return null;
+        }
+        throw error;
+    }
 }

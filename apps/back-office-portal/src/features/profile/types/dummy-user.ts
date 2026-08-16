@@ -34,7 +34,7 @@ export const dummyUserResponse: DummyUserResponse = {
   image: "https://dummyjson.com/icon/emilys/128",
   gender: "female",
   birthDate: "1996-5-30",
-  role: "admin",
+  role: "super_admin",
   company: {
     name: "Dooley, Kozey and Cronin",
     department: "Engineering",

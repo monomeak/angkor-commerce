@@ -7,14 +7,19 @@ import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+// Still mock-backed: the cart holds product ids and resolves them against local data. The
+// categories list is passed in explicitly now that the helpers are pure — swap both for
+// core-api when the cart itself is ported.
+import { categories } from "@/src/features/categories/data/categories.data";
 import { getCategoryById } from "@/src/features/categories/lib/category-helpers";
 import { products } from "@/src/features/products/data/products.data";
 import { getDiscountedPrice, getProductById } from "@/src/features/products/lib/product-helpers";
-import type { Product } from "@/src/features/products/types/product";
+import { productPlaceholder } from "@/src/features/products/lib/product-image";
+import type { MockProduct } from "@/src/features/products/types/product";
 import { useCart } from "../lib/cart-context";
 import type { CartItem } from "../types/cart";
 
-type CartLine = { item: CartItem; product: Product };
+type CartLine = { item: CartItem; product: MockProduct };
 
 export function CartSheet() {
     const { items, itemCount, isOpen, setOpen, removeItem, updateQuantity } = useCart();
@@ -58,13 +63,19 @@ export function CartSheet() {
                         <div className="flex-1 overflow-y-auto px-4">
                             <ul className="flex flex-col gap-4">
                                 {lines.map(({ item, product }) => {
-                                    const category = getCategoryById(product.categoryId);
+                                    const category = getCategoryById(categories, product.categoryId);
                                     const price = getDiscountedPrice(product);
 
                                     return (
                                         <li key={`${item.productId}-${item.size}`} className="flex gap-3">
                                             <div className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-muted to-muted/40">
-                                                <Image src="/image.png" alt={product.name} width={56} height={56} />
+                                                <Image
+                                                    src={productPlaceholder(product.name)}
+                                                    alt={product.name}
+                                                    width={56}
+                                                    height={56}
+                                                    unoptimized
+                                                />
                                             </div>
 
                                             <div className="flex flex-1 flex-col gap-1">

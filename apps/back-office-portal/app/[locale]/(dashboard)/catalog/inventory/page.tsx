@@ -1,3 +1,5 @@
+import { InventoryView } from "@/src/features/catalog/inventory/views/inventory-view";
+
 export default function InventoryPage() {
-    return <h1>Inventory page</h1>;
+    return <InventoryView />;
 }

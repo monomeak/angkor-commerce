@@ -1,12 +1,13 @@
 package com.angkor.commerce.product.dto.request;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 import com.angkor.commerce.common.dto.OffsetPageable;
 import com.angkor.commerce.common.enums.RecordStatus;
+import com.angkor.commerce.common.exception.ValidationException;
 
-import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.Pageable;
@@ -64,14 +65,13 @@ public record ProductQueryParams(
     private String resolveSortField() {
         if (!StringUtils.hasText(sortBy)) return DEFAULT_SORT;
 
-        // API exposes "title", entity field is "name"
-        String field = "name".equals(sortBy) ? "name" : sortBy;
-
-        if (!SORTABLE.contains(field)) {
+        if (!SORTABLE.contains(sortBy)) {
+            String allowed = String.join(", ", SORTABLE);
             throw new ValidationException(
-                    "Invalid sortBy '%s'. Allowed: %s".formatted(sortBy, String.join(", ", SORTABLE)));
+                    "Invalid sortBy '%s'. Allowed: %s".formatted(sortBy, allowed),
+                    Map.of("sortBy", "Must be one of: " + allowed));
         }
-        return field;
+        return sortBy;
     }
 
 

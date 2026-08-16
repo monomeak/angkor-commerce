@@ -1,4 +1,3 @@
-import { env } from "@/config/env";
 import { usersResponseSchema } from "../schemas/customer.schema";
 import { mapUserToCustomer } from "../mappers/customer.mapper";
 import type {
@@ -7,19 +6,18 @@ import type {
 } from "../types/customer";
 import type { DummyUser } from "../types/dummy-customer";
 
-const BASE_URL = env.apiBaseUrl;
+// Base URL comes from <AppConfigProvider> via the calling hook — see auth-api.ts.
 
-export async function fetchCustomers({
-  search,
-  page,
-  pageSize,
-}: CustomerListFilters): Promise<CustomerListResult> {
+export async function fetchCustomers(
+  apiBaseUrl: string,
+  { search, page, pageSize }: CustomerListFilters,
+): Promise<CustomerListResult> {
   const skip = (page - 1) * pageSize;
   const query = search.trim();
   const url =
     query.length > 0
-      ? `${BASE_URL}/users/search?q=${encodeURIComponent(query)}&limit=${pageSize}&skip=${skip}`
-      : `${BASE_URL}/users?limit=${pageSize}&skip=${skip}`;
+      ? `${apiBaseUrl}/users/search?q=${encodeURIComponent(query)}&limit=${pageSize}&skip=${skip}`
+      : `${apiBaseUrl}/users?limit=${pageSize}&skip=${skip}`;
 
   const res = await fetch(url);
   if (!res.ok) {
@@ -36,8 +34,8 @@ export async function fetchCustomers({
     total: parsed.data.total,
   };
 }
-export async function fetchCustomerById(id: number) {
-  const res = await fetch(`${BASE_URL}/users/${id}`);
+export async function fetchCustomerById(apiBaseUrl: string, id: number) {
+  const res = await fetch(`${apiBaseUrl}/users/${id}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch customer ${id}: ${res.status}`);
   }

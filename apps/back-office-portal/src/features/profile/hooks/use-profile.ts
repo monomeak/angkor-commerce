@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { useCurrentUser } from "@/src/features/auth/hooks/use-current-user";
-import { mapAppRoleToApiRole } from "@/src/features/auth/mappers/role.mapper";
 
 import { getProfileResponse } from "../api/profile-api";
 import { mapProfileResponse } from "../mappers/profile.mapper";
@@ -21,9 +20,11 @@ export function useProfile() {
         lastName: currentUser.lastName,
         email: currentUser.email,
         username: currentUser.username,
-        image: currentUser.image,
-        gender: currentUser.gender,
-        role: mapAppRoleToApiRole(currentUser.role),
+        // core-api returns a MinIO object key or null; the rest of this feature still
+        // runs on the DummyJSON mock (gender, birthDate, company, address), so those
+        // fields keep coming from initialProfile until the profile port lands.
+        image: currentUser.image ?? initialProfile.image,
+        role: currentUser.role,
       }
     : initialProfile;
 

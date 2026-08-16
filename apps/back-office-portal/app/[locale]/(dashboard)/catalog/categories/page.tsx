@@ -1,3 +1,5 @@
-export default function CategoryPage() {
-    return <h1>Category page</h1>;
+import { CategoriesView } from "@/src/features/catalog/categories/views/categories-view";
+
+export default function CategoriesPage() {
+    return <CategoriesView />;
 }

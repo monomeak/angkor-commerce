@@ -5,19 +5,35 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { accountProfileSchema } from "../lib/account-schemas";
-import { useAccount } from "../lib/account-context";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ApiError } from "@/lib/api-client";
+import { useCurrentCustomer } from "@/src/features/auth/hooks/use-current-customer";
+import { useUpdateProfile } from "@/src/features/auth/hooks/use-update-profile";
+import { accountProfileSchema } from "../schemas/profile.schema";
 
 export function AccountProfileForm() {
-  const { customer, updateCustomer } = useAccount();
+  const { data: customer, isPending } = useCurrentCustomer();
+  const updateProfile = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
-  const [firstName, setFirstName] = useState(customer.firstName);
-  const [lastName, setLastName] = useState(customer.lastName);
-  const [email, setEmail] = useState(customer.email);
-  const [phone, setPhone] = useState(customer.phone ?? "");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  if (isPending) {
+    return <Skeleton className="h-40 w-full" />;
+  }
+
+  if (!customer) {
+    return <p className="text-sm text-muted-foreground">Sign in to see your details.</p>;
+  }
+
   function startEditing() {
+    if (!customer) {
+      return;
+    }
+
     setFirstName(customer.firstName);
     setLastName(customer.lastName);
     setEmail(customer.email);
@@ -37,8 +53,14 @@ export function AccountProfileForm() {
     }
 
     setError(null);
-    updateCustomer(result.data);
-    setIsEditing(false);
+    updateProfile.mutate(result.data, {
+      onSuccess: () => setIsEditing(false),
+      onError: (cause) => {
+        setError(
+          cause instanceof ApiError ? cause.displayMessage : "Could not save your details.",
+        );
+      },
+    });
   }
 
   if (!isEditing) {
@@ -116,8 +138,15 @@ export function AccountProfileForm() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-2">
-        <Button type="submit">Save changes</Button>
-        <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+        <Button type="submit" disabled={updateProfile.isPending}>
+          {updateProfile.isPending ? "Saving…" : "Save changes"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={updateProfile.isPending}
+          onClick={() => setIsEditing(false)}
+        >
           Cancel
         </Button>
       </div>

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +43,14 @@ public class CustomerWishlistController {
         return ResponseEntity.ok(wishlistService.getWishlistItems(customer.id(), limit, skip));
     }
 
+    @GetMapping("/product-ids")
+    @Operation(summary = "List the product ids on a customer's wishlist")
+    public ResponseEntity<List<Long>> getWishlistProductIds(@AuthenticationPrincipal AuthenticatedCustomer customer) {
+        return ResponseEntity.ok(wishlistService.getWishlistProductIds(customer.id()));
+    }
+
     @PostMapping
-    @Operation(summary = "Add a product to a customer's wishlist (idempotent)")
+    @Operation(summary = "Add a product to a customer's wishlist (409 if it is already there)")
     public ResponseEntity<WishlistItemResponse> addItem(
         @AuthenticationPrincipal AuthenticatedCustomer customer,
         @RequestBody @Valid AddWishlistItemRequest request

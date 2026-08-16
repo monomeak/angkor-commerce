@@ -14,6 +14,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Optional<Category> findTopByParentIdIsNullOrderBySortOrderDesc();
 
+    // Storefront URLs carry the slug, not the id, so listing filters resolve through here.
+    Optional<Category> findBySlug(String slug);
+
     boolean existsBySlug(String slug);
 
     boolean existsBySlugAndIdNot(String slug, Long id);

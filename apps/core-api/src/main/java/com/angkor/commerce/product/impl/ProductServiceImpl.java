@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.angkor.commerce.category.Category;
 import com.angkor.commerce.category.CategoryRepository;
+import com.angkor.commerce.category.CategoryService;
 import com.angkor.commerce.common.dto.PageResponse;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.common.exception.ResourceNotFoundException;
@@ -43,6 +44,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /*
@@ -61,6 +63,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantRepository variantRepository;
     private final ProductImageRepository imageRepository;
     private final CategoryRepository categoryRepository;
+    // Only for getDescendantCategoryIds — the repository above still covers direct lookups.
+    private final CategoryService categoryService;
     private final ProductMapper mapper;
     private final ImageStorageService imageStorageService;
     private final ThumbnailGenerator thumbnailGenerator;
@@ -102,9 +106,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional()
     public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
-        Product product = loadProduct(id);
+        Product product = loadProductIncludingArchived(id);
 
-        if (request.title() != null) product.setName(request.title());
+        if (request.name() != null) product.setName(request.name());
         if (request.description() != null) product.setDescription(request.description());
         if (request.price() != null) product.setPrice(request.price());
         if (request.currency() != null) product.setCurrency(request.currency());
@@ -136,7 +140,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageResponse<ProductSummaryResponse> getProducts(ProductQueryParams query) {
-        Page<Product> page = this.productRepository.findAll(ProductSpecification.from(query), query.toPageable());
+        List<Long> categoryIds = resolveCategoryFilter(query);
+
+        // A category filter that resolves to nothing must return nothing. Falling through
+        // with an empty id list would drop the predicate and list the whole catalogue.
+        if (categoryIds != null && categoryIds.isEmpty()) {
+            return PageResponse.empty(COLLECTION_KEY, query.skipOrDefault(), query.limitOrDefault());
+        }
+
+        Page<Product> page = this.productRepository.findAll(
+            ProductSpecification.from(query, categoryIds),
+            query.toPageable()
+        );
 
         if (page.isEmpty()) {
             return PageResponse.empty(COLLECTION_KEY, query.skipOrDefault(), query.limitOrDefault());
@@ -160,6 +175,28 @@ public class ProductServiceImpl implements ProductService {
             query.skipOrDefault(),
             query.limitOrDefault()
         );
+    }
+
+    /**
+     * Turns the query's category filter into the ids the specification should match.
+     *
+     * <p>Three outcomes, deliberately distinct: {@code null} means no category filter was
+     * asked for, an empty list means one was asked for but matched no category, and a
+     * populated list is the category plus its descendants.
+     */
+    private List<Long> resolveCategoryFilter(ProductQueryParams query) {
+        if (query.categoryId() != null) {
+            return categoryService.getDescendantCategoryIds(query.categoryId());
+        }
+
+        if (!StringUtils.hasText(query.categorySlug())) {
+            return null;
+        }
+
+        return categoryRepository
+            .findBySlug(query.categorySlug())
+            .map(category -> categoryService.getDescendantCategoryIds(category.getId()))
+            .orElse(List.<Long>of());
     }
 
     @Override
@@ -281,6 +318,15 @@ public class ProductServiceImpl implements ProductService {
             .findById(id)
             .filter(p -> p.getStatus() != RecordStatus.DELETED)
             .orElseThrow(() -> notFound(id));
+    }
+
+    /**
+     * Archived products are hidden from reads but must stay writable, otherwise a soft
+     * delete is a one-way door: restoring one means PATCHing status back to active, and
+     * loadProduct() would 404 before that could ever run.
+     */
+    private Product loadProductIncludingArchived(Long id) {
+        return productRepository.findById(id).orElseThrow(() -> notFound(id));
     }
 
     private ProductVariant loadProductVariant(Long productId, Long variantId) {
