@@ -19,3 +19,15 @@ export function getDiscountedPrice(product: MockProduct): number {
 export function getProductById(products: MockProduct[], id: number): MockProduct | undefined {
     return products.find((product) => product.id === id);
 }
+
+/**
+ * Where a product card links. The detail route is `/product/{categorySlug}/{productId}` —
+ * the slug is what makes the URL readable and unambiguous, since category names repeat
+ * across the tree ("Shoes" exists under Men, Women and Children).
+ *
+ * Returns undefined for a product whose category the API left null, so a caller can disable
+ * the link rather than route to `/product/null/12`.
+ */
+export function productDetailHref(categorySlug: string | null | undefined, productId: number): string | undefined {
+    return categorySlug ? `/product/${categorySlug}/${productId}` : undefined;
+}

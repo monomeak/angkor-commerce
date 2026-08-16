@@ -1,9 +1,4 @@
-import type {
-    ProductDto,
-    ProductListDto,
-    ProductSummaryDto,
-    ProductVariantDto
-} from "../schemas/product-api.schema";
+import type { ProductDto, ProductListDto, ProductSummaryDto, ProductVariantDto } from "../schemas/product-api.schema";
 import type { Product, ProductListResult, ProductSummary, ProductVariant } from "../types/product";
 
 /**
@@ -11,7 +6,7 @@ import type { Product, ProductListResult, ProductSummary, ProductVariant } from 
  * variants has no aggregate row, so totalStock/variantCount come back null. The grids count
  * and format these, so they are normalised once here rather than guarded at every call site.
  */
-const DEFAULT_CURRENCY = "USD";
+export const DEFAULT_CURRENCY = "USD";
 
 export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
     return {

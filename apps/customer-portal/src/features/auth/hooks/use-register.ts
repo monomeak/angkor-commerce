@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { registerRequest } from "../api/auth-api";
 import { authKeys } from "../lib/query-keys";
+import { resetSessionCache } from "../lib/session-cache";
 import type { RegisterPayload } from "../types/auth";
 import { seedCurrentCustomer } from "./use-login";
 
@@ -16,7 +17,7 @@ export function useRegister() {
     return useMutation({
         mutationFn: (payload: RegisterPayload) => registerRequest(apiBaseUrl, payload),
         onSuccess: (customer) => {
-            queryClient.setQueryData(authKeys.currentCustomer(), seedCurrentCustomer(customer));
+            resetSessionCache(queryClient, seedCurrentCustomer(customer));
             void queryClient.invalidateQueries({ queryKey: authKeys.currentCustomer() });
         }
     });

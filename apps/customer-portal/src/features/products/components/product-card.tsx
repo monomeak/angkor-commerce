@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -10,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useAppConfig } from "@/components/providers/app-config-provider";
+import { WishlistButton } from "@/src/features/wishlist/components/wishlist-button";
+import { productDetailHref } from "../lib/product-helpers";
 import { productImageSrc } from "../lib/product-image";
 import { applyDiscount, formatPrice } from "../lib/pricing";
 import type { ProductSummary } from "../types/product";
@@ -23,13 +24,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
     const { mediaBaseUrl, locale } = useAppConfig();
     const hasDiscount = product.discountPercentage > 0;
     const discountedPrice = applyDiscount(product.price, product.discountPercentage);
-    const [isFavorite, setIsFavorite] = useState(false);
     // Real count from the API, unlike the sizes themselves — enough to tell a shopper whether
     // there is a choice waiting on the detail page.
     const sizeCount = product.variantCount;
-    // The API flattens category to a name on list rows, but names repeat across the tree
-    // ("Shoes" exists under Men, Women and Children), so the link is built from the slug.
-    const detailHref = product.categorySlug ? `/product/${product.categorySlug}/${product.id}` : undefined;
+    const detailHref = productDetailHref(product.categorySlug, product.id);
     const thumbnailSrc = productImageSrc(mediaBaseUrl, product.thumbnail, product.name);
     const isSoldOut = product.totalStock <= 0;
 
@@ -40,37 +38,28 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 className
             )}
         >
-            <Link
-                href={detailHref ?? "#"}
-                className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-muted to-muted/40"
-            >
-                <Image
-                    src={thumbnailSrc}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover"
-                    unoptimized
-                />
+            {/*
+             * The heart is a sibling of the link, not a child of it. Nesting a button inside an
+             * anchor is invalid HTML and left the heart cancelling a navigation on every tap.
+             */}
+            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-muted to-muted/40">
+                <Link href={detailHref ?? "#"} className="absolute inset-0">
+                    <Image
+                        src={thumbnailSrc}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover"
+                        unoptimized
+                    />
+                </Link>
                 {hasDiscount && (
                     <Badge variant="destructive" className="absolute top-2 left-2">
                         -{product.discountPercentage}%
                     </Badge>
                 )}
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setIsFavorite((value) => !value);
-                    }}
-                    aria-pressed={isFavorite}
-                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                    className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm transition-colors hover:text-destructive"
-                >
-                    <Heart className={cn("size-4", isFavorite && "fill-destructive text-destructive")} />
-                </button>
-            </Link>
+                <WishlistButton productId={product.id} productName={product.name} className="absolute top-2 right-2" />
+            </div>
 
             <div className="flex flex-col gap-3 px-1">
                 <div className="flex items-start justify-between gap-3">

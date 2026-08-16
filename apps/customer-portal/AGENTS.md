@@ -10,7 +10,7 @@ Public storefront for Angkor Commerce: browsing, self-registration, and order/in
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4, Leaflet + react-leaflet (the address map picker, and the only place either is used). Auth, the customer profile, the product catalogue and the address book talk to `apps/core-api`; the cart, checkout, orders and favorites are still local mock/localStorage data.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4, Leaflet + react-leaflet (the address map picker, and the only place either is used). Auth, the customer profile, the product catalogue, the address book and the wishlist talk to `apps/core-api`; the cart, checkout and orders are still local mock/localStorage data.
 
 ## Structure and conventions
 
@@ -34,6 +34,8 @@ The storefront browser calls core-api directly — there is no BFF/proxy layer. 
 
 - Next middleware and server components cannot see the session. `GET /storefront/auth/me` is the only source of truth, exposed as `useCurrentCustomer()` — `null` means anonymous, `undefined` means not resolved yet.
 - Route protection is the client-side `RequireCustomer` guard (`src/features/auth/components/require-customer.tsx`) wrapped around `app/account/layout.tsx`, not `proxy.ts`.
+- Login, register and logout all go through `resetSessionCache` (`auth/lib/session-cache.ts`), which clears the **whole** query cache before installing the new customer. Customer-scoped caches otherwise outlive the session and get handed to whoever signs in next. `/login` and `/signup` are reachable while signed in, so they are session boundaries too.
+- Both logout controls (header icon, account nav row) confirm first via `LogoutConfirmDialog` and go through `useLogoutAndLeave`, which navigates home *before* dropping the session — otherwise `RequireCustomer` wins the race and bounces to `/login`.
 - The 15-minute access token makes refresh-and-replay on 401 routine, not exceptional; it's handled once inside `apiFetch`.
 - Signed-in customer state lives in the TanStack Query cache under `authKeys.currentCustomer()`. Mutations write to that key rather than to a parallel context.
 - `CurrentCustomerResponse.image` is a raw MinIO **object key**, unlike the staff `UserMapper` which resolves it — `lib/media.ts` builds the public URL.
@@ -62,8 +64,23 @@ Products and categories come from core-api's **shared** `GET /products` and `GET
 - Leaflet touches `window` on import, so `map-canvas.tsx` (the react-leaflet part, plus `leaflet/dist/leaflet.css`) is only ever loaded through `next/dynamic` with `ssr: false` from `map-picker.tsx`. Import the picker, never the canvas.
 - Checkout does not manage addresses: `/shipping` offers the saved ones as fill-in buttons and flattens the chosen one into its mock `ShippingAddress` through `checkout/lib/saved-address.ts`. That adapter is lossy on purpose and should be deleted once `POST /storefront/orders` accepts an `addressId`.
 
+## Wishlist (favorites)
+
+`src/features/wishlist/` owns everything saved-for-later against `/storefront/my-wishlist`. The UI calls it "favorites" (the account route is `/account/favorites`) and the API calls it the wishlist; the feature folder follows the API.
+
+- The heart is one component, `components/wishlist-button.tsx`, used by the product grid and the detail page. Saved state is **not** a prop: every heart reads the same cached id list (`GET /my-wishlist/product-ids`, a projection query added for exactly this), so saving on a detail page fills the heart on the grid behind it.
+- Saving keys on the **product**, not the variant — so the heart is unaffected by the size picker and stays live on a sold-out product.
+- The id list is patched optimistically and rolled back on failure; the item list never is, because it shows prices, stock and a saved date the client would have to invent. Both are invalidated on settle.
+- `useWishlistProductIds` returns `[]` unless `/me` says somebody is signed in. A disabled query still hands back what it cached, so `data ?? []` would leave hearts filled after a logout — and `resetSessionCache` (auth) clears the whole cache on every session boundary for the same reason.
+- An anonymous tap is a sign-in prompt (`/login?next=…`), not a request — the endpoints are customer-scoped and would 401.
+- The API answers **409** for a product already saved and **404** for removing one that isn't; `api/wishlist-api.ts` swallows both, because neither is something the shopper did wrong.
+- A saved product can outlive its place in the catalogue, so the row carries `productStatus` and the card greys out and drops its link rather than routing to a 404. `categorySlug` is on the row for the same reason it is on a list row — the detail link needs it.
+- `price` and `totalStock` are the same variant aggregates the catalogue grid shows, so a saved product does not appear to change price. The API loads them in one `aggragateByProductIds` call per page, alongside an entity graph over `product` + `product.category`.
+- Paging is **9 per page** through `?page=` and the shared `ProductPagination`, so back/forward work and a page is linkable — but the rows are fetched client-side, since the session cookie is httpOnly on the API origin. That makes `/account/favorites` a dynamic route. Only the client knows the total, so `WishlistBoard` clamps a page past the end itself (removing the last item on the last page).
+- `AppConfig.features.wishlist` exists but is still unread, like the rest of `features` — the wishlist is always on.
+
 ## Current state
 
-Real backend integration covers auth, the customer profile, the catalogue and the address book: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, product listing (landing rows, category browse, search), product detail with variants, and address CRUD with a map pin.
+Real backend integration covers auth, the customer profile, the catalogue, the address book and the wishlist: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, product listing (landing rows, category browse, search), product detail with variants, address CRUD with a map pin, and saving/removing/clearing favorites.
 
-Still mock/localStorage: cart, checkout, orders, favorites and payment methods — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.
+Still mock/localStorage: cart, checkout, orders and payment methods — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.

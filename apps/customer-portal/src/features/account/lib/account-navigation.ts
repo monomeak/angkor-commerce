@@ -1,6 +1,6 @@
-import { Heart, Lock, ShoppingCart, User } from "lucide-react";
+import { Heart, Lock, LogOut, ShoppingCart, User } from "lucide-react";
 
-import type { AccountNavigationItem } from "../types/account";
+import type { AccountNavigationItem, AccountNavigationLink } from "../types/account";
 
 export const accountNavigation: AccountNavigationItem[] = [
     {
@@ -22,10 +22,14 @@ export const accountNavigation: AccountNavigationItem[] = [
         label: "Change Password",
         href: "/account/change-password",
         icon: Lock
+    },
+    {
+        label: "Log out",
+        action: "logout",
+        icon: LogOut
     }
-    // {
-    //   label: "Payment Methods",
-    //   href: "/account/payment-methods",
-    //   icon: CreditCard,
-    // },
 ];
+
+export function isNavigationLink(item: AccountNavigationItem): item is AccountNavigationLink {
+    return "href" in item;
+}

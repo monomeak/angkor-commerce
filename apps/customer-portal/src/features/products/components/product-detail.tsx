@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { useCart } from "@/src/features/cart/lib/cart-context";
+import { WishlistButton } from "@/src/features/wishlist/components/wishlist-button";
 import { productGallery } from "../lib/product-image";
 import { applyDiscount, formatPrice } from "../lib/pricing";
 import { pickDefaultVariant, variantLabel } from "../lib/variants";
@@ -169,15 +170,31 @@ export function ProductDetail({ product }: ProductDetailProps) {
                     </p>
                 </div>
 
-                <Button
-                    variant="accent"
-                    size="lg"
-                    className="h-12 w-full text-sm sm:w-auto sm:px-10"
-                    disabled={isSoldOut}
-                    onClick={() => addItem(product.id, variantLabel(selectedVariant), quantity)}
-                >
-                    {isSoldOut ? "Sold out" : "Add to cart"}
-                </Button>
+                {/*
+                 * Saving is per product, not per variant — core-api's wishlist keys on the
+                 * product — so the heart is unaffected by the size chosen above, and stays
+                 * available on a sold-out product, which is much of the point of saving one.
+                 */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <Button
+                        variant="accent"
+                        size="lg"
+                        className="h-12 w-full text-sm sm:w-auto sm:px-10"
+                        disabled={isSoldOut}
+                        onClick={() => addItem(product.id, variantLabel(selectedVariant), quantity)}
+                    >
+                        {isSoldOut ? "Sold out" : "Add to cart"}
+                    </Button>
+                    {/* Its own column so a failure reads under the heart, not beside the cart button. */}
+                    <div className="flex w-full flex-col gap-1 sm:w-auto">
+                        <WishlistButton
+                            productId={product.id}
+                            productName={product.name}
+                            variant="inline"
+                            className="w-full"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );

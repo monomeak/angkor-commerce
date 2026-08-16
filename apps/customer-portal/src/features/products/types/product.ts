@@ -11,6 +11,13 @@
  *    detail page, which fetches GET /products/{id}; a card links there rather than offering
  *    a size it would have to invent.
  */
+/**
+ * core-api's RecordStatus as the storefront sees it. Listing screens never carry it — they
+ * only ever ask for `active` — but a row that outlives the catalogue does: a wishlist entry
+ * survives the product being taken off sale. `schemas/product-api.schema.ts` mirrors this.
+ */
+export type RecordStatus = "active" | "inactive" | "deleted";
+
 export interface ProductSummary {
     id: number;
     name: string;

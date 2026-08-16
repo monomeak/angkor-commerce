@@ -1,7 +1,7 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Menu, Search, User, LogOut, Loader2 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand/brand-logo";
@@ -18,8 +18,9 @@ import {
     navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { LogoutConfirmDialog } from "@/src/features/auth/components/logout-confirm-dialog";
 import { useAuthSession } from "@/src/features/auth/hooks/use-current-customer";
-import { useLogout } from "@/src/features/auth/hooks/use-logout";
+import { useLogoutAndLeave } from "@/src/features/auth/hooks/use-logout";
 import { CartSheet } from "@/src/features/cart/components/cart-sheet";
 import { getChildCategories, getTopLevelCategories } from "@/src/features/categories/lib/category-helpers";
 import { useCategories } from "@/src/features/categories/hooks/use-categories";
@@ -101,18 +102,9 @@ export function SiteHeader() {
 }
 
 function HeaderAuthActions() {
-    const router = useRouter();
     const { isAuthenticated, isResolving } = useAuthSession();
-    const logout = useLogout();
-
-    // Leave the page before the session is dropped: `useLogout` clears the /me cache,
-    // which would otherwise let `RequireCustomer` bounce an account page to /login
-    // and win the race against this redirect.
-    const handleLogout = () => {
-        if (logout.isPending) return;
-        router.push("/");
-        logout.mutate();
-    };
+    const { logout, isPending } = useLogoutAndLeave();
+    const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
 
     // While /me is in flight we don't know yet — hold the space with placeholders so the
     // header doesn't flash "Log in" at someone signed in, or jump once the answer lands.
@@ -143,20 +135,23 @@ function HeaderAuthActions() {
             <CartSheet />
 
             {isAuthenticated ? (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={logout.isPending ? "Logging out" : "Log out"}
-                    aria-busy={logout.isPending}
-                    disabled={logout.isPending}
-                    onClick={handleLogout}
-                >
-                    {logout.isPending ? (
-                        <Loader2 className="size-5 animate-spin" />
-                    ) : (
-                        <LogOut className="size-5" />
-                    )}
-                </Button>
+                <>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={isPending ? "Logging out" : "Log out"}
+                        aria-busy={isPending}
+                        disabled={isPending}
+                        onClick={() => setIsConfirmingLogout(true)}
+                    >
+                        {isPending ? <Loader2 className="size-5 animate-spin" /> : <LogOut className="size-5" />}
+                    </Button>
+                    <LogoutConfirmDialog
+                        open={isConfirmingLogout}
+                        onOpenChange={setIsConfirmingLogout}
+                        onConfirm={logout}
+                    />
+                </>
             ) : (
                 <Button
                     variant="accent"
