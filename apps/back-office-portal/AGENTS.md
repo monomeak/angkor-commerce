@@ -5,7 +5,7 @@ Frontend for Angkor Commerce. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](.
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth and the product catalogue now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; the dashboard, invoices, customers, reports and profile features are still on DummyJSON-shaped mock data and have not been ported yet.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth, the product catalogue and the customer directory now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; the dashboard, invoices, reports and profile features are still on DummyJSON-shaped mock data and have not been ported yet.
 
 ## Structure and conventions
 
@@ -23,11 +23,19 @@ Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base U
 
 ## Current state (see proposal doc for details)
 
-Implemented against core-api: login/logout/session via httpOnly cookies (`/auth/*`), and the catalogue module under `src/features/catalog/` — `products/` (list with URL-param filters, sort and pagination; create; edit with PATCH diffing; variant rows; image upload; archive/restore), `categories/` (list, create, edit, delete) and `inventory/` (stock grouped per category card).
+Implemented against core-api: login/logout/session via httpOnly cookies (`/auth/*`), the catalogue module under `src/features/catalog/` — `products/` (list with URL-param filters, sort and pagination; create; edit with PATCH diffing; variant rows; image upload; archive/restore), `categories/` (list, create, edit, delete) and `inventory/` (stock grouped per category card) — and `customers/` (read-only directory: search, status filter, sortable columns, pagination, details dialog).
 
-Still on mock data: landing page, dashboard overview, invoice feature layer, profile + appearance/privacy settings, reports.
+The customer directory mirrors the product list deliberately: `lib/search-params.ts` + `hooks/use-customer-list-params.ts` are the same shape as the catalogue's, so filters, sort and page live in the URL and core-api does the work. Three things differ from products and are worth knowing:
 
-Placeholder routes with little/no view wired up: `/invoices` (feature layer exists, not routed), `/customers`, `/reports`, `/analytics`, `/team`.
+- The search parameter is **`search`**, not `q` — that is what `/customers` has always taken.
+- `GET /customers` and `GET /customers/{id}` return the *same* CustomerResponse, so one `Customer` type covers list rows and the details dialog; there is no summary/detail split like products have.
+- The table is hand-rolled rather than TanStack Table (the catalogue's `ProductTable` is typed to `ProductSummary` and not shared); sortable headers are a local `SortableHead` component. `displayName` is computed in Java, not a column, so it cannot be sorted on — the Customer column sorts by `firstName`.
+
+core-api has no admin write endpoints for customers (only the two GETs), so the directory is read-only by design, not by omission. Customers are created by storefront self-registration.
+
+Still on mock data: landing page, dashboard overview, invoice feature layer, profile + appearance/privacy settings, reports. Reports looks customers up through the ported `customers` API but feeds it DummyJSON invoice user ids, so most of those lookups 404 and the rows fall back to "Customer #id" until invoices are ported.
+
+Placeholder routes with little/no view wired up: `/invoices` (feature layer exists, not routed), `/reports`, `/analytics`, `/team`.
 
 Self-service registration is disabled: core-api's back-office `AuthController` has no `/register`, so `registerRequest()` throws a 501 with an explanation. Staff accounts come from the admin-only `POST /users`.
 

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/table";
 
 import type { TopCustomerWithDetails } from "../types/reports";
+import { getInitials } from "@/src/shared/lib/get-initial";
 import { CustomerAvatar } from "../../customers/components/customer-avatar";
 import { formatCurrency } from "../../dashboard-overview/lib/format";
 
@@ -63,9 +64,9 @@ export function TopCustomersTable({
             <TableCell>
               <div className="flex items-center gap-3">
                 <CustomerAvatar
-                  avatarUrl={customer.avatarUrl}
-                  fullName={customer.fullName}
-                  initials={customer.fullName}
+                  image={customer.avatarUrl || null}
+                  displayName={customer.fullName}
+                  initials={getInitials(customer.fullName)}
                   className="size-9"
                 />
                 <div className="flex flex-col">

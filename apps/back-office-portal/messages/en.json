@@ -198,5 +198,33 @@
     "stepVariants": "Variants & stock",
     "stepVariantsHint": "A product carries no stock of its own, so the API requires at least one variant before it can be created.",
     "imagesAfterCreate": "Images can be added on the next screen, once the product exists."
+  },
+  "Customers": {
+    "title": "Customers",
+    "subtitle": "Everyone who has registered on the storefront.",
+    "search": "Search",
+    "searchPlaceholder": "Search by name, email, phone or company",
+    "status": "Status",
+    "activeAndInactive": "Active & inactive",
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived",
+    "clearFilters": "Clear filters",
+    "loading": "Loading…",
+    "empty": "No customers match your filters.",
+    "error": "We couldn't load customers. Please try again.",
+    "forbidden": "Your session doesn't have access to customers. Sign in again as staff.",
+    "retry": "Try again",
+    "colCustomer": "Customer",
+    "colEmail": "Email",
+    "colPhone": "Phone",
+    "colCompany": "Company",
+    "colStatus": "Status",
+    "colJoined": "Joined",
+    "viewDetailsFor": "View details for {name}",
+    "detailsTitle": "Customer",
+    "detailsError": "Could not load this customer. Please try again.",
+    "taxNumber": "Tax number",
+    "customerId": "Customer ID"
   }
 }

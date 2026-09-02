@@ -1,118 +1,105 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
+import { Building2, CalendarDays, Hash, Mail, Phone, Receipt } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatDateTime } from "@/lib/formatters";
 import { CustomerAvatar } from "./customer-avatar";
+import { CustomerStatusBadge } from "./customer-status-badge";
 import { useCustomerDetails } from "../hooks/use-customer-details";
-import {
-  Building2,
-  BriefcaseBusiness,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
 
 interface CustomerDetailsDialogProps {
-  readonly customerId: number | null;
-  readonly onClose: () => void;
+    readonly customerId: number | null;
+    readonly onClose: () => void;
 }
 
-export function CustomerDetailsDialog({
-  customerId,
-  onClose,
-}: CustomerDetailsDialogProps) {
-  const { data: customer, isLoading, isError } = useCustomerDetails(customerId);
-  return (
-    <Dialog
-      open={customerId !== null}
-      onOpenChange={(open) => !open && onClose()}
-    >
-      <DialogContent className="w-full max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{customer ? customer.fullName : "Customer"}</DialogTitle>
-        </DialogHeader>
+export function CustomerDetailsDialog({ customerId, onClose }: CustomerDetailsDialogProps) {
+    const t = useTranslations("Customers");
+    const { data: customer, isLoading, isError } = useCustomerDetails(customerId);
 
-        {isLoading && (
-          <p className="text-sm text-muted-foreground">
-            Loading customer details...
-          </p>
-        )}
+    const statusLabel = customer
+        ? { active: t("active"), inactive: t("inactive"), deleted: t("archived") }[customer.status]
+        : "";
 
-        {isError && (
-          <p className="text-sm text-red-600">
-            Could not load this customer. Please try again.
-          </p>
-        )}
+    return (
+        <Dialog open={customerId !== null} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="w-full max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>{customer ? customer.displayName : t("detailsTitle")}</DialogTitle>
+                </DialogHeader>
 
-        {customer && (
-          <div className="space-y-6">
-            <div className="flex min-w-0 items-center gap-4">
-              <CustomerAvatar
-                avatarUrl={customer.avatarUrl}
-                fullName={customer.fullName}
-                initials={customer.initials}
-                className="size-16"
-              />
-              <div className="min-w-0">
-                <p className="truncate font-medium">{customer.fullName}</p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {customer.company.title}
-                </p>
-              </div>
-            </div>
+                {isLoading && <p className="text-sm text-muted-foreground">{t("loading")}</p>}
 
-            <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 rounded-lg border p-4 text-sm">
-              <dt className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="size-4" /> Email
-              </dt>
-              <dd className="min-w-0">
-                <a
-                  href={`mailto:${customer.email}`}
-                  title={customer.email}
-                  className="block break-all hover:underline"
-                >
-                  {customer.email}
-                </a>
-              </dd>
+                {isError && <p className="text-sm text-destructive">{t("detailsError")}</p>}
 
-              <dt className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="size-4" /> Phone
-              </dt>
-              <dd className="min-w-0 truncate">
-                <a href={`tel:${customer.phone}`} className="hover:underline">
-                  {customer.phone}
-                </a>
-              </dd>
+                {customer && (
+                    <div className="space-y-6">
+                        <div className="flex min-w-0 items-center gap-4">
+                            <CustomerAvatar
+                                image={customer.image}
+                                displayName={customer.displayName}
+                                initials={customer.initials}
+                                className="size-16"
+                            />
+                            <div className="min-w-0 space-y-1">
+                                <p className="truncate font-medium">{customer.displayName}</p>
+                                {/* The display name is the company when there is one, so the
+                                    person's own name is worth showing under it. */}
+                                {customer.companyName && (
+                                    <p className="truncate text-sm text-muted-foreground">
+                                        {[customer.firstName, customer.lastName].filter(Boolean).join(" ")}
+                                    </p>
+                                )}
+                                <CustomerStatusBadge status={customer.status} label={statusLabel} />
+                            </div>
+                        </div>
 
-              <dt className="flex items-center gap-2 text-muted-foreground">
-                <Building2 className="size-4" /> Company
-              </dt>
-              <dd className="min-w-0 truncate" title={customer.company.name}>
-                {customer.company.name}
-              </dd>
+                        <dl className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 rounded-lg border p-4 text-sm">
+                            <DetailLabel icon={<Mail className="size-4" />}>{t("colEmail")}</DetailLabel>
+                            <dd className="min-w-0">
+                                <a
+                                    href={`mailto:${customer.email}`}
+                                    title={customer.email}
+                                    className="block break-all hover:underline"
+                                >
+                                    {customer.email}
+                                </a>
+                            </dd>
 
-              <dt className="flex items-center gap-2 text-muted-foreground">
-                <BriefcaseBusiness className="size-4" /> Department
-              </dt>
-              <dd className="min-w-0 truncate">
-                {customer.company.department}
-              </dd>
+                            <DetailLabel icon={<Phone className="size-4" />}>{t("colPhone")}</DetailLabel>
+                            <dd className="min-w-0 truncate">
+                                {customer.phone ? (
+                                    <a href={`tel:${customer.phone}`} className="hover:underline">
+                                        {customer.phone}
+                                    </a>
+                                ) : (
+                                    "—"
+                                )}
+                            </dd>
 
-              <dt className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="size-4" /> Location
-              </dt>
-              <dd className="min-w-0 break-all">
-                {customer.location.city}, {customer.location.state},{" "}
-                {customer.location.country}
-              </dd>
-            </dl>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+                            <DetailLabel icon={<Building2 className="size-4" />}>{t("colCompany")}</DetailLabel>
+                            <dd className="min-w-0 truncate">{customer.companyName ?? "—"}</dd>
+
+                            <DetailLabel icon={<Receipt className="size-4" />}>{t("taxNumber")}</DetailLabel>
+                            <dd className="min-w-0 truncate">{customer.taxNumber ?? "—"}</dd>
+
+                            <DetailLabel icon={<CalendarDays className="size-4" />}>{t("colJoined")}</DetailLabel>
+                            <dd className="min-w-0">{formatDateTime(customer.createdAt)}</dd>
+
+                            <DetailLabel icon={<Hash className="size-4" />}>{t("customerId")}</DetailLabel>
+                            <dd className="min-w-0">{customer.id}</dd>
+                        </dl>
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DetailLabel({ icon, children }: { readonly icon: React.ReactNode; readonly children: React.ReactNode }) {
+    return (
+        <dt className="flex items-center gap-2 text-muted-foreground">
+            {icon} {children}
+        </dt>
+    );
 }
