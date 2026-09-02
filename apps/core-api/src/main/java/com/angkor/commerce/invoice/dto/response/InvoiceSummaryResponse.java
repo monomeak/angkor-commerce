@@ -8,6 +8,7 @@ public record InvoiceSummaryResponse(
     Long id,
     String invoiceNumber,
     InvoiceStatus invoiceStatus,
+    Long customerId,
     String customerName,
     LocalDate issueDate,
     LocalDate dueDate,
