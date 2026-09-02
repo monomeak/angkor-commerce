@@ -1,19 +1,19 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { fetchDashboardOverview } from "../api/dashboard-api";
-import { dashboardOverviewData } from "../data/dashboard-overview-data";
 import { dashboardKeys } from "../lib/query-keys";
-import type { DashboardOverviewData } from "../types/dashboard";
-
-// `initialData` is the same mock dataset used by dashboard-api.ts's
+import type { DashboardOverview } from "../types/dashboard";
 
 export function useDashboardOverview() {
-  const { apiBaseUrl } = useAppConfig();
+    const { apiBaseUrl } = useAppConfig();
 
-  return useQuery<DashboardOverviewData>({
-    queryKey: dashboardKeys.overview(),
-    queryFn: () => fetchDashboardOverview(apiBaseUrl),
-    initialData: dashboardOverviewData,
-    staleTime: 60 * 1000,
-  });
+    return useQuery<DashboardOverview>({
+        queryKey: dashboardKeys.overview(),
+        queryFn: () => fetchDashboardOverview(apiBaseUrl),
+        // The aggregates move whenever an order is paid, but not fast enough to warrant
+        // refetching on every focus.
+        staleTime: 60 * 1000
+    });
 }

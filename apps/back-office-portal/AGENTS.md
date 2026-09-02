@@ -5,7 +5,7 @@ Frontend for Angkor Commerce. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](.
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth, the product catalogue, the customer directory and invoices now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; the dashboard, reports and profile features are still on DummyJSON-shaped mock data and have not been ported yet.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth, the product catalogue, the customer directory, invoices and the dashboard overview now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; reports and the profile feature are still on DummyJSON-shaped mock data and have not been ported yet.
 
 ## Structure and conventions
 
@@ -38,9 +38,17 @@ Invoices work the same way and for the same reason: core-api issues an invoice o
 - A receipt is a document, so it has a URL: `/invoices/[invoiceId]` renders the full record and prints through `data-print-region` plus the `@media print` block at the bottom of `app/globals.css`. There is no print route and no details dialog.
 - **There is no OVERDUE status in core-api** — `InvoiceMapper` has a note about it and no implementation. `lib/invoice-display.ts` derives it for the badge from `dueDate < today && balance > 0`, in Phnom Penh time so an invoice due today doesn't read as overdue. The status *filter* only offers what the API can filter on, which is why OVERDUE is absent from it.
 - The list's date range params are named `issuedFrom`/`issuedTo`/`dueFrom`/`dueTo` in the URL but `issueDateFrom`/... on the wire — the short forms read better in a shared link. Only the **issued** range has a control: the due-date range is still parsed, sent and cleared, so a hand-written `?dueFrom=` works, but a second pair of date boxes was noise on the toolbar. `search` matches the invoice number or the customer's name, company or email.
-- `src/features/invoices/mock/` is the old DummyJSON `/carts` invoice model, kept **only** because the dashboard overview and reports still aggregate it client-side. Its statuses (`paid | pending | overdue | draft`) are invented and are not core-api's. It keys its cache as `["invoices", "mock"]` so it never collides with the real list. Delete it when those two screens are ported.
+- `src/features/invoices/mock/` is the old DummyJSON `/carts` invoice model, kept **only** because the reports screens still aggregate it client-side. Its statuses (`paid | pending | overdue | draft`) are invented and are not core-api's. It keys its cache as `["invoices", "mock"]` so it never collides with the real list. Delete it when reports is ported.
 
-Still on mock data: landing page, dashboard overview, profile + appearance/privacy settings, reports. Reports looks customers up through the ported `customers` API but feeds it DummyJSON invoice user ids, so most of those lookups 404 and the rows fall back to "Customer #id" until invoices are ported.
+The overview dashboard is one call — `GET /dashboard/overview?months=6` — behind all four of its widgets, because four aggregate queries in one transaction beat four endpoints the client has to assemble:
+
+- KPI cards are **totals**, not trends: revenue (COMPLETED payments), outstanding (unpaid invoice balances), products on sale, customers, orders awaiting payment, invoices issued. Only revenue carries a change chip, computed from this month against last in the same series the chart draws — the other five have nothing honest to compare against, which is what the mock's invented percentages were doing.
+- The revenue chart is **one** series. The old paid-vs-pending split was unanswerable: money is either received or it is an invoice balance, and a balance is not revenue. Outstanding is a KPI card instead.
+- There are no "pending" or "overdue" invoice KPIs. core-api's statuses are ISSUED / PARTIALLY_PAID / PAID / CANCELLED, and overdue is a derived display state (see the invoices section).
+- Money is summed across invoices and payments without grouping by currency — the shop trades in one, and `summary.currency` says which (`angkor.default-currency`). A second currency makes these totals meaningless and needs the API to group first.
+- The mock fallback in `api/dashboard-api.ts` is gone: a dashboard that quietly shows invented numbers when the API is down is worse than one that says it could not load.
+
+Still on mock data: landing page, profile + appearance/privacy settings, reports. Reports looks customers up through the ported `customers` API but feeds it DummyJSON invoice user ids, so most of those lookups 404 and the rows fall back to "Customer #id" until invoices are ported.
 
 Placeholder routes with little/no view wired up: `/reports`, `/analytics`, `/team`.
 

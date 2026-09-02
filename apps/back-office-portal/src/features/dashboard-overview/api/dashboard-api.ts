@@ -1,35 +1,27 @@
-import { dashboardOverviewData } from "../data/dashboard-overview-data";
-import type { DashboardOverviewData } from "../types/dashboard";
+import { apiFetch, parseResponse } from "@/lib/api-client";
+import type { DashboardOverviewDto } from "../schemas/dashboard-api.schema";
+import { dashboardOverviewDtoSchema } from "../schemas/dashboard-api.schema";
+import type { DashboardOverview } from "../types/dashboard";
 
 /*
- * PLACEHOLDER ENDPOINT: there is no real "/dashboard/overview" route on
- * DummyJSON (or most backends, this early) — this file exists so the
- * hook/view layer already has its final shape. Point AppConfig.apiBaseUrl at
- * your real API once `/dashboard/overview` (or whatever you name it) exists,
- * and delete the fallback below.
- *
- * For now: attempts the real call, and falls back to local mock data if
- * the endpoint 404s or the network call fails, so the page keeps working
- * during development without a backend.
+ * One call for the whole screen. The mock fallback this file used to carry is gone with the
+ * endpoint it was standing in for — a dashboard that silently shows invented numbers when the
+ * API is down is worse than one that says it could not load.
  */
 
-export async function fetchDashboardOverview(
-  apiBaseUrl: string,
-): Promise<DashboardOverviewData> {
-  try {
-    const res = await fetch(`${apiBaseUrl}/dashboard/overview`);
-    if (!res.ok) {
-      throw new Error(`Dashboard overview endpoint returned ${res.status}`);
-    }
-    return await res.json();
-  } catch (err) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn(
-        "[dashboard-api] Falling back to mock data - real endpoint not available yet:",
-        err instanceof Error ? err.message : err,
-      );
-      return dashboardOverviewData;
-    }
-    throw err;
-  }
+/** Months of revenue history the chart shows. core-api clamps this to 1..24. */
+export const REVENUE_MONTHS = 6;
+
+export async function fetchDashboardOverview(apiBaseUrl: string): Promise<DashboardOverview> {
+    const data = await apiFetch<unknown>(apiBaseUrl, `/dashboard/overview?months=${REVENUE_MONTHS}`);
+    const dto: DashboardOverviewDto = parseResponse(dashboardOverviewDtoSchema, data);
+
+    return {
+        ...dto,
+        // Only the customer name needs a fallback; everything else is non-null from the API.
+        recentInvoices: dto.recentInvoices.map((invoice) => ({
+            ...invoice,
+            customerName: invoice.customerName?.trim() || `Customer #${invoice.customerId}`
+        }))
+    };
 }

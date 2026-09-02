@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import type { MonthlyStatusBreakdown } from "../types/reports";
-import { formatCurrency } from "../../dashboard-overview/lib/format";
+import { formatCurrency } from "../lib/format";
 import {
   ALL_INVOICE_STATUSES,
   getStatusStyle,

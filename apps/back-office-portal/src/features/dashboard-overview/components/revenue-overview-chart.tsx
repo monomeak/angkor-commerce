@@ -1,152 +1,82 @@
 "use client";
 
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { useTranslations } from "next-intl";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "../lib/format";
+import { formatMoney } from "@/lib/formatters";
+import { monthLabel } from "../lib/stats";
 import type { RevenuePoint } from "../types/dashboard";
 
 interface RevenueOverviewChartProps {
-  readonly data: RevenuePoint[];
+    readonly data: RevenuePoint[];
+    readonly currency: string;
+    readonly months: number;
 }
 
-function RevenueTooltip({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: {
-    value: number;
-    dataKey: string;
-  }[];
-  label?: string;
-}) {
-  if (!active || !payload?.length) return null;
+/**
+ * One series, not two. The old chart split "paid" against "pending" revenue, which core-api
+ * cannot answer and never could: money is either received (a COMPLETED payment) or it is an
+ * invoice balance, and a balance is not revenue. Outstanding has its own KPI card instead.
+ */
+export function RevenueOverviewChart({ data, currency, months }: RevenueOverviewChartProps) {
+    const t = useTranslations("Overview");
+    const points = data.map((point) => ({ ...point, label: monthLabel(point.month) }));
 
-  return (
-    <div className="rounded-lg border bg-background p-3 shadow-sm">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="mt-1 space-y-0.5">
-        {payload.map((entry) => (
-          <p key={entry.dataKey} className="text-sm font-medium">
-            {entry.dataKey === "paid" ? "Paid" : "Pending"}:{" "}
-            {formatCurrency(entry.value)}
-          </p>
-        ))}
-      </div>
-    </div>
-  );
-}
+    return (
+        <Card className="h-full min-w-0">
+            <CardHeader>
+                <CardTitle className="text-base font-semibold">{t("revenueTitle")}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t("revenueSubtitle", { months })}</p>
+            </CardHeader>
+            <CardContent>
+                <div className="h-[280px] w-full min-w-0">
+                    <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                        initialDimension={{ width: 800, height: 280 }}
+                    >
+                        <AreaChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.35} />
+                                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
 
-export function RevenueOverviewChart({ data }: RevenueOverviewChartProps) {
-  return (
-    <Card className="h-full min-w-0">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base font-semibold">
-          Revenue overview
-        </CardTitle>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-primary" /> Paid
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-primary/30" /> Pending
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="h-[280px] min-w-0 w-full">
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            minWidth={0}
-            initialDimension={{ width: 800, height: 280 }}
-          >
-            <AreaChart
-              data={data}
-              margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="paidGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="0%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0.35}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-                <linearGradient
-                  id="pendingGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0.12}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor="hsl(var(--primary))"
-                    stopOpacity={0}
-                  />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="3 3"
-                className="stroke-muted"
-              />
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                className="text-xs fill-muted-foreground"
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                width={48}
-                tickFormatter={(v) => `$${v / 1000}k`}
-                className="text-xs fill-muted-foreground"
-              />
-              <Tooltip content={<RevenueTooltip />} />
-
-              <Area
-                type="monotone"
-                dataKey="pending"
-                stackId="1"
-                stroke="hsl(var(--primary) / 0.5)"
-                strokeWidth={2}
-                fill="url(#pendingGradient)"
-              />
-              <Area
-                type="monotone"
-                dataKey="paid"
-                stackId="1"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#paidGradient)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
-  );
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis
+                                dataKey="label"
+                                axisLine={false}
+                                tickLine={false}
+                                className="fill-muted-foreground text-xs"
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                width={72}
+                                className="fill-muted-foreground text-xs"
+                                tickFormatter={(value: number) => formatMoney(value, currency)}
+                            />
+                            <Tooltip
+                                formatter={(value) => [formatMoney(Number(value), currency), t("revenueTitle")]}
+                                contentStyle={{
+                                    borderRadius: "0.5rem",
+                                    border: "1px solid var(--border)",
+                                    background: "var(--background)"
+                                }}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="revenue"
+                                stroke="var(--chart-1)"
+                                strokeWidth={2}
+                                fill="url(#revenueGradient)"
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

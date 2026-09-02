@@ -33,9 +33,22 @@
   },
   "Overview": {
     "totalRevenue": "ចំណូលសរុប",
-    "outstanding": "នៅសល់",
-    "pendingInvoices": "វិក្កយបត្រកំពុងរង់ចាំ",
-    "overdueInvoices": "វិក្កយបត្រហួសកំណត់"
+    "outstanding": "នៅសល់ត្រូវទទួល",
+    "totalProducts": "ផលិតផលកំពុងលក់",
+    "totalCustomers": "អតិថិជន",
+    "pendingOrders": "ការបញ្ជាទិញរង់ចាំបង់ប្រាក់",
+    "totalInvoices": "វិក្កយបត្របានចេញ",
+    "vsLastMonth": "ធៀបនឹងខែមុន",
+    "revenueTitle": "ចំណូល",
+    "revenueSubtitle": "ប្រាក់ទទួលបានក្នុងរយៈពេល {months} ខែចុងក្រោយ",
+    "invoiceStatusTitle": "ស្ថានភាពវិក្កយបត្រ",
+    "latestInvoices": "វិក្កយបត្រថ្មីៗ",
+    "viewAll": "មើលទាំងអស់",
+    "noInvoices": "មិនទាន់មានវិក្កយបត្រទេ។",
+    "loading": "កំពុងផ្ទុក…",
+    "error": "មិនអាចផ្ទុកផ្ទាំងគ្រប់គ្រងបានទេ។ សូមព្យាយាមម្តងទៀត។",
+    "forbidden": "សម័យរបស់អ្នកមិនមានសិទ្ធិចូលមើលផ្ទាំងគ្រប់គ្រងទេ។ សូមចូលម្តងទៀតជាបុគ្គលិក។",
+    "retry": "ព្យាយាមម្តងទៀត"
   },
   "Theme": {
     "changeTheme": "ប្ដូររូបរាង",

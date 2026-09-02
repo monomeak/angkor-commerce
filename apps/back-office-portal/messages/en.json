@@ -32,10 +32,23 @@
     "netRevenue": "Net revenue"
   },
   "Overview": {
-    "totalRevenue": "Total Revenue",
+    "totalRevenue": "Total revenue",
     "outstanding": "Outstanding",
-    "pendingInvoices": "Pending invoices",
-    "overdueInvoices": "Overdue invoices"
+    "totalProducts": "Products on sale",
+    "totalCustomers": "Customers",
+    "pendingOrders": "Orders awaiting payment",
+    "totalInvoices": "Invoices issued",
+    "vsLastMonth": "vs last month",
+    "revenueTitle": "Revenue",
+    "revenueSubtitle": "Payments received over the last {months} months",
+    "invoiceStatusTitle": "Invoice status",
+    "latestInvoices": "Latest invoices",
+    "viewAll": "View all",
+    "noInvoices": "No invoices yet.",
+    "loading": "Loading…",
+    "error": "We couldn't load the dashboard. Please try again.",
+    "forbidden": "Your session doesn't have access to the dashboard. Sign in again as staff.",
+    "retry": "Try again"
   },
   "Theme": {
     "changeTheme": "Change theme",

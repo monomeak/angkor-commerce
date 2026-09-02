@@ -12,7 +12,7 @@ import {
 import type { TopCustomerWithDetails } from "../types/reports";
 import { getInitials } from "@/src/shared/lib/get-initial";
 import { CustomerAvatar } from "../../customers/components/customer-avatar";
-import { formatCurrency } from "../../dashboard-overview/lib/format";
+import { formatCurrency } from "../lib/format";
 
 interface TopCustomersTableProps {
   readonly customers: TopCustomerWithDetails[];
