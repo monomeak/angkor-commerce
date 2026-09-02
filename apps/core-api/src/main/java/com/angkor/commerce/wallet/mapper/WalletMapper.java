@@ -49,6 +49,7 @@ public class WalletMapper {
         return new WalletTransactionResponse(
             txn.getId(),
             txn.getTxnType(),
+            txn.getDirection(),
             txn.getAmount(),
             Currency.getInstance(txn.getWallet().getCurrency()),
             txn.getBalanceAfter(),

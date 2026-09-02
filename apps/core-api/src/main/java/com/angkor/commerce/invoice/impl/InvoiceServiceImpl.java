@@ -150,6 +150,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceMapper.toResponse(invoice);
     }
 
+    /** The receipt for an order the customer has paid. Absent until the payment lands. */
+    @Override
+    public InvoiceResponse getMyInvoiceForOrder(Long customerId, Long orderId) {
+        Invoice invoice = invoiceRepository
+            .findByOrderIdAndStatusNot(orderId, RecordStatus.DELETED)
+            .orElseThrow(() -> new ResourceNotFoundException("Order " + orderId + " has no invoice"));
+
+        if (!invoice.getCustomer().getId().equals(customerId)) {
+            throw new ResourceNotFoundException("Order " + orderId + " has no invoice");
+        }
+
+        return invoiceMapper.toResponse(invoice);
+    }
+
     // ══════════════════════════════════════════════════════
     // Helpers
     // ══════════════════════════════════════════════════════

@@ -53,7 +53,8 @@ public class InvoiceCalculator {
         invoice.setDiscountAmount(discountAmount);
         invoice.setTaxAmount(taxAmount);
         invoice.setTotal(taxable.add(taxAmount)); // INCLUDE TAX
-        invoice.setTotalItems(totalQuantity);
+        invoice.setTotalItems(invoice.getItems().size());
+        invoice.setTotalQuantity(totalQuantity);
         invoice.recalculateBalance();
     }
 }
