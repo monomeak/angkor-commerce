@@ -6,6 +6,8 @@ import { usePathname } from "@/app/i18n/navigation";
 import { routing } from "@/app/i18n/routing";
 import { productKeys } from "@/src/features/catalog/products/lib/query-keys";
 import type { Product } from "@/src/features/catalog/products/types/product";
+import { invoiceKeys } from "@/src/features/invoices/lib/query-keys";
+import type { Invoice } from "@/src/features/invoices/types/invoice";
 
 export interface Crumb {
     label: string;
@@ -71,12 +73,20 @@ export function useBreadcrumbs(): Crumb[] {
             label = tCrumb("edit");
         } else if (/^\d+$/.test(segment)) {
             /*
-             * A product id. The detail query is already in the cache by the time the edit page
-             * renders, so read the real name from there rather than showing a bare number.
-             * Falling back to "#12" keeps the crumb honest on a cold load or a direct link.
+             * A record id. The detail query is already in the cache by the time the page
+             * renders, so read the real name or number from there rather than showing a bare
+             * id — which one depends on what the id belongs to. Falling back to "#12" keeps
+             * the crumb honest on a cold load or a direct link.
              */
-            const product = queryClient.getQueryData<Product>(productKeys.detail(Number(segment)));
-            label = product?.name ?? `#${segment}`;
+            const id = Number(segment);
+            const parent = segments[index - 1];
+
+            const cached =
+                parent === "invoices"
+                    ? queryClient.getQueryData<Invoice>(invoiceKeys.detail(id))?.invoiceNumber
+                    : queryClient.getQueryData<Product>(productKeys.detail(id))?.name;
+
+            label = cached ?? `#${segment}`;
         } else {
             // Unknown segment: title-case it rather than dropping the crumb, so a route added
             // later still shows something sensible before it gets a translation.

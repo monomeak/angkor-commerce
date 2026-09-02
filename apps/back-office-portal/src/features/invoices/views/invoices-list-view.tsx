@@ -1,135 +1,82 @@
 "use client";
 
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
-import { InvoiceDetailsDialog } from "../components/invoice-details-dialog";
-import { useInvoiceList } from "../hooks/use-invoice-list";
-import type { InvoiceStatus } from "../types/invoice";
+import { ApiError } from "@/lib/api-client";
 import { PaginationControls } from "@/lib/pagination-control";
-import { useDebouncedValue } from "@/src/shared/hooks/use-debounced-value";
-import { InvoiceToolbar } from "../components/invoices-toolbar";
+import { InvoiceFilters } from "../components/invoice-filters";
 import { InvoicesTable } from "../components/invoices-table";
+import { useInvoiceListParams } from "../hooks/use-invoice-list-params";
+import { useInvoices } from "../hooks/use-invoices";
+import { PAGE_SIZE_OPTIONS } from "../lib/constants";
+
+/**
+ * The invoice register. Search, status, both date ranges, sort and paging live in the URL and
+ * are applied by core-api — the same arrangement as the catalogue and the customer directory.
+ */
 export function InvoicesListView() {
-  // Handle search input
-  const [searchInput, setSearchInput] = useState("");
+    const t = useTranslations("Invoices");
+    const { params, page, setParams } = useInvoiceListParams();
+    const { data, isLoading, isError, error, isFetching, refetch } = useInvoices(params);
 
-  // Handle status selected
-  const [status, setStatus] = useState<InvoiceStatus | "all">("all");
-  const [issuedDateFrom, setIssuedDateFrom] = useState("");
-  const [issuedDateTo, setIssuedDateTo] = useState("");
-  const [dueDateFrom, setDueDateFrom] = useState("");
-  const [dueDateTo, setDueDateTo] = useState("");
-  // Handle page navigation
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  // Handle Selected InvoiceId
+    const statusLabels: Record<string, string> = {
+        ISSUED: t("status_ISSUED"),
+        PARTIALLY_PAID: t("status_PARTIALLY_PAID"),
+        PAID: t("status_PAID"),
+        CANCELLED: t("status_CANCELLED"),
+        OVERDUE: t("status_OVERDUE")
+    };
 
-  const [selectedInvoiceId, setSeletedInvoiceId] = useState<string | null>(
-    null,
-  );
+    const total = data?.total ?? 0;
+    const pageCount = Math.max(1, Math.ceil(total / params.limit));
 
-  // add debounced Search for ux
+    if (isError) {
+        const isForbidden = error instanceof ApiError && (error.status === 401 || error.status === 403);
 
-  const debouncedSearch = useDebouncedValue(searchInput, 250);
+        return (
+            <div className="space-y-3">
+                <p className="text-sm text-destructive">{isForbidden ? t("forbidden") : t("error")}</p>
+                <Button variant="outline" disabled={isFetching} onClick={() => void refetch()}>
+                    {isFetching ? t("loading") : t("retry")}
+                </Button>
+            </div>
+        );
+    }
 
-  const { invoices, total, pageCount, currentPage, isLoading, isError, error } =
-    useInvoiceList({
-      search: debouncedSearch,
-      status,
-      issuedDateFrom,
-      issuedDateTo,
-      dueDateFrom,
-      dueDateTo,
-      page,
-      pageSize,
-    });
-
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value);
-    // reset to page 1 after search change / status filtering updated
-    setPage(1);
-  };
-
-  const handleStatusChange = (value: InvoiceStatus | "all") => {
-    setStatus(value);
-    setPage(1);
-  };
-
-  const handleResetFilters = () => {
-    setSearchInput("");
-    setStatus("all");
-    setIssuedDateFrom("");
-    setIssuedDateTo("");
-    setDueDateFrom("");
-    setDueDateTo("");
-    setPage(1);
-  };
-
-  if (isError) {
     return (
-      <p className="text-sm text-red-600">
-        Could not load invoices{error ? `: ${error.message}` : "."} Please try
-        again.
-      </p>
+        <div className="space-y-4">
+            <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+                <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+            </div>
+
+            <InvoiceFilters params={params} onChange={setParams} />
+
+            <Card>
+                <CardContent className="p-0">
+                    <InvoicesTable
+                        invoices={data?.invoices ?? []}
+                        params={params}
+                        isLoading={isLoading}
+                        isFetching={isFetching}
+                        statusLabels={statusLabels}
+                        onSort={(sortBy, order) => setParams({ sortBy, order })}
+                        onFilterByCustomer={(customerId) => setParams({ customerId })}
+                    />
+                </CardContent>
+            </Card>
+
+            <PaginationControls
+                currentPage={page}
+                pageCount={pageCount}
+                total={total}
+                pageSize={params.limit}
+                pageSizeOptions={PAGE_SIZE_OPTIONS}
+                itemLabel="invoice"
+                onPageChange={(next) => setParams({ page: next })}
+                onPageSizeChange={(limit) => setParams({ limit })}
+            />
+        </div>
     );
-  }
-
-  return (
-    <div className="space-y-4">
-      <InvoiceToolbar
-        search={searchInput}
-        onSearchChange={handleSearchChange}
-        status={status}
-        onStatusChange={handleStatusChange}
-        issuedDateFrom={issuedDateFrom}
-        issuedDateTo={issuedDateTo}
-        dueDateFrom={dueDateFrom}
-        dueDateTo={dueDateTo}
-        onIssuedDateFromChange={(value) => {
-          setIssuedDateFrom(value);
-          setPage(1);
-        }}
-        onIssuedDateToChange={(value) => {
-          setIssuedDateTo(value);
-          setPage(1);
-        }}
-        onDueDateFromChange={(value) => {
-          setDueDateFrom(value);
-          setPage(1);
-        }}
-        onDueDateToChange={(value) => {
-          setDueDateTo(value);
-          setPage(1);
-        }}
-        onReset={handleResetFilters}
-      />
-      <Card>
-        <CardContent className="p-0">
-          <InvoicesTable
-            invoices={invoices}
-            isLoading={isLoading}
-            onViewDetails={setSeletedInvoiceId}
-          />
-        </CardContent>
-      </Card>
-
-      <PaginationControls
-        currentPage={currentPage}
-        pageCount={pageCount}
-        total={total}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={(value) => {
-          setPageSize(value);
-          setPage(1);
-        }}
-        itemLabel="invoice"
-      />
-      <InvoiceDetailsDialog
-        invoiceId={selectedInvoiceId}
-        onClose={() => setSeletedInvoiceId(null)}
-      />
-    </div>
-  );
 }

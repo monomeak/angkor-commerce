@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
 import { formatCurrency, formatDate } from "../lib/format";
-import { Invoice } from "../../invoices/types/invoice";
+import { Invoice } from "../../invoices/mock/types";
 import Link from "next/link";
 
 interface LatestInvoicesProps {

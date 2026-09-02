@@ -5,7 +5,7 @@ Frontend for Angkor Commerce. See [`docs/ANGKOR_COMMERCE_PROJECT_PROPOSAL.md`](.
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth, the product catalogue and the customer directory now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; the dashboard, invoices, reports and profile features are still on DummyJSON-shaped mock data and have not been ported yet.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui, Base UI, TanStack React Query 5, TanStack React Table 8, React Hook Form 7 + `@hookform/resolvers`, Zod 4, Recharts 3, Sonner, Lucide React. Auth, the product catalogue, the customer directory and invoices now talk to the shared Spring Boot API (`apps/core-api`) through `lib/api-client.ts`; the dashboard, reports and profile features are still on DummyJSON-shaped mock data and have not been ported yet.
 
 ## Structure and conventions
 
@@ -33,9 +33,16 @@ The customer directory mirrors the product list deliberately: `lib/search-params
 
 core-api has no admin write endpoints for customers (only the two GETs), so the directory is read-only by design, not by omission. Customers are created by storefront self-registration.
 
-Still on mock data: landing page, dashboard overview, invoice feature layer, profile + appearance/privacy settings, reports. Reports looks customers up through the ported `customers` API but feeds it DummyJSON invoice user ids, so most of those lookups 404 and the rows fall back to "Customer #id" until invoices are ported.
+Invoices work the same way and for the same reason: core-api issues an invoice only when a payment is confirmed (`CheckoutServiceImpl`), so `src/features/invoices/` is a register and a receipt printer, not an invoice editor. `RecordPaymentRequest` and `CancelnvoiceRequest` exist as DTOs in core-api with no service method or controller behind them — recording a payment and cancelling an invoice are the next slice, not missing wiring on this side.
 
-Placeholder routes with little/no view wired up: `/invoices` (feature layer exists, not routed), `/reports`, `/analytics`, `/team`.
+- A receipt is a document, so it has a URL: `/invoices/[invoiceId]` renders the full record and prints through `data-print-region` plus the `@media print` block at the bottom of `app/globals.css`. There is no print route and no details dialog.
+- **There is no OVERDUE status in core-api** — `InvoiceMapper` has a note about it and no implementation. `lib/invoice-display.ts` derives it for the badge from `dueDate < today && balance > 0`, in Phnom Penh time so an invoice due today doesn't read as overdue. The status *filter* only offers what the API can filter on, which is why OVERDUE is absent from it.
+- The list's date range params are named `issuedFrom`/`issuedTo`/`dueFrom`/`dueTo` in the URL but `issueDateFrom`/... on the wire — the short forms read better in a shared link. Only the **issued** range has a control: the due-date range is still parsed, sent and cleared, so a hand-written `?dueFrom=` works, but a second pair of date boxes was noise on the toolbar. `search` matches the invoice number or the customer's name, company or email.
+- `src/features/invoices/mock/` is the old DummyJSON `/carts` invoice model, kept **only** because the dashboard overview and reports still aggregate it client-side. Its statuses (`paid | pending | overdue | draft`) are invented and are not core-api's. It keys its cache as `["invoices", "mock"]` so it never collides with the real list. Delete it when those two screens are ported.
+
+Still on mock data: landing page, dashboard overview, profile + appearance/privacy settings, reports. Reports looks customers up through the ported `customers` API but feeds it DummyJSON invoice user ids, so most of those lookups 404 and the rows fall back to "Customer #id" until invoices are ported.
+
+Placeholder routes with little/no view wired up: `/reports`, `/analytics`, `/team`.
 
 Self-service registration is disabled: core-api's back-office `AuthController` has no `/register`, so `registerRequest()` throws a 501 with an explanation. Staff accounts come from the admin-only `POST /users`.
 

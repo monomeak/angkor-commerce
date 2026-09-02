@@ -1,4 +1,4 @@
-import { Invoice } from "../../invoices/types/invoice";
+import { Invoice } from "../../invoices/mock/types";
 
 export function filterInvoicesByRecentMonths(
   invoices: Invoice[],

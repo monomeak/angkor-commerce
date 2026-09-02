@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "../../invoices/types/invoice";
+import { InvoiceStatus } from "../../invoices/mock/types";
 
 export type MonthlyStatusBreakdown = Record<InvoiceStatus, number> & {
   month: string;

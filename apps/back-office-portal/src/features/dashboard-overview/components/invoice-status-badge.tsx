@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
-import { InvoiceStatus } from "../../invoices/types/invoice";
-import { getStatusStyle } from "../../invoices/lib/invoice-status-style";
+import { InvoiceStatus } from "../../invoices/mock/types";
+import { getStatusStyle } from "../../invoices/mock/status-style";
 interface InvoiceStatusBadgeProps {
   readonly status: InvoiceStatus;
   readonly className?: string;

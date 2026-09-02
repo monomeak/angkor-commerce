@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { Invoice, InvoiceStatus } from "../../invoices/types/invoice";
+import type { Invoice, InvoiceStatus } from "../../invoices/mock/types";
 
 export type DashboardStatKey =
   | "totalRevenue"

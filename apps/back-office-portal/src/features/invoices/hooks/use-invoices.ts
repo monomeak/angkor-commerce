@@ -1,16 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+"use client";
+
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useAppConfig } from "@/components/providers/app-config-provider";
-import { fetchAllInvoices } from "../api/invoice-api";
+import { fetchInvoices } from "../api/invoice-api";
 import { invoiceKeys } from "../lib/query-keys";
-import type { Invoice } from "../types/invoice";
-// fetches the full invoice list once and caches it -- search/ filter / pagination are all derived client-side from this in useInvoiceList
+import type { InvoiceListParams, InvoiceListResult } from "../types/invoice";
 
-export function useInvoices() {
-  const { apiBaseUrl } = useAppConfig();
+/**
+ * One page of invoices, filtered and sorted by core-api. Note this is not the same thing as
+ * `mock/use-invoices.ts`, which fetches every DummyJSON cart at once for the dashboard —
+ * that one is going away with the screens still built on it.
+ */
+export function useInvoices(params: InvoiceListParams) {
+    const { apiBaseUrl } = useAppConfig();
 
-  return useQuery<Invoice[]>({
-    queryKey: invoiceKeys.list(),
-    queryFn: () => fetchAllInvoices(apiBaseUrl),
-    staleTime: 5 * 60,
-  });
+    return useQuery<InvoiceListResult>({
+        queryKey: invoiceKeys.list(params),
+        queryFn: () => fetchInvoices(apiBaseUrl, params),
+        // Keeps the current page on screen while the next loads, so paging and typing in the
+        // search box don't collapse the table to its empty height.
+        placeholderData: keepPreviousData
+    });
 }

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useInvoices } from "../../invoices/hooks/use-invoices";
+import { useInvoices } from "../../invoices/mock/use-invoices";
 import { TopCustomerWithDetails } from "../types/reports";
 import { aggregateTopCustomer } from "../lib/aggregate-top-customers";
 import { useQueries } from "@tanstack/react-query";
