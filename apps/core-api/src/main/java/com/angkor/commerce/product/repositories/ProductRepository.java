@@ -14,6 +14,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+    /** Dashboard KPI: how many products are actually on sale. */
+    long countByStatus(RecordStatus status);
+
 
     @Query("select p from Product p where p.id = :id and p.status <> 'DELETED'")
     Optional<Product> findActiveById(@Param("id") Long id);

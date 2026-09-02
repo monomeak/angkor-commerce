@@ -11,6 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    /** Dashboard KPI: orders placed but not yet paid for — the work waiting on staff. */
+    long countByStatus(OrderStatus status);
+
     // HACK: revisit Entity Graph
     // Details
     @EntityGraph(attributePaths = { "items" })
