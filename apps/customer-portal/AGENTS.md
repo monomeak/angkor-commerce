@@ -10,7 +10,7 @@ Public storefront for Angkor Commerce: browsing, self-registration, and order/in
 
 ## Stack
 
-Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4, Leaflet + react-leaflet (the address map picker, and the only place either is used). Auth, the customer profile, the product catalogue, the address book and the wishlist talk to `apps/core-api`; the cart, checkout and orders are still local mock/localStorage data.
+Next.js 16 App Router, React 19, TypeScript 5, Tailwind CSS 4, shadcn/ui (`base-nova` style, neutral base color — matches `apps/back-office-portal`), TanStack React Query 5, Zod 4, Leaflet + react-leaflet (the address map picker, and the only place either is used). Everything but saved cards talks to `apps/core-api`: auth, the customer profile, the catalogue, the address book, the wishlist, the cart's catalogue data, checkout, orders, receipts and the wallet.
 
 ## Structure and conventions
 
@@ -62,7 +62,7 @@ Products and categories come from core-api's **shared** `GET /products` and `GET
 - Fields are Cambodian, not the old `{address, city}` mock: `line1` is house + street, `commune` the sangkat, `district` the khan, `province` the khaet. `PATCH` sends every field, so blanking an optional one clears it server-side.
 - The form has a **map picker** (`components/map-picker.tsx`, reusable and address-agnostic — it only emits coordinates). Click drops a pin, dragging moves it, and each drop reverse-geocodes through OpenStreetMap's Nominatim to fill the address fields; whatever the lookup can't name keeps what was typed. `latitude`/`longitude` are saved with the address as a pair. That fetch is the one call in the portal that deliberately skips `apiFetch` — it isn't core-api, and session cookies have no business going there.
 - Leaflet touches `window` on import, so `map-canvas.tsx` (the react-leaflet part, plus `leaflet/dist/leaflet.css`) is only ever loaded through `next/dynamic` with `ssr: false` from `map-picker.tsx`. Import the picker, never the canvas.
-- Checkout does not manage addresses: `/shipping` offers the saved ones as fill-in buttons and flattens the chosen one into its mock `ShippingAddress` through `checkout/lib/saved-address.ts`. That adapter is lossy on purpose and should be deleted once `POST /storefront/orders` accepts an `addressId`.
+- Checkout does not manage addresses beyond adding one: `/shipping` **picks** a saved address and passes its id to the order, since `POST /storefront/orders` takes a `shippingAddressId` and copies that row onto the order itself. The old flattening adapter and `SavedAddressPicker` are gone with it; `AddressForm` is what checkout reuses for adding an address inline.
 
 ## Wishlist (favorites)
 
@@ -79,8 +79,21 @@ Products and categories come from core-api's **shared** `GET /products` and `GET
 - Paging is **9 per page** through `?page=` and the shared `ProductPagination`, so back/forward work and a page is linkable — but the rows are fetched client-side, since the session cookie is httpOnly on the API origin. That makes `/account/favorites` a dynamic route. Only the client knows the total, so `WishlistBoard` clamps a page past the end itself (removing the last item on the last page).
 - `AppConfig.features.wishlist` exists but is still unread, like the rest of `features` — the wishlist is always on.
 
+## Cart, checkout, orders and the wallet
+
+Full write-up: [`docs/CART_CHECKOUT_ORDERS_INTEGRATION.md`](docs/CART_CHECKOUT_ORDERS_INTEGRATION.md). The short version:
+
+- The cart is still `localStorage` — core-api has no cart endpoint — but a line is now `{productId, variantId, quantity}` plus a **display snapshot** (name, size, sku, unitPrice, currency, thumbnail, categorySlug). It is keyed by `variantId`, because the variant is the unit of sale and `POST /storefront/orders` takes variant ids. The snapshot is never sent: the API reprices every line from the variant, so a stale snapshot costs a surprise, not a wrong charge. Legacy lines are dropped by `isCartItem` rather than migrated.
+- `/shipping` **picks** a saved address rather than typing one — `POST /storefront/orders` takes a `shippingAddressId` and copies that row onto the order. `AddressForm` is reused inline for adding one. The choice reaches `/checkout` as `?addressId=`, not through storage.
+- Placing and paying are two calls on purpose. The order exists and holds its stock after the first; if the payment fails the order survives and the button retries only the payment, so a short balance never produces a second order. The same retry lives on the order's page (`PayPendingOrderButton`).
+- Payment is the wallet provider (`WALLET`) — core-api's own ledger, taking the same intent → confirm path as ABA PayWay, with no QR to render. ABA is wired on the backend but not offered in the UI; it needs merchant credentials.
+- `SeedBalanceButton` posts to `/dev/wallet/seed` for demo money and renders nothing when `AppConfig.environment` is production, matching `/api/v1/dev/**` being registered only outside the prod profile.
+- An order and its invoice are different documents: the invoice is issued when payment is confirmed, so an unpaid order has no receipt and 404 is its normal answer. Reached through `GET /storefront/orders/{orderId}/invoice`, added for this — the invoice list rows carry no `orderId`.
+- Printing a receipt goes through `data-print-region` and the `@media print` block in `app/globals.css`; there is no print route.
+- Order status is lowercase on the wire (`OrderStatus` has `@JsonValue`); the invoice, payment, intent and wallet enums have none and stay UPPERCASE. The schemas mirror that split.
+
 ## Current state
 
-Real backend integration covers auth, the customer profile, the catalogue, the address book and the wishlist: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload via `PUT /storefront/auth/me/image`, product listing (landing rows, category browse, search), product detail with variants, address CRUD with a map pin, and saving/removing/clearing favorites.
+Real backend integration now covers auth, the customer profile, the catalogue, the address book, the wishlist, checkout, orders, receipts and the wallet: register/login/logout/refresh, `GET|PATCH /storefront/auth/me`, avatar upload, product listing and detail, address CRUD with a map pin, favorites, `POST /storefront/orders`, wallet payment and its ledger, order history and per-order receipts.
 
-Still mock/localStorage: cart, checkout, orders and payment methods — those land in later migration phases per `docs/api-design-draft/NEXTJS_MIGRATION_PLAN.md`. The cart holds product ids and resolves them against `products.data.ts`, so **its ids no longer line up with the real catalogue** — adding to the cart from a detail page books a line the cart sheet cannot resolve. That is the next thing to port.
+Still mock: `/account/payment-methods` (saved cards in localStorage). Nothing in checkout reads it any more — it is a leftover from the pre-core-api flow.

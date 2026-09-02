@@ -1,65 +1,33 @@
-import type { Order } from "../types/order";
+"use client";
 
-function getPaymentMethodLabel(order: Order): string {
-  if (order.paymentMethod === "cod") {
-    return "Cash on delivery";
-  }
+import Link from "next/link";
 
-  return order.card ? `${order.card.brand} •••• ${order.card.last4}` : "Card";
-}
+import { useAppConfig } from "@/components/providers/app-config-provider";
+import { formatDate } from "@/lib/date";
+import { formatPrice } from "@/src/features/products/lib/pricing";
+import type { OrderSummary } from "../types/order";
+import { OrderStatusBadge } from "./order-status-badge";
 
-export function OrderCard({ order }: { readonly order: Order }) {
-  const placedAtLabel = new Date(order.placedAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+/** A history row. Items live on the detail record, so a row shows only what the API pre-counted. */
+export function OrderCard({ order }: { readonly order: OrderSummary }) {
+    const { locale, timezone } = useAppConfig();
 
-  return (
-    <div className="rounded-2xl border bg-card p-5">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold">Order #{order.orderNumber}</p>
-          <p className="text-sm text-muted-foreground">Placed on {placedAtLabel}</p>
-        </div>
-        <span className="text-sm font-medium text-muted-foreground">
-          {getPaymentMethodLabel(order)}
-        </span>
-      </div>
-
-      <ul className="mt-4 flex flex-col gap-2 border-t pt-4">
-        {order.items.map((line) => (
-          <li
-            key={`${line.productId}-${line.size}`}
-            className="flex items-center justify-between gap-4 text-sm"
-          >
-            <span className="text-foreground">
-              {line.name}{" "}
-              <span className="text-muted-foreground">
-                (Size {line.size} × {line.quantity})
-              </span>
-            </span>
-            <span className="shrink-0 font-medium">
-              ${(line.unitPrice * line.quantity).toFixed(2)}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-4 flex flex-col gap-1 border-t pt-4 text-sm">
-        <div className="flex items-center justify-between text-muted-foreground">
-          <span>Subtotal</span>
-          <span>${order.subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center justify-between text-muted-foreground">
-          <span>Shipping</span>
-          <span>${order.shippingFee.toFixed(2)}</span>
-        </div>
-        <div className="flex items-center justify-between font-semibold text-foreground">
-          <span>Total</span>
-          <span>${order.total.toFixed(2)}</span>
-        </div>
-      </div>
-    </div>
-  );
+    return (
+        <Link
+            href={`/account/orders/${order.id}`}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-5 transition-colors hover:border-primary/50"
+        >
+            <div>
+                <p className="font-semibold">{order.orderNumber}</p>
+                <p className="text-sm text-muted-foreground">
+                    {formatDate(order.placedAt, locale, timezone)} · {order.totalItems}{" "}
+                    {order.totalItems === 1 ? "item" : "items"} ({order.totalQuantity} pcs)
+                </p>
+            </div>
+            <div className="flex items-center gap-3">
+                <OrderStatusBadge status={order.status} />
+                <span className="font-semibold">{formatPrice(order.total, order.currency, locale)}</span>
+            </div>
+        </Link>
+    );
 }

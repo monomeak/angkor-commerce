@@ -1,4 +1,4 @@
-import { Heart, Lock, LogOut, ShoppingCart, User } from "lucide-react";
+import { Heart, Lock, LogOut, ShoppingCart, User, Wallet } from "lucide-react";
 
 import type { AccountNavigationItem, AccountNavigationLink } from "../types/account";
 
@@ -7,6 +7,11 @@ export const accountNavigation: AccountNavigationItem[] = [
         label: "My Orders",
         href: "/account/orders",
         icon: ShoppingCart
+    },
+    {
+        label: "My Wallet",
+        href: "/account/transactions",
+        icon: Wallet
     },
     {
         label: "My Favorites",

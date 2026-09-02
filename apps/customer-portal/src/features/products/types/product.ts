@@ -104,19 +104,3 @@ export interface Product {
     /** Summed across variants by the API. */
     totalStock: number;
 }
-
-/**
- * The legacy mock shape, still used by the cart and checkout, which resolve product ids
- * against local data. New code should use Product or ProductSummary.
- */
-export type MockProduct = {
-    id: number;
-    name: string;
-    categoryId: number;
-    images: string[];
-    description: string;
-    quantity: number;
-    rating: number;
-    promotionPercentage: number;
-    price: number;
-};
