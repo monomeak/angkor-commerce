@@ -16,6 +16,7 @@ import com.angkor.commerce.invoice.dto.request.InvoiceQueryParams;
 import com.angkor.commerce.invoice.dto.response.InvoiceResponse;
 import com.angkor.commerce.invoice.dto.response.InvoiceSummaryResponse;
 import com.angkor.commerce.invoice.mapper.InvoiceMapper;
+import com.angkor.commerce.invoice.specification.InvoiceSpecification;
 import com.angkor.commerce.order.Order;
 import com.angkor.commerce.order.OrderItem;
 import com.angkor.commerce.payment.Payment;
@@ -118,25 +119,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public PageResponse<InvoiceSummaryResponse> getInvoices(InvoiceQueryParams query) {
-        Page<Invoice> page =
-            query.status() == null
-                ? invoiceRepository.findByStatusNot(RecordStatus.DELETED, query.toPageable())
-                : invoiceRepository.findByInvoiceStatusAndStatusNot(
-                      query.status(),
-                      RecordStatus.DELETED,
-                      query.toPageable()
-                  );
-        return toPageResponse(page, query);
+        return toPageResponse(find(query, null), query);
     }
 
+    /**
+     * The same query as the back office's, with the customer pinned to the session — a
+     * customer sending ?customerId= cannot widen it past their own invoices.
+     */
     @Override
     public PageResponse<InvoiceSummaryResponse> getMyInvoices(Long customerId, InvoiceQueryParams query) {
-        Page<Invoice> page = invoiceRepository.findByCustomerIdAndStatusNot(
-            customerId,
-            RecordStatus.DELETED,
-            query.toPageable()
-        );
-        return toPageResponse(page, query);
+        return toPageResponse(find(query, customerId), query);
+    }
+
+    private Page<Invoice> find(InvoiceQueryParams query, Long customerId) {
+        return invoiceRepository.findAll(InvoiceSpecification.from(query, customerId), query.toPageable());
     }
 
     @Override
@@ -145,6 +141,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         // Same rule as orders: someone else's invoice is a 404, not a 403
         if (!invoice.getCustomer().getId().equals(customerId)) {
             throw new ResourceNotFoundException("Invoice " + invoiceId + " was not found");
+        }
+
+        return invoiceMapper.toResponse(invoice);
+    }
+
+    /** The receipt for an order the customer has paid. Absent until the payment lands. */
+    @Override
+    public InvoiceResponse getMyInvoiceForOrder(Long customerId, Long orderId) {
+        Invoice invoice = invoiceRepository
+            .findByOrderIdAndStatusNot(orderId, RecordStatus.DELETED)
+            .orElseThrow(() -> new ResourceNotFoundException("Order " + orderId + " has no invoice"));
+
+        if (!invoice.getCustomer().getId().equals(customerId)) {
+            throw new ResourceNotFoundException("Order " + orderId + " has no invoice");
         }
 
         return invoiceMapper.toResponse(invoice);

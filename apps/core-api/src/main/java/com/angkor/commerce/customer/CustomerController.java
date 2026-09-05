@@ -2,13 +2,15 @@ package com.angkor.commerce.customer;
 
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.common.dto.PageResponse;
+import com.angkor.commerce.customer.dto.request.CustomerQueryParams;
 import com.angkor.commerce.customer.dto.response.CustomerResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,13 +25,9 @@ class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<CustomerResponse>> listCustomers(
-        @RequestParam(defaultValue = "0") int skip,
-        @RequestParam(defaultValue = "30") int limit,
-        @RequestParam(required = false) String search
-    ) {
-        PageResponse<CustomerResponse> result = this.customerService.listCustomers(skip, limit, search);
-        return ResponseEntity.ok(result);
+    @Operation(summary = "List customers with pagination, search, status filter and sorting")
+    public ResponseEntity<PageResponse<CustomerResponse>> listCustomers(@Valid CustomerQueryParams query) {
+        return ResponseEntity.ok(this.customerService.listCustomers(query));
     }
 
     @GetMapping("/{id}")

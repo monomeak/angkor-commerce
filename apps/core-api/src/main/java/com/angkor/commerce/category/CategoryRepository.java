@@ -8,6 +8,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findAllByOrderBySortOrderAscNameAsc();
 
+    List<Category> findByParentIdIsNullOrderBySortOrderAscNameAsc();
+
     // Used to auto-append a new category to the end of its sibling group
     // (gap-of-10 sortOrder scheme) when the caller doesn't specify one.
     Optional<Category> findTopByParentIdOrderBySortOrderDesc(Long parentId);

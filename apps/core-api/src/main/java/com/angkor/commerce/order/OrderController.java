@@ -2,6 +2,8 @@ package com.angkor.commerce.order;
 
 import com.angkor.commerce.common.ApiConstants;
 import com.angkor.commerce.common.dto.PageResponse;
+import com.angkor.commerce.invoice.InvoiceService;
+import com.angkor.commerce.invoice.dto.response.InvoiceResponse;
 import com.angkor.commerce.order.dto.request.CreateOrderRequest;
 import com.angkor.commerce.order.dto.request.OrderQueryParams;
 import com.angkor.commerce.order.dto.response.OrderResponse;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final InvoiceService invoiceService;
 
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
@@ -54,6 +57,15 @@ public class OrderController {
         @PathVariable Long orderId
     ) {
         return ResponseEntity.ok(orderService.getMyOrder(customer.id(), orderId));
+    }
+
+    @GetMapping("/{orderId}/invoice")
+    @Operation(summary = "The receipt for a paid order — 404 until the payment lands")
+    public ResponseEntity<InvoiceResponse> getMyOrderInvoice(
+        @AuthenticationPrincipal AuthenticatedCustomer customer,
+        @PathVariable Long orderId
+    ) {
+        return ResponseEntity.ok(invoiceService.getMyInvoiceForOrder(customer.id(), orderId));
     }
 
     @PostMapping("/{orderId}/cancel")

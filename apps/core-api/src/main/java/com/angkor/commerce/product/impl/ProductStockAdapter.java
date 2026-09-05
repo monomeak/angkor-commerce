@@ -11,6 +11,8 @@ import com.angkor.commerce.product.port.ProductStockPort;
 import com.angkor.commerce.product.port.StockChange;
 import com.angkor.commerce.product.port.VariantSnapshot;
 import com.angkor.commerce.product.repositories.ProductVariantRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductStockAdapter implements ProductStockPort {
+
+    /** Money columns are NUMERIC(19,4). */
+    private static final int MONEY_SCALE = 4;
+    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
 
     private final ProductVariantRepository productVariantRepository;
 
@@ -106,6 +112,24 @@ public class ProductStockAdapter implements ProductStockPort {
         }
     }
 
+    /**
+     * What the shopper is actually charged: the variant's own price, less the product's
+     * discount. The storefront advertises that discounted figure on the grid and the detail
+     * page, so an order priced at the list price would charge more than the price shown.
+     */
+    private static BigDecimal payablePrice(ProductVariant v, Product p) {
+        BigDecimal listPrice = v.getPriceOverride() != null ? v.getPriceOverride() : p.getPrice();
+        BigDecimal discount = p.getDiscountPercentage();
+
+        if (discount == null || discount.signum() <= 0) {
+            return listPrice;
+        }
+
+        return listPrice
+            .multiply(HUNDRED.subtract(discount))
+            .divide(HUNDRED, MONEY_SCALE, RoundingMode.HALF_UP);
+    }
+
     // helper function
     private VariantSnapshot toSnapshot(ProductVariant v) {
         Product p = v.getProduct();
@@ -117,7 +141,7 @@ public class ProductStockAdapter implements ProductStockPort {
             v.getSize(),
             v.getSku(),
             p.getThumbnailUrl(),
-            v.getPriceOverride() != null ? v.getPriceOverride() : p.getPrice(),
+            payablePrice(v, p),
             p.getCurrency(),
             p.getUnit(),
             v.getStock(),

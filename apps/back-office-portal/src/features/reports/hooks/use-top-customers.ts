@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { useInvoices } from "../../invoices/hooks/use-invoices";
+import { useInvoices } from "../../invoices/mock/use-invoices";
 import { TopCustomerWithDetails } from "../types/reports";
 import { aggregateTopCustomer } from "../lib/aggregate-top-customers";
 import { useQueries } from "@tanstack/react-query";
 import { customerKeys } from "../../customers/lib/query-keys";
-import { fetchCustomerById } from "../../customers/api/customer-api";
+import { fetchCustomer } from "../../customers/api/customer-api";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { filterInvoicesByRecentMonths } from "../lib/filter-invoices-by-recent-months";
 const TOP_N = 5;
@@ -26,10 +26,16 @@ export function useTopCustomers(months?: number): {
   );
 
   const customerQueries = useQueries({
+    /*
+     * The ids come from DummyJSON invoices while /customers is core-api, so most lookups
+     * 404 until the invoice feature is ported. A miss falls back to "Customer #id" below;
+     * retry: false keeps a screenful of misses from becoming three rounds of requests.
+     */
     queries: topRevenue.map((entry) => ({
       queryKey: customerKeys.detail(entry.userId),
-      queryFn: () => fetchCustomerById(apiBaseUrl, entry.userId),
-      staletime: 5 * 60 * 1000,
+      queryFn: () => fetchCustomer(apiBaseUrl, entry.userId),
+      staleTime: 5 * 60 * 1000,
+      retry: false,
     })),
   });
 
@@ -40,10 +46,10 @@ export function useTopCustomers(months?: number): {
 
       return {
         ...entry,
-        fullName: customer?.fullName ?? `Customer #${entry.userId}`,
+        fullName: customer?.displayName ?? `Customer #${entry.userId}`,
         email: customer?.email ?? "",
-        avatarUrl: customer?.avatarUrl ?? "",
-        company: customer?.company.name ?? "",
+        avatarUrl: customer?.image ?? "",
+        company: customer?.companyName ?? "",
       };
     });
   }, [topRevenue, customerQueries]);

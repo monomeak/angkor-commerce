@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useInvoices } from "../../invoices/hooks/use-invoices";
+import { useInvoices } from "../../invoices/mock/use-invoices";
 import { MonthlyStatusBreakdown } from "../types/reports";
 import { aggregateStatusByMonth } from "../lib/aggregate-status-by-month";
 import { filterInvoicesByRecentMonths } from "../lib/filter-invoices-by-recent-months";

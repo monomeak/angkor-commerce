@@ -2,18 +2,17 @@ package com.angkor.commerce.invoice;
 
 import com.angkor.commerce.common.enums.RecordStatus;
 import jakarta.persistence.LockModeType;
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
     @EntityGraph(attributePaths = { "items", "customer" })
     @Query("select i from Invoice i where i.id = :id and i.status <> 'DELETED'")
     Optional<Invoice> findActiveWithItemsById(@Param("id") Long id);
@@ -29,16 +28,28 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     boolean existsByOrderIdAndStatusNot(Long orderId, RecordStatus status);
 
     // ── Lists ──
-    @EntityGraph(attributePaths = { "customer" })
-    Page<Invoice> findByStatusNot(RecordStatus status, Pageable pageable);
+    // Filtering, search and date ranges live in InvoiceSpecification, which also fetches
+    // the customer the rows are labelled with.
 
     Optional<Invoice> findByOrderIdAndStatusNot(Long orderId, RecordStatus status);
 
-    @EntityGraph(attributePaths = { "customer" })
-    Page<Invoice> findByInvoiceStatusAndStatusNot(InvoiceStatus invoiceStatus, RecordStatus status, Pageable pageable);
+    // ── Dashboard aggregates ──
+
+    long countByStatusNot(RecordStatus status);
+
+    /** What customers still owe: only ISSUED and PARTIALLY_PAID invoices carry a real balance. */
+    @Query(
+        """
+        select coalesce(sum(i.balance), 0) from Invoice i
+        where i.status <> com.angkor.commerce.common.enums.RecordStatus.DELETED
+          and i.invoiceStatus in (com.angkor.commerce.invoice.InvoiceStatus.ISSUED,
+                                  com.angkor.commerce.invoice.InvoiceStatus.PARTIALLY_PAID)
+        """
+    )
+    BigDecimal sumOutstandingBalance();
 
     @EntityGraph(attributePaths = { "customer" })
-    Page<Invoice> findByCustomerIdAndStatusNot(Long customerId, RecordStatus status, Pageable pageable);
+    List<Invoice> findTop5ByStatusNotOrderByIssueDateDescIdDesc(RecordStatus status);
 
     @Query(value = "SELECT nextval('invoice_number_seq')", nativeQuery = true)
     long nextInvoiceSequence();

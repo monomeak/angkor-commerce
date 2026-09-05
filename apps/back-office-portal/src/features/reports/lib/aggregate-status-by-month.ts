@@ -1,4 +1,4 @@
-import { Invoice } from "../../invoices/types/invoice";
+import { Invoice } from "../../invoices/mock/types";
 import { MonthlyStatusBreakdown } from "../types/reports";
 
 export function aggregateStatusByMonth(

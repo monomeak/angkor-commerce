@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import { useCart } from "@/src/features/cart/lib/cart-context";
 import { WishlistButton } from "@/src/features/wishlist/components/wishlist-button";
+import { toCartLine } from "../lib/cart-line";
 import { productGallery } from "../lib/product-image";
 import { applyDiscount, formatPrice } from "../lib/pricing";
 import { pickDefaultVariant, variantLabel } from "../lib/variants";
@@ -180,8 +181,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                         variant="accent"
                         size="lg"
                         className="h-12 w-full text-sm sm:w-auto sm:px-10"
-                        disabled={isSoldOut}
-                        onClick={() => addItem(product.id, variantLabel(selectedVariant), quantity)}
+                        disabled={isSoldOut || !selectedVariant}
+                        onClick={() => selectedVariant && addItem(toCartLine(product, selectedVariant), quantity)}
                     >
                         {isSoldOut ? "Sold out" : "Add to cart"}
                     </Button>

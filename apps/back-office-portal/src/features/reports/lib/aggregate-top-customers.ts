@@ -1,4 +1,4 @@
-import { Invoice } from "../../invoices/types/invoice";
+import { Invoice } from "../../invoices/mock/types";
 import { TopCustomerRevenue } from "../types/reports";
 
 export function aggregateTopCustomer(

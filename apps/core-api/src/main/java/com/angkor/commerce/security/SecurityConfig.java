@@ -106,6 +106,7 @@ public class SecurityConfig {
                         "/api/v1/categories/**",
                         "/api/v1/orders/**",
                         "/api/v1/invoices/**",
+                        "/api/v1/dashboard/**",
                         "/api/v1/payments/**",
                         "/api/v1/payment-intents/**",
                         "/api/v1/reports/**"

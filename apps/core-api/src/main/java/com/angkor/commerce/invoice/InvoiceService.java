@@ -16,4 +16,5 @@ public interface InvoiceService {
     PageResponse<InvoiceSummaryResponse> getInvoices(InvoiceQueryParams query);
     PageResponse<InvoiceSummaryResponse> getMyInvoices(Long customerId, InvoiceQueryParams query);
     InvoiceResponse getMyInvoice(Long customerId, Long invoiceId);
+    InvoiceResponse getMyInvoiceForOrder(Long customerId, Long orderId);
 }

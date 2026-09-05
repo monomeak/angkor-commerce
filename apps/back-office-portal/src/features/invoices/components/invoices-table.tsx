@@ -1,118 +1,161 @@
 "use client";
-import { Eye } from "lucide-react";
+
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  formatCurrency,
-  formatDate,
-} from "../../dashboard-overview/lib/format";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatDate, formatMoney } from "@/lib/formatters";
+import { cn } from "@/lib/utils";
 import { InvoiceStatusBadge } from "./invoice-status-badge";
-import type { Invoice } from "../types/invoice";
+import type { InvoiceListParams, InvoiceSortField, InvoiceSummary, SortOrder } from "../types/invoice";
 
 interface InvoicesTableProps {
-  readonly invoices: Invoice[];
-  readonly isLoading: boolean;
-  onViewDetails: (invoiceId: string) => void;
+    readonly invoices: InvoiceSummary[];
+    readonly params: InvoiceListParams;
+    readonly isLoading: boolean;
+    /** Dims the table while a filter or page change is in flight. */
+    readonly isFetching: boolean;
+    readonly statusLabels: Record<string, string>;
+    readonly onSort: (sortBy: InvoiceSortField, order: SortOrder) => void;
+    readonly onFilterByCustomer: (customerId: number) => void;
 }
 
+/**
+ * Rows link to the receipt rather than opening a dialog: a receipt is a document, so it gets
+ * its own URL and prints on its own. Sorting and paging are server-side through the URL, so
+ * the rows render in the order the API returned them and are never re-sorted here.
+ */
 export function InvoicesTable({
-  invoices,
-  isLoading,
-  onViewDetails,
+    invoices,
+    params,
+    isLoading,
+    isFetching,
+    statusLabels,
+    onSort,
+    onFilterByCustomer
 }: InvoicesTableProps) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Invoice</TableHead>
-          <TableHead className="w-[220px]">Client</TableHead>
-          <TableHead>Items</TableHead>
-          <TableHead>Issued</TableHead>
-          <TableHead>Due Date</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
-          <TableHead className="w-10"></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {isLoading && (
-          <TableRow>
-            <TableCell
-              colSpan={8}
-              className="py-8 text-center text-sm text-muted-foreground"
-            >
-              {" "}
-              Loading Invoices...
-            </TableCell>
-          </TableRow>
-        )}
+    const t = useTranslations("Invoices");
 
-        {!isLoading && invoices.length === 0 && (
-          <TableRow>
-            <TableCell
-              colSpan={8}
-              className="py-8 text-center text-sm text-muted-foreground"
-            >
-              {" "}
-              Invoices not found...
-            </TableCell>
-          </TableRow>
-        )}
+    return (
+        <div className={cn("transition-opacity", isFetching && !isLoading && "opacity-60")}>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <SortableHead field="invoiceNumber" params={params} onSort={onSort}>
+                            {t("colInvoice")}
+                        </SortableHead>
+                        <TableHead>{t("colCustomer")}</TableHead>
+                        <SortableHead field="issueDate" params={params} onSort={onSort}>
+                            {t("colIssued")}
+                        </SortableHead>
+                        <SortableHead field="dueDate" params={params} onSort={onSort}>
+                            {t("colDue")}
+                        </SortableHead>
+                        <SortableHead field="total" params={params} onSort={onSort} className="text-right">
+                            {t("colTotal")}
+                        </SortableHead>
+                        <SortableHead field="balance" params={params} onSort={onSort} className="text-right">
+                            {t("colBalance")}
+                        </SortableHead>
+                        <TableHead>{t("colStatus")}</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {isLoading && (
+                        <TableRow>
+                            <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
+                                {t("loading")}
+                            </TableCell>
+                        </TableRow>
+                    )}
 
-        {invoices.map((inv) => (
-          <TableRow key={inv.id}>
-            <TableCell className="font-medium">{inv.invoiceNumber}</TableCell>
-            <TableCell className="max-w-[220px]">
-              <div className="min-w-0 space-y-1">
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <span className="truncate text-sm font-medium">
-                    {inv.client.name}
-                  </span>
-                </div>
-                <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
-                  <span className="truncate text-xs" title={inv.client.email}>
-                    {inv.client.email}
-                  </span>
-                </div>
-              </div>
-            </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {inv.totalProducts} item{inv.totalProducts === 1 ? "" : "s"}
-            </TableCell>
+                    {!isLoading && invoices.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
+                                {t("empty")}
+                            </TableCell>
+                        </TableRow>
+                    )}
 
-            <TableCell className="text-sm text-muted-foreground">
-              {formatDate(inv.issuedDate)}
-            </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {formatDate(inv.dueDate)}
-            </TableCell>
-            <TableCell>
-              <InvoiceStatusBadge status={inv.status} />
-            </TableCell>
-            <TableCell className="text-right font-medium">
-              {formatCurrency(inv.amountDue)}
-            </TableCell>
+                    {invoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                            <TableCell>
+                                <Link
+                                    href={`/invoices/${invoice.id}`}
+                                    className="font-medium hover:underline"
+                                    aria-label={t("openReceipt", { number: invoice.invoiceNumber })}
+                                >
+                                    {invoice.invoiceNumber}
+                                </Link>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                                {/* Narrows the list to this customer rather than navigating away —
+                                    the same "filter by what you clicked" move the product table makes. */}
+                                <button
+                                    type="button"
+                                    className="text-left hover:underline"
+                                    onClick={() => onFilterByCustomer(invoice.customerId)}
+                                >
+                                    {invoice.customerName}
+                                </button>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{formatDate(invoice.issueDate)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{formatDate(invoice.dueDate)}</TableCell>
+                            <TableCell className="text-right text-sm font-medium">
+                                {formatMoney(invoice.total, invoice.currency)}
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                                {formatMoney(invoice.balance, invoice.currency)}
+                            </TableCell>
+                            <TableCell>
+                                <InvoiceStatusBadge
+                                    status={invoice.invoiceStatus}
+                                    dueDate={invoice.dueDate}
+                                    balance={invoice.balance}
+                                    labels={statusLabels}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
 
-            <TableCell>
-              <Button
+type SortableHeadProps = {
+    readonly field: InvoiceSortField;
+    readonly params: InvoiceListParams;
+    readonly onSort: (sortBy: InvoiceSortField, order: SortOrder) => void;
+    readonly className?: string;
+    readonly children: React.ReactNode;
+};
+
+function SortableHead({ field, params, onSort, className, children }: SortableHeadProps) {
+    const isActive = params.sortBy === field;
+
+    return (
+        <TableHead className={className}>
+            <Button
                 variant="ghost"
-                size="icon"
-                aria-label={`View details of ${inv.invoiceNumber}`}
-                onClick={() => onViewDetails(inv.id)}
-              >
-                <Eye className="size-4"></Eye>
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+                size="sm"
+                className="-ml-2 h-8"
+                // Clicking the active column flips direction; a new column starts descending,
+                // which is what you want for dates and money.
+                onClick={() => onSort(field, isActive && params.order === "desc" ? "asc" : "desc")}
+            >
+                {children}
+                {isActive ? (
+                    params.order === "desc" ? (
+                        <ArrowDown className="size-3.5" />
+                    ) : (
+                        <ArrowUp className="size-3.5" />
+                    )
+                ) : (
+                    <ChevronsUpDown className="size-3.5 opacity-50" />
+                )}
+            </Button>
+        </TableHead>
+    );
 }

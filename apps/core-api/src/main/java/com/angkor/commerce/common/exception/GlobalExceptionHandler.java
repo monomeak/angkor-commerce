@@ -169,7 +169,7 @@ public class GlobalExceptionHandler {
         InsufficientStockException ex,
         HttpServletRequest request
     ) {
-        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+        return build(HttpStatus.CONFLICT, "Conflict", ex.getMessage(), request);
     }
 
     @ExceptionHandler(StorageException.class)
@@ -212,7 +212,7 @@ public class GlobalExceptionHandler {
         InsufficientBalanceException ex,
         HttpServletRequest request
     ) {
-        return build(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), null, request);
+        return build(HttpStatus.PAYMENT_REQUIRED, "Payment Required", ex.getMessage(), request);
     }
 
     @ExceptionHandler(AlreadyProcessedException.class)
@@ -220,7 +220,7 @@ public class GlobalExceptionHandler {
         AlreadyProcessedException ex,
         HttpServletRequest request
     ) {
-        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+        return build(HttpStatus.CONFLICT, "Conflict", ex.getMessage(), request);
     }
 
     @ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -228,6 +228,6 @@ public class GlobalExceptionHandler {
         ResourceAlreadyExistsException ex,
         HttpServletRequest request
     ) {
-        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+        return build(HttpStatus.CONFLICT, "Conflict", ex.getMessage(), request);
     }
 }

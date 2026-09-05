@@ -241,3 +241,26 @@ html[lang="km"],
     transform: rotate(10deg);
   }
 }
+
+/*
+ * Printing a receipt: everything but the marked region is hidden rather than the region being
+ * lifted into its own window, so the printed page keeps the app's own styling and the sidebar,
+ * header and toolbar drop away. `visibility` rather than `display` — collapsing ancestors would
+ * take the region with them.
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  [data-print-region],
+  [data-print-region] * {
+    visibility: visible;
+  }
+  [data-print-region] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: 0;
+  }
+}

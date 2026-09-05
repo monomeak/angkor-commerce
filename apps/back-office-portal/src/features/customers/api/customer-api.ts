@@ -1,44 +1,49 @@
-import { usersResponseSchema } from "../schemas/customer.schema";
-import { mapUserToCustomer } from "../mappers/customer.mapper";
-import type {
-  CustomerListFilters,
-  CustomerListResult,
-} from "../types/customer";
-import type { DummyUser } from "../types/dummy-customer";
+import { apiFetch, parseResponse } from "@/lib/api-client";
+import { mapCustomer, mapCustomerList } from "../mappers/customer.mapper";
+import { customerDtoSchema, customerListDtoSchema } from "../schemas/customer-api.schema";
+import type { Customer, CustomerListParams, CustomerListResult } from "../types/customer";
 
-// Base URL comes from <AppConfigProvider> via the calling hook — see auth-api.ts.
+/*
+ * The only place the customer directory talks HTTP. Components go through hooks, hooks call
+ * these. apiBaseUrl is passed in because it comes from <AppConfigProvider> via useAppConfig(),
+ * which can only be read inside a hook or component.
+ *
+ * `/customers` is staff-only in core-api's SecurityConfig — a customer's own session cannot
+ * reach it, and an expired staff one is refreshed once inside apiFetch.
+ */
 
-export async function fetchCustomers(
-  apiBaseUrl: string,
-  { search, page, pageSize }: CustomerListFilters,
-): Promise<CustomerListResult> {
-  const skip = (page - 1) * pageSize;
-  const query = search.trim();
-  const url =
-    query.length > 0
-      ? `${apiBaseUrl}/users/search?q=${encodeURIComponent(query)}&limit=${pageSize}&skip=${skip}`
-      : `${apiBaseUrl}/users?limit=${pageSize}&skip=${skip}`;
+const CUSTOMERS_BASE = "/customers";
 
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch customers: ${res.status}`);
-  }
-  const json = await res.json();
-  const parsed = usersResponseSchema.safeParse(json);
-  if (!parsed.success) {
-    console.error(parsed.error.flatten());
-    throw new Error("Invalid customers response shape");
-  }
-  return {
-    customers: parsed.data.users.map(mapUserToCustomer),
-    total: parsed.data.total,
-  };
+/**
+ * The search parameter is `search` here, not `q` as on `/products` — it is what this endpoint
+ * has always taken. It matches the full name, either half of it, the email, the phone or the
+ * company in one predicate.
+ *
+ * Empty values are dropped rather than sent blank: `?status=` fails enum conversion with a
+ * 400 rather than being read as "no filter".
+ */
+function toSearchParams(params: CustomerListParams): string {
+    const search = new URLSearchParams();
+
+    search.set("skip", String(params.skip));
+    search.set("limit", String(params.limit));
+    search.set("sortBy", params.sortBy);
+    search.set("order", params.order);
+
+    if (params.search) search.set("search", params.search);
+    if (params.status) search.set("status", params.status);
+
+    return search.toString();
 }
-export async function fetchCustomerById(apiBaseUrl: string, id: number) {
-  const res = await fetch(`${apiBaseUrl}/users/${id}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch customer ${id}: ${res.status}`);
-  }
-  const json: DummyUser = await res.json();
-  return mapUserToCustomer(json);
+
+export async function fetchCustomers(apiBaseUrl: string, params: CustomerListParams): Promise<CustomerListResult> {
+    const data = await apiFetch<unknown>(apiBaseUrl, `${CUSTOMERS_BASE}?${toSearchParams(params)}`);
+
+    return mapCustomerList(parseResponse(customerListDtoSchema, data));
+}
+
+export async function fetchCustomer(apiBaseUrl: string, id: number): Promise<Customer> {
+    const data = await apiFetch<unknown>(apiBaseUrl, `${CUSTOMERS_BASE}/${id}`);
+
+    return mapCustomer(parseResponse(customerDtoSchema, data));
 }

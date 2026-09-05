@@ -12,12 +12,12 @@ import {
 } from "recharts";
 
 import type { MonthlyStatusBreakdown } from "../types/reports";
-import { formatCurrency } from "../../dashboard-overview/lib/format";
+import { formatCurrency } from "../lib/format";
 import {
   ALL_INVOICE_STATUSES,
   getStatusStyle,
-} from "../../invoices/lib/invoice-status-style";
-import { InvoiceStatus } from "../../invoices/types/invoice";
+} from "../../invoices/mock/status-style";
+import { InvoiceStatus } from "../../invoices/mock/types";
 import { readonly } from "zod";
 
 interface StatusByMonthChartProps {
