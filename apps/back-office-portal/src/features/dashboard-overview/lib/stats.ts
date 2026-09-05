@@ -16,10 +16,8 @@ export function buildStats(summary: DashboardSummary, revenueByMonth: RevenuePoi
             icon: Wallet,
             change: revenueChange(revenueByMonth)
         },
-        { key: "outstanding", value: money(summary.outstandingAmount), icon: HandCoins },
         { key: "totalProducts", value: String(summary.totalProducts), icon: Boxes },
         { key: "totalCustomers", value: String(summary.totalCustomers), icon: Users },
-        { key: "pendingOrders", value: String(summary.pendingOrders), icon: ClipboardList },
         { key: "totalInvoices", value: String(summary.totalInvoices), icon: FileText }
     ];
 }

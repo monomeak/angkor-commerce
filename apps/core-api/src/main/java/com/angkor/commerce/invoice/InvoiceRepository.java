@@ -48,16 +48,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
     )
     BigDecimal sumOutstandingBalance();
 
-    /** [status, count, total] per invoice status, for the breakdown chart. */
-    @Query(
-        """
-        select i.invoiceStatus, count(i), coalesce(sum(i.total), 0) from Invoice i
-        where i.status <> com.angkor.commerce.common.enums.RecordStatus.DELETED
-        group by i.invoiceStatus
-        """
-    )
-    List<Object[]> countAndTotalByInvoiceStatus();
-
     @EntityGraph(attributePaths = { "customer" })
     List<Invoice> findTop5ByStatusNotOrderByIssueDateDescIdDesc(RecordStatus status);
 

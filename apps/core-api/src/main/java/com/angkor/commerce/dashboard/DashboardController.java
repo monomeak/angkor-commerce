@@ -24,7 +24,7 @@ public class DashboardController {
 
     @GetMapping("/overview")
     @IsAdmin
-    @Operation(summary = "KPIs, revenue by month, invoice status split and the latest invoices")
+    @Operation(summary = "KPIs, revenue by month, units sold per category and the latest invoices")
     public ResponseEntity<DashboardOverviewResponse> getOverview(
         @RequestParam(required = false) Integer months
     ) {

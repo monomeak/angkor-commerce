@@ -1,80 +1,80 @@
 services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-acme_invoice}
-      POSTGRES_USER: ${POSTGRES_USER:-acme}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-    ports:
-      - "${POSTGRES_HOST_PORT:-5433}:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-acme} -d ${POSTGRES_DB:-acme_invoice}",
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+  # postgres:
+  #   image: postgres:16
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB:-acme_invoice}
+  #     POSTGRES_USER: ${POSTGRES_USER:-acme}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+  #   ports:
+  #     - "${POSTGRES_HOST_PORT:-5433}:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD-SHELL",
+  #         "pg_isready -U ${POSTGRES_USER:-acme} -d ${POSTGRES_DB:-acme_invoice}",
+  #       ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
 
-  core-api:
-    build:
-      context: ./apps/core-api
-    environment:
-      SERVER_PORT: 8080
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-acme_invoice}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-acme}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--spider",
-          "-q",
-          "http://localhost:8080/actuator/health",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+  # core-api:
+  #   build:
+  #     context: ./apps/core-api
+  #   environment:
+  #     SERVER_PORT: 8080
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-acme_invoice}
+  #     SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-acme}
+  #     SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+  #     CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "wget",
+  #         "--spider",
+  #         "-q",
+  #         "http://localhost:8080/actuator/health",
+  #       ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
 
-  back-office-portal:
-    build:
-      context: .
-      dockerfile: apps/back-office-portal/Dockerfile
-      args:
-        # Stage 1 talks to DummyJSON directly, not core-api — see apps/back-office-portal/AGENTS.md.
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://dummyjson.com}
-    environment:
-      AI_API_KEY: ${AI_API_KEY:-}
-      AI_MODEL: ${AI_MODEL:-gemini-3.5-flash}
-    ports:
-      - "${BACK_OFFICE_HOST_PORT:-3000}:3000"
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+  # back-office-portal:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/back-office-portal/Dockerfile
+  #     args:
+  #       # Stage 1 talks to DummyJSON directly, not core-api — see apps/back-office-portal/AGENTS.md.
+  #       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://dummyjson.com}
+  #   environment:
+  #     AI_API_KEY: ${AI_API_KEY:-}
+  #     AI_MODEL: ${AI_MODEL:-gemini-3.5-flash}
+  #   ports:
+  #     - "${BACK_OFFICE_HOST_PORT:-3000}:3000"
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
 
-  customer-portal:
-    build:
-      context: .
-      dockerfile: apps/customer-portal/Dockerfile
-    ports:
-      - "${CUSTOMER_PORTAL_HOST_PORT:-3001}:3000"
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+  # customer-portal:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/customer-portal/Dockerfile
+  #   ports:
+  #     - "${CUSTOMER_PORTAL_HOST_PORT:-3001}:3000"
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
 
   minio:
     image: minio/minio:latest

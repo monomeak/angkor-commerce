@@ -1,16 +1,18 @@
 package com.angkor.commerce.dashboard.impl;
 
+import com.angkor.commerce.category.Category;
+import com.angkor.commerce.category.CategoryRepository;
 import com.angkor.commerce.common.enums.RecordStatus;
 import com.angkor.commerce.customer.CustomerRepository;
 import com.angkor.commerce.dashboard.DashboardService;
+import com.angkor.commerce.dashboard.dto.response.CategorySalesResponse;
 import com.angkor.commerce.dashboard.dto.response.DashboardOverviewResponse;
 import com.angkor.commerce.dashboard.dto.response.DashboardSummaryResponse;
-import com.angkor.commerce.dashboard.dto.response.InvoiceStatusBreakdownResponse;
 import com.angkor.commerce.dashboard.dto.response.RecentInvoiceResponse;
 import com.angkor.commerce.dashboard.dto.response.RevenuePointResponse;
 import com.angkor.commerce.invoice.Invoice;
+import com.angkor.commerce.invoice.InvoiceItemRepository;
 import com.angkor.commerce.invoice.InvoiceRepository;
-import com.angkor.commerce.invoice.InvoiceStatus;
 import com.angkor.commerce.order.OrderRepository;
 import com.angkor.commerce.order.OrderStatus;
 import com.angkor.commerce.payment.PaymentRepository;
@@ -19,7 +21,6 @@ import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,11 @@ public class DashboardServiceImpl implements DashboardService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Phnom_Penh");
 
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceItemRepository invoiceItemRepository;
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+    private final CategoryRepository categoryRepository;
     private final OrderRepository orderRepository;
 
     @Value("${angkor.default-currency:USD}")
@@ -50,7 +53,7 @@ public class DashboardServiceImpl implements DashboardService {
         return new DashboardOverviewResponse(
             summary(),
             revenueByMonth(months),
-            invoiceStatusBreakdown(),
+            salesByCategory(),
             recentInvoices()
         );
     }
@@ -93,28 +96,32 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     /**
-     * Every status is present, including the ones with nothing in them, so the chart's
-     * legend and colours stay put as invoices move between them.
+     * Every top-level category is present, including the ones nobody bought from, so the
+     * chart's legend and colours stay put as sales move between them. The repository rolls
+     * leaf categories up to their root; this fills in the roots it found nothing for.
      */
-    private List<InvoiceStatusBreakdownResponse> invoiceStatusBreakdown() {
-        Map<InvoiceStatus, Object[]> rows = new EnumMap<>(InvoiceStatus.class);
-        for (Object[] row : invoiceRepository.countAndTotalByInvoiceStatus()) {
-            rows.put((InvoiceStatus) row[0], row);
+    private List<CategorySalesResponse> salesByCategory() {
+        Map<Long, Object[]> rows = new HashMap<>();
+        for (Object[] row : invoiceItemRepository.sumSoldUnitsByRootCategory()) {
+            rows.put(((Number) row[0]).longValue(), row);
         }
 
-        List<InvoiceStatusBreakdownResponse> breakdown = new ArrayList<>(InvoiceStatus.values().length);
-        for (InvoiceStatus status : InvoiceStatus.values()) {
-            Object[] row = rows.get(status);
-            breakdown.add(
-                new InvoiceStatusBreakdownResponse(
-                    status,
-                    row == null ? 0L : ((Number) row[1]).longValue(),
-                    row == null ? BigDecimal.ZERO : toAmount(row[2])
+        List<Category> roots = categoryRepository.findByParentIdIsNullOrderBySortOrderAscNameAsc();
+        List<CategorySalesResponse> sales = new ArrayList<>(roots.size());
+        for (Category root : roots) {
+            Object[] row = rows.get(root.getId());
+            sales.add(
+                new CategorySalesResponse(
+                    root.getId(),
+                    root.getName(),
+                    root.getSlug(),
+                    row == null ? 0L : ((Number) row[3]).longValue(),
+                    row == null ? BigDecimal.ZERO : toAmount(row[4])
                 )
             );
         }
 
-        return breakdown;
+        return sales;
     }
 
     private List<RecentInvoiceResponse> recentInvoices() {

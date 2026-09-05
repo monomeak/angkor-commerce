@@ -18,9 +18,11 @@ export const revenuePointDtoSchema = z.object({
     revenue: z.number()
 });
 
-export const invoiceStatusBreakdownDtoSchema = z.object({
-    status: invoiceStatusSchema,
-    count: z.number(),
+export const categorySalesDtoSchema = z.object({
+    categoryId: z.number(),
+    category: z.string(),
+    slug: z.string(),
+    unitsSold: z.number(),
     amount: z.number()
 });
 
@@ -40,7 +42,7 @@ export const recentInvoiceDtoSchema = z.object({
 export const dashboardOverviewDtoSchema = z.object({
     summary: dashboardSummaryDtoSchema,
     revenueByMonth: z.array(revenuePointDtoSchema),
-    invoiceStatusBreakdown: z.array(invoiceStatusBreakdownDtoSchema),
+    salesByCategory: z.array(categorySalesDtoSchema),
     recentInvoices: z.array(recentInvoiceDtoSchema)
 });
 

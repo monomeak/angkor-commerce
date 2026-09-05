@@ -10,6 +10,6 @@ import java.util.List;
 public record DashboardOverviewResponse(
     DashboardSummaryResponse summary,
     List<RevenuePointResponse> revenueByMonth,
-    List<InvoiceStatusBreakdownResponse> invoiceStatusBreakdown,
+    List<CategorySalesResponse> salesByCategory,
     List<RecentInvoiceResponse> recentInvoices
 ) {}

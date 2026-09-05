@@ -11,12 +11,12 @@ export interface DashboardSummary {
     /** Money received: the sum of COMPLETED payments. */
     totalRevenue: number;
     /** Money owed: the balance of every unpaid or part-paid invoice. */
-    outstandingAmount: number;
+    // outstandingAmount: number;
     currency: string;
     totalProducts: number;
     totalCustomers: number;
     /** Orders placed but not paid for — the only KPI that is a to-do rather than a total. */
-    pendingOrders: number;
+    // pendingOrders: number;
     totalInvoices: number;
 }
 
@@ -26,9 +26,12 @@ export interface RevenuePoint {
     revenue: number;
 }
 
-export interface InvoiceStatusBreakdown {
-    status: InvoiceStatus;
-    count: number;
+/** Units sold in one top-level category — core-api rolls the leaf categories up to their root. */
+export interface CategorySales {
+    categoryId: number;
+    category: string;
+    slug: string;
+    unitsSold: number;
     amount: number;
 }
 
@@ -48,7 +51,7 @@ export interface RecentInvoice {
 export interface DashboardOverview {
     summary: DashboardSummary;
     revenueByMonth: RevenuePoint[];
-    invoiceStatusBreakdown: InvoiceStatusBreakdown[];
+    salesByCategory: CategorySales[];
     recentInvoices: RecentInvoice[];
 }
 
